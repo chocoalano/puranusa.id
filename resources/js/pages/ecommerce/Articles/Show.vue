@@ -66,6 +66,9 @@ const getImageUrl = (url: string | null) => {
 };
 
 const getFeaturedImage = () => {
+    if (!props.article.blocks || !Array.isArray(props.article.blocks)) {
+        return null;
+    }
     const imageBlock = props.article.blocks.find(block => block.type === 'image');
     if (imageBlock) {
         const content = imageBlock.content || imageBlock;
@@ -149,7 +152,8 @@ const getFeaturedImage = () => {
 
                     <!-- Article Content -->
                     <div class="prose prose-lg max-w-none dark:prose-invert mb-12">
-                        <ArticleContent :blocks="article.blocks" />
+                        <ArticleContent v-if="article.blocks && article.blocks.length > 0" :blocks="article.blocks" />
+                        <p v-else class="text-muted-foreground">Konten artikel tidak tersedia.</p>
                     </div>
 
                     <Separator class="my-12" />

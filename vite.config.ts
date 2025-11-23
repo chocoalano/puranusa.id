@@ -23,10 +23,14 @@ export default defineConfig({
                 },
             },
         }),
-    ],
-    build: {
-        sourcemap: false, // Disable source maps to prevent warnings
-        rollupOptions: {
+],
+optimizeDeps: {
+    // Memberi tahu Vite untuk tidak menganalisis modul ini
+    exclude: ['monaco-editor'],
+},
+build: {
+    sourcemap: false,
+    rollupOptions: {
             output: {
                 manualChunks: {
                     vendor: ['vue', '@inertiajs/vue3'],
