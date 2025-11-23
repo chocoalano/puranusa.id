@@ -249,6 +249,7 @@ class DatabaseSeeder extends Seeder
             }
 
             $upline = $currentLevel->shift();
+            $uplineNetwork = CustomerNetwork::where('member_id', $upline->id)->first();
             $position = CustomerNetwork::where('upline_id', $upline->id)->count() == 0 ? 'left' : 'right';
 
             CustomerNetwork::create([
@@ -256,7 +257,7 @@ class DatabaseSeeder extends Seeder
                 'upline_id' => $upline->id,
                 'position' => $position,
                 'status' => true,
-                'level' => ($upline->level ?? 0) + 1,
+                'level' => ($uplineNetwork->level ?? 0) + 1,
             ]);
 
             if ($position == 'right') {

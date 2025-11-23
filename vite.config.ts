@@ -23,17 +23,22 @@ export default defineConfig({
                 },
             },
         }),
-],
-optimizeDeps: {
-    // Memberi tahu Vite untuk tidak menganalisis modul ini
-    exclude: ['monaco-editor'],
-},
-build: {
-    sourcemap: false,
-    rollupOptions: {
+    ],
+
+    optimizeDeps: {
+        exclude: ['monaco-editor'],
+    },
+
+    build: {
+        sourcemap: false,
+        chunkSizeWarningLimit: 1500,
+        rollupOptions: {
             output: {
-                manualChunks: {
-                    vendor: ['vue', '@inertiajs/vue3'],
+                // Semua module dari node_modules dijadiin 1 chunk "vendor"
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        return 'vendor';
+                    }
                 },
             },
         },
