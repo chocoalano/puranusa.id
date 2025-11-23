@@ -175,7 +175,11 @@ const isAuthenticated = computed(() => {
 
 const isDark = computed(() => {
     if (appearance.value === 'system') {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        // Check if window is available (not in SSR)
+        if (typeof window !== 'undefined') {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        return false; // Default to light mode during SSR
     }
     return appearance.value === 'dark';
 });
