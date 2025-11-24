@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EcommerceLayout from '@/layouts/store/Ecommerce.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import { AlertCircle, Lock, Package, User, Wallet, Network, GitBranch } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed } from 'vue';
 import type { Customer, Order, WalletTransaction } from '@/types/profile';
 import ProfileCard from '@/components/profile/ProfileCard.vue';
 import NetworkStatsCard from '@/components/profile/NetworkStatsCard.vue';
@@ -54,9 +54,14 @@ defineProps<{
     totalRight: number;
 }>();
 
-// Get active tab from URL query parameter
-const urlParams = new URLSearchParams(window.location.search);
-const activeTab = ref(urlParams.get('tab') || 'profile');
+const page = usePage();
+
+// Get active tab from URL query parameter (SSR-safe)
+const activeTab = computed(() => {
+    const url = page.url;
+    const urlObj = new URL(url, 'https://preview.puranusa.id'); // Base URL to ensure URL parsing works
+    return urlObj.searchParams.get('tab') || 'profile';
+});
 </script>
 
 <template>
