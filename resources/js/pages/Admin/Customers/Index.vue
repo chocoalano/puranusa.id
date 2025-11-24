@@ -37,7 +37,7 @@ import { toast } from 'vue-sonner';
 
 // Login as customer action
 const loginAsCustomer = (id: number, name: string) => {
-    router.post(`/admin/manage/customers/${id}/login-as`, {}, {
+    router.post(`/manage/customers/${id}/login-as`, {}, {
         onSuccess: () => {
             toast.success(`Login sebagai ${name}`);
         },

@@ -28,6 +28,7 @@ import {
     Home,
     Info,
     Laptop,
+    LockIcon,
     LogOut,
     Menu,
     Minus,
@@ -262,7 +263,7 @@ const subscribeNewsletter = async () => {
 
 // Stop impersonating function
 const stopImpersonating = () => {
-    router.post('/admin/manage/customers/stop-impersonating', {}, {
+    router.post('/manage/customers/stop-impersonating', {}, {
         onSuccess: () => {
             toast.success('Kembali ke akun admin');
         },
@@ -596,10 +597,10 @@ const searchSuggestions = computed(() => {
         <!-- Impersonation Banner -->
         <div
             v-if="page.props.impersonating"
-            class="bg-yellow-500 dark:bg-yellow-600 text-black dark:text-white py-2 px-4 text-center text-sm font-medium sticky top-0 z-[60] flex items-center justify-center gap-4"
+            class="bg-primary dark:bg-zinc-100 text-white dark:text-black py-2 px-4 text-center text-sm font-medium sticky top-0 z-[60] flex items-center justify-center gap-4"
         >
             <span>
-                🔒 Anda login sebagai <strong>{{ (page.props.impersonating as any)?.customer_name }}</strong>
+                <LockIcon class="inline-block mr-1 h-4 w-4" /> Anda login sebagai <strong>{{ (page.props.impersonating as any)?.customer_name }}</strong>
                 (Admin: {{ (page.props.impersonating as any)?.admin_name }})
             </span>
             <Button
