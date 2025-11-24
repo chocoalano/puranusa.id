@@ -5,6 +5,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { initializeTheme } from './composables/useAppearance';
+import 'vue-sonner/style.css';
 import Toaster from '@/components/ui/sonner/Sonner.vue';
 import axios from 'axios';
 

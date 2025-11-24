@@ -318,27 +318,27 @@ class HandleInertiaRequests extends Middleware
      */
     protected function getAuthUser(Request $request): ?array
     {
-        // For client routes, only check client guard
-        if ($request->is('client/*') || $request->is('toko') || $request->is('toko/*') || $request->is('produk/*') || $request->is('/')) {
-            if (auth('client')->check()) {
+        // For admin/web routes, check web guard only
+        if ($request->is('admin/*') || $request->is('login') || $request->is('settings/*')) {
+            if ($request->user()) {
                 return [
-                    'id' => auth('client')->user()->id,
-                    'name' => auth('client')->user()->name,
-                    'email' => auth('client')->user()->email,
-                    'ewallet_saldo' => auth('client')->user()->ewallet_saldo ?? 0,
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'avatar' => $request->user()->avatar ?? null,
                 ];
             }
 
             return null;
         }
 
-        // For admin/web routes, check web guard
-        if ($request->user()) {
+        // For all other routes (ecommerce/client), check client guard
+        if (auth('client')->check()) {
             return [
-                'id' => $request->user()->id,
-                'name' => $request->user()->name,
-                'email' => $request->user()->email,
-                'avatar' => $request->user()->avatar ?? null,
+                'id' => auth('client')->user()->id,
+                'name' => auth('client')->user()->name,
+                'email' => auth('client')->user()->email,
+                'ewallet_saldo' => auth('client')->user()->ewallet_saldo ?? 0,
             ];
         }
 

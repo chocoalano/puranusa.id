@@ -2,7 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EcommerceLayout from '@/layouts/store/Ecommerce.vue';
 import { Head } from '@inertiajs/vue3';
-import { AlertCircle, Lock, Package, User, Wallet, Network } from 'lucide-vue-next';
+import { AlertCircle, Lock, Package, User, Wallet, Network, GitBranch } from 'lucide-vue-next';
 import { ref } from 'vue';
 import type { Customer, Order, WalletTransaction } from '@/types/profile';
 import ProfileCard from '@/components/profile/ProfileCard.vue';
@@ -15,6 +15,7 @@ import WalletTab from '@/components/profile/WalletTab.vue';
 import SecurityTab from '@/components/profile/SecurityTab.vue';
 import DangerZoneTab from '@/components/profile/DangerZoneTab.vue';
 import NetworkMembersTab from '@/components/profile/NetworkMembersTab.vue';
+import BinaryTreeTab from '@/components/profile/BinaryTreeTab.vue';
 
 interface NetworkMember {
     id: number;
@@ -28,6 +29,18 @@ interface NetworkMember {
     joined_at: string;
 }
 
+interface TreeNode {
+    id: number;
+    member_id: number;
+    name: string;
+    email: string;
+    position: string | null;
+    level: number;
+    status: boolean;
+    left: TreeNode | null;
+    right: TreeNode | null;
+}
+
 defineProps<{
     customer: Customer;
     orders: Order[];
@@ -35,6 +48,10 @@ defineProps<{
     activeMembers: NetworkMember[];
     passiveMembers: NetworkMember[];
     prospectMembers: NetworkMember[];
+    binaryTree: TreeNode | null;
+    totalDownlines: number;
+    totalLeft: number;
+    totalRight: number;
 }>();
 
 // Get active tab from URL query parameter
@@ -103,6 +120,13 @@ const activeTab = ref(urlParams.get('tab') || 'profile');
                                         <span class="text-xs font-medium">Jaringan</span>
                                     </TabsTrigger>
                                     <TabsTrigger
+                                        value="binary"
+                                        class="flex-1 flex-col gap-1 py-3 px-4 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg transition-all"
+                                    >
+                                        <GitBranch class="w-5 h-5" />
+                                        <span class="text-xs font-medium">Binary</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger
                                         value="wallet"
                                         class="flex-1 flex-col gap-1 py-3 px-4 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg transition-all"
                                     >
@@ -142,6 +166,23 @@ const activeTab = ref(urlParams.get('tab') || 'profile');
                                         :passive-members="passiveMembers"
                                         :prospect-members="prospectMembers"
                                     />
+                                </TabsContent>
+
+                                <TabsContent value="binary" class="mt-0">
+                                    <BinaryTreeTab
+                                        v-if="binaryTree"
+                                        :binary-tree="binaryTree"
+                                        :total-downlines="totalDownlines"
+                                        :total-left="totalLeft"
+                                        :total-right="totalRight"
+                                    />
+                                    <div v-else class="text-center py-12">
+                                        <GitBranch class="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                                        <h3 class="text-lg font-semibold mb-2">Belum Ada Jaringan Binary</h3>
+                                        <p class="text-muted-foreground">
+                                            Anda belum memiliki posisi dalam jaringan binary tree MLM.
+                                        </p>
+                                    </div>
                                 </TabsContent>
 
                                 <TabsContent value="wallet" class="mt-0">

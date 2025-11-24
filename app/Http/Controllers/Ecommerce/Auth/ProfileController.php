@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Ecommerce\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ecommerce\UpdatePasswordRequest;
 use App\Http\Requests\Ecommerce\UpdateProfileRequest;
+use App\Models\Manage\CustomerNetwork;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -119,6 +120,9 @@ class ProfileController extends Controller
             ])
             ->values();
 
+        // Build binary tree structure
+        $binaryTree = $this->buildBinaryTree($customer);
+
         return Inertia::render('ecommerce/profile/Index', [
             'customer' => [
                 'id' => $customer->id,
@@ -155,6 +159,10 @@ class ProfileController extends Controller
             'activeMembers' => $activeMembers,
             'passiveMembers' => $passiveMembers,
             'prospectMembers' => $prospectMembers,
+            'binaryTree' => $binaryTree['tree'],
+            'totalDownlines' => $binaryTree['totalDownlines'],
+            'totalLeft' => $binaryTree['totalLeft'],
+            'totalRight' => $binaryTree['totalRight'],
         ]);
     }
 
@@ -211,5 +219,93 @@ class ProfileController extends Controller
         request()->session()->forget('auth');
 
         return redirect()->route('client.login')->with('success', 'Akun berhasil dihapus.');
+    }
+
+    /**
+     * Build binary tree structure for visualization.
+     */
+    private function buildBinaryTree($customer, int $maxDepth = 4): array
+    {
+        // Get customer's network position
+        $networkPosition = CustomerNetwork::where('member_id', $customer->id)
+            ->with('member')
+            ->first();
+
+        if (! $networkPosition) {
+            return [
+                'tree' => null,
+                'totalDownlines' => 0,
+                'totalLeft' => 0,
+                'totalRight' => 0,
+            ];
+        }
+
+        // Calculate totals
+        $totalLeft = $customer->countLeftNetwork();
+        $totalRight = $customer->countRightNetwork();
+        $totalDownlines = $totalLeft + $totalRight;
+
+        // Build tree structure recursively
+        $tree = $this->buildTreeNode($customer, 1, $maxDepth);
+
+        return [
+            'tree' => $tree,
+            'totalDownlines' => $totalDownlines,
+            'totalLeft' => $totalLeft,
+            'totalRight' => $totalRight,
+        ];
+    }
+
+    /**
+     * Recursively build tree node.
+     */
+    private function buildTreeNode($customer, int $currentLevel, int $maxDepth): ?array
+    {
+        if ($currentLevel > $maxDepth || ! $customer) {
+            return null;
+        }
+
+        // Get network position info
+        $networkPosition = CustomerNetwork::where('member_id', $customer->id)->first();
+
+        if (! $networkPosition) {
+            return null;
+        }
+
+        // Get left and right downlines
+        $leftNetwork = CustomerNetwork::where('upline_id', $customer->id)
+            ->where('position', 'left')
+            ->with('member')
+            ->first();
+
+        $rightNetwork = CustomerNetwork::where('upline_id', $customer->id)
+            ->where('position', 'right')
+            ->with('member')
+            ->first();
+
+        $leftChild = null;
+        $rightChild = null;
+
+        // Build left child
+        if ($leftNetwork && $leftNetwork->member) {
+            $leftChild = $this->buildTreeNode($leftNetwork->member, $currentLevel + 1, $maxDepth);
+        }
+
+        // Build right child
+        if ($rightNetwork && $rightNetwork->member) {
+            $rightChild = $this->buildTreeNode($rightNetwork->member, $currentLevel + 1, $maxDepth);
+        }
+
+        return [
+            'id' => $networkPosition->id,
+            'member_id' => $customer->id,
+            'name' => $customer->name,
+            'email' => $customer->email,
+            'position' => $networkPosition->position,
+            'level' => $networkPosition->level,
+            'status' => $networkPosition->status,
+            'left' => $leftChild,
+            'right' => $rightChild,
+        ];
     }
 }

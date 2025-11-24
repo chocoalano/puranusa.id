@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import CheckoutSheet from '@/components/ecommerce/checkout/CheckoutSheet.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import CheckoutSheet from '@/components/ecommerce/checkout/CheckoutSheet.vue';
-import { ShoppingCart, Heart, Minus, Plus, Share2 } from 'lucide-vue-next';
+import { router } from '@inertiajs/vue3';
+import axios from 'axios';
+import { Heart, Minus, Plus, Share2, ShoppingCart } from 'lucide-vue-next';
+import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface Props {
     productId: number;
@@ -36,37 +38,37 @@ const decrementQuantity = () => {
     }
 };
 
-const addToCart = () => {
+const addToCart = async () => {
     if (addingToCart.value) return;
 
     addingToCart.value = true;
 
-    router.post('/cart/add', {
-        product_id: props.productId,
-        quantity: quantity.value,
-    }, {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
-            console.log('Product added to cart');
-        },
-        onError: (errors) => {
-            console.error('Failed to add to cart:', errors);
-            
-            // Check if it's a 419 error, the interceptor will handle retry
-            if (typeof errors === 'object' && errors !== null) {
-                const errorObj = errors as Record<string, any>;
-                if (errorObj.status !== 419) {
-                    alert('Gagal menambahkan ke keranjang. Silakan coba lagi.');
-                }
-            } else {
-                alert('Gagal menambahkan ke keranjang. Silakan coba lagi.');
-            }
-        },
-        onFinish: () => {
-            addingToCart.value = false;
-        },
-    });
+    try {
+        const response = await axios.post('/cart/add', {
+            product_id: props.productId,
+            quantity: quantity.value,
+        });
+
+        if (response.data.success) {
+            toast.success('Berhasil', {
+                description:
+                    response.data.message ||
+                    'Produk berhasil ditambahkan ke keranjang.',
+            });
+            // Reload Inertia page data to update cart count without full page reload
+            router.reload({ only: ['ecommerce'] });
+        }
+    } catch (error: any) {
+        console.error('Failed to add to cart:', error);
+        const message =
+            error.response?.data?.message ||
+            'Gagal menambahkan ke keranjang. Silakan coba lagi.';
+        toast.error('Gagal', {
+            description: message,
+        });
+    } finally {
+        addingToCart.value = false;
+    }
 };
 
 const buyNow = () => {
@@ -74,38 +76,41 @@ const buyNow = () => {
     checkoutSheetOpen.value = true;
 };
 
-const toggleWishlist = () => {
+const toggleWishlist = async () => {
     if (addingToWishlist.value) return;
 
     addingToWishlist.value = true;
 
     const endpoint = isInWishlist.value ? '/wishlist/remove' : '/wishlist/add';
 
-    router.post(endpoint, {
-        product_id: props.productId,
-    }, {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
+    try {
+        const response = await axios.post(endpoint, {
+            product_id: props.productId,
+        });
+
+        if (response.data.success) {
             isInWishlist.value = !isInWishlist.value;
-        },
-        onError: (errors) => {
-            console.error('Failed to update wishlist:', errors);
-            
-            // Check if it's a 419 error, the interceptor will handle retry
-            if (typeof errors === 'object' && errors !== null) {
-                const errorObj = errors as Record<string, any>;
-                if (errorObj.status !== 419) {
-                    alert('Gagal mengubah wishlist. Silakan coba lagi.');
-                }
-            } else {
-                alert('Gagal mengubah wishlist. Silakan coba lagi.');
-            }
-        },
-        onFinish: () => {
-            addingToWishlist.value = false;
-        },
-    });
+            toast.success('Berhasil', {
+                description:
+                    response.data.message ||
+                    (isInWishlist.value
+                        ? 'Produk ditambahkan ke wishlist.'
+                        : 'Produk dihapus dari wishlist.'),
+            });
+            // Reload Inertia page data to update wishlist count without full page reload
+            router.reload({ only: ['ecommerce'] });
+        }
+    } catch (error: any) {
+        console.error('Failed to update wishlist:', error);
+        const message =
+            error.response?.data?.message ||
+            'Gagal mengubah wishlist. Silakan coba lagi.';
+        toast.error('Gagal', {
+            description: message,
+        });
+    } finally {
+        addingToWishlist.value = false;
+    }
 };
 
 const shareProduct = async () => {
@@ -121,7 +126,9 @@ const shareProduct = async () => {
     } else {
         // Fallback: copy to clipboard
         navigator.clipboard.writeText(window.location.href);
-        alert('Link produk telah disalin!');
+        toast.success('Berhasil', {
+            description: 'Link produk telah disalin!',
+        });
     }
 };
 </script>
@@ -132,7 +139,7 @@ const shareProduct = async () => {
         <div class="space-y-2">
             <label class="text-sm font-medium">Jumlah</label>
             <div class="flex items-center gap-3">
-                <div class="flex items-center border rounded-lg">
+                <div class="flex items-center rounded-lg border">
                     <Button
                         variant="ghost"
                         size="icon"
@@ -146,7 +153,7 @@ const shareProduct = async () => {
                         type="number"
                         min="1"
                         :max="stock"
-                        class="w-20 text-center border-0 focus-visible:ring-0"
+                        class="w-20 border-0 text-center focus-visible:ring-0"
                     />
                     <Button
                         variant="ghost"
@@ -166,20 +173,20 @@ const shareProduct = async () => {
         <Separator />
 
         <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row gap-3">
+        <div class="flex flex-col gap-3 sm:flex-row">
             <Button
                 variant="outline"
                 size="lg"
-                class="sm:flex-1 min-h-11"
+                class="min-h-11 sm:flex-1"
                 @click="addToCart"
                 :disabled="addingToCart || stock === 0"
             >
-                <ShoppingCart class="h-5 w-5 mr-2" />
+                <ShoppingCart class="mr-2 h-5 w-5" />
                 Tambah ke Keranjang
             </Button>
             <Button
                 size="lg"
-                class="sm:flex-1 min-h-11"
+                class="min-h-11 sm:flex-1"
                 @click="buyNow"
                 :disabled="stock === 0"
             >
@@ -198,17 +205,13 @@ const shareProduct = async () => {
             >
                 <Heart
                     :class="[
-                        'h-5 w-5 mr-2',
-                        isInWishlist ? 'fill-red-500 text-red-500' : ''
+                        'mr-2 h-5 w-5',
+                        isInWishlist ? 'fill-red-500 text-red-500' : '',
                     ]"
                 />
                 {{ isInWishlist ? 'Di Wishlist' : 'Tambah Wishlist' }}
             </Button>
-            <Button
-                variant="outline"
-                size="lg"
-                @click="shareProduct"
-            >
+            <Button variant="outline" size="lg" @click="shareProduct">
                 <Share2 class="h-5 w-5" />
             </Button>
         </div>

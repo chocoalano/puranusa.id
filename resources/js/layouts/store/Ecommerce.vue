@@ -21,7 +21,7 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { useAppearance } from '@/composables/useAppearance';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
     Heart,
@@ -45,6 +45,7 @@ import {
     UserCircle,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface Props {
     title?: string;
@@ -235,16 +236,25 @@ const subscribeNewsletter = async () => {
         if (data.success) {
             newsletterSuccess.value = true;
             newsletterEmail.value = '';
+            toast.success('Berhasil!', {
+                description: 'Anda telah berlangganan newsletter kami.',
+            });
 
             setTimeout(() => {
                 newsletterSuccess.value = false;
             }, 3000);
         } else {
-            alert(data.message || 'Terjadi kesalahan saat berlangganan');
+            toast.error('Gagal Berlangganan', {
+                description:
+                    data.message || 'Terjadi kesalahan saat berlangganan',
+            });
         }
     } catch (error) {
         console.error('Newsletter subscription failed:', error);
-        alert('Terjadi kesalahan saat berlangganan. Silakan coba lagi.');
+        toast.error('Terjadi Kesalahan', {
+            description:
+                'Terjadi kesalahan saat berlangganan. Silakan coba lagi.',
+        });
     } finally {
         newsletterSubmitting.value = false;
     }
@@ -259,14 +269,18 @@ const addToCartFromWishlist = async (item: WishlistItem) => {
         });
 
         if (response.data.success) {
-            // Refresh page to update cart count
-            window.location.reload();
+            toast.success('Berhasil', {
+                description: 'Produk berhasil ditambahkan ke keranjang.',
+            });
+            router.reload({ only: ['ecommerce'] });
         }
     } catch (error: any) {
         console.error('Failed to add to cart:', error);
         const message =
             error.response?.data?.message || 'Gagal menambahkan ke keranjang';
-        alert(message);
+        toast.error('Gagal', {
+            description: message,
+        });
     }
 };
 
@@ -286,12 +300,18 @@ const removeFromWishlist = async (itemId: number, productId: number) => {
                     wishlistData.value.items.splice(index, 1);
                 }
             }
+            toast.success('Berhasil', {
+                description: 'Produk berhasil dihapus dari wishlist.',
+            });
+            router.reload({ only: ['ecommerce'] });
         }
     } catch (error: any) {
         console.error('Failed to remove from wishlist:', error);
         const message =
             error.response?.data?.message || 'Gagal menghapus dari wishlist';
-        alert(message);
+        toast.error('Gagal', {
+            description: message,
+        });
     }
 };
 
@@ -320,7 +340,9 @@ const updateCartQuantity = async (itemId: number, newQuantity: number) => {
         }
     } catch (error) {
         console.error('Failed to update cart quantity:', error);
-        alert('Gagal memperbarui jumlah produk');
+        toast.error('Gagal', {
+            description: 'Gagal memperbarui jumlah produk',
+        });
     }
 };
 
@@ -352,10 +374,17 @@ const removeFromCart = async (itemId: number) => {
             if (index > -1) {
                 selectedCartItems.value.splice(index, 1);
             }
+
+            toast.success('Berhasil', {
+                description: 'Produk berhasil dihapus dari keranjang.',
+            });
+            router.reload({ only: ['ecommerce'] });
         }
     } catch (error) {
         console.error('Failed to remove from cart:', error);
-        alert('Gagal menghapus dari keranjang');
+        toast.error('Gagal', {
+            description: 'Gagal menghapus dari keranjang',
+        });
     }
 };
 
@@ -404,7 +433,9 @@ const handleCheckout = () => {
     );
 
     if (selectedItems.length === 0) {
-        alert('Pilih minimal satu produk untuk checkout');
+        toast.warning('Perhatian', {
+            description: 'Pilih minimal satu produk untuk checkout',
+        });
         return;
     }
 
@@ -1340,7 +1371,6 @@ const searchSuggestions = computed(() => {
         <main>
             <slot />
         </main>
-
         <!-- Modern Ecommerce Footer -->
         <footer class="border-t bg-gradient-to-b from-background to-muted/20">
             <div class="container mx-auto px-6">

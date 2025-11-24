@@ -116,13 +116,12 @@ class WishlistController extends Controller
             ]);
 
             DB::commit();
-
-            return back()->with('success', 'Produk ditambahkan ke wishlist');
+            return response()->json(['success' => true, 'message' => 'Produk ditambahkan ke wishlist']);
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', 'Gagal menambahkan ke wishlist');
+            return response()->json(['success' => false, 'message' => 'Gagal menambahkan ke wishlist'], 500);
         }
     }
 
@@ -182,7 +181,7 @@ class WishlistController extends Controller
                 return response()->json(['success' => true, 'message' => 'Produk dihapus dari wishlist']);
             }
 
-            return back()->with('success', 'Produk dihapus dari wishlist');
+            return response()->json(['success' => true, 'message' => 'Produk dihapus dari wishlist']);
 
         } catch (\Exception $e) {
             DB::rollBack();

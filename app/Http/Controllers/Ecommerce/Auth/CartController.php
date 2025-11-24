@@ -129,12 +129,18 @@ class CartController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Produk berhasil ditambahkan ke keranjang');
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil ditambahkan ke keranjang',
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', 'Gagal menambahkan produk ke keranjang');
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menambahkan produk ke keranjang',
+            ], 500);
         }
     }
 
