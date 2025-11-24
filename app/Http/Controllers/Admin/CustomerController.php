@@ -432,22 +432,34 @@ class CustomerController extends Controller
      */
     public function loginAsCustomer(Customer $customer)
     {
-        // Store current admin session data
-        $adminId = Auth::guard('web')->id();
-        $adminName = Auth::guard('web')->user()->name;
+        try {
+            // Store current admin session data
+            $adminId = Auth::guard('web')->id();
+            $adminName = Auth::guard('web')->user()->name;
 
-        // Login to client guard without logging out from web guard
-        Auth::guard('client')->login($customer);
+            // Login to client guard without logging out from web guard
+            Auth::guard('client')->login($customer);
 
-        // Store flag that this is an impersonation session
-        session()->put('impersonating', [
-            'admin_id' => $adminId,
-            'admin_name' => $adminName,
-            'customer_id' => $customer->id,
-            'customer_name' => $customer->name,
-        ]);
+            // Store flag that this is an impersonation session
+            session()->put('impersonating', [
+                'admin_id' => $adminId,
+                'admin_name' => $adminName,
+                'customer_id' => $customer->id,
+                'customer_name' => $customer->name,
+            ]);
 
-        return redirect('/beranda')->with('success', "Login sebagai {$customer->name}");
+            return redirect('/beranda')->with('success', "Login sebagai {$customer->name}");
+        } catch (\Exception $e) {
+            \Log::error('Login as customer failed', [
+                'customer_id' => $customer->id,
+                'admin_id' => Auth::guard('web')->id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal login sebagai customer: '.$e->getMessage());
+        }
     }
 
     /**
