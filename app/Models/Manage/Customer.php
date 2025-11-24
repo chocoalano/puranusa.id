@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 
 /**
  * @property int $id
+ * @property string $ref_code
  * @property string $name
  * @property string $email
  * @property string|null $phone
@@ -45,6 +46,7 @@ class Customer extends Authenticatable
     protected $table = 'customers';
 
     protected $fillable = [
+        'ref_code',
         'name',
         'email',
         'phone',
@@ -94,6 +96,9 @@ class Customer extends Authenticatable
             if (empty($customer->ewallet_id)) {
                 $customer->ewallet_id = self::generateEwalletId();
             }
+            if (empty($customer->ref_code)) {
+                $customer->ref_code = self::generateRefCode();
+            }
         });
     }
 
@@ -118,6 +123,29 @@ class Customer extends Authenticatable
         }
 
         return $ewalletId;
+    }
+
+    /**
+     * ✅ Generate unique ref_code with format: REF-XXXXXXXX
+     */
+    public static function generateRefCode(): string
+    {
+        $prefix = 'REF-';
+        $attempts = 0;
+        $maxAttempts = 100;
+
+        do {
+            $randomPart = strtoupper(Str::random(8)); // 8 char random
+            $refCode = $prefix.$randomPart;
+            $exists = self::where('ref_code', $refCode)->exists();
+            $attempts++;
+        } while ($exists && $attempts < $maxAttempts);
+
+        if ($exists) {
+            throw new \RuntimeException('Unable to generate unique ref code after '.$maxAttempts.' attempts');
+        }
+
+        return $refCode;
     }
 
     /**

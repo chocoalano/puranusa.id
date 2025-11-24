@@ -267,7 +267,7 @@ onUnmounted(() => {
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <Link v-for="category in categories" :key="category.id" :href="`/produk?kategori=${category.slug}`"
+                    <Link v-for="category in categories" :key="category.id" :href="`/toko?category=${category.slug}`"
                         class="group" :aria-label="`Lihat produk ${category.name}`">
                     <Card class="overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-0 p-0">
                         <div class="aspect-square relative overflow-hidden bg-gray-100">

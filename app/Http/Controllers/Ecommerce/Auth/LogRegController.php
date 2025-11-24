@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Ecommerce\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Manage\Customer;
+use App\Models\Manage\CustomerNetwork;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -46,9 +48,11 @@ class LogRegController extends Controller
     /**
      * Show register form
      */
-    public function showRegister(): Response
+    public function showRegister(Request $request): Response
     {
-        return Inertia::render('ecommerce/auth/Register');
+        return Inertia::render('ecommerce/auth/Register', [
+            'ref_code' => $request->query('ref'),
+        ]);
     }
 
     /**
@@ -61,19 +65,62 @@ class LogRegController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:customers'],
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'ref_code' => ['nullable', 'string', 'exists:customers,ref_code'],
         ]);
 
-        $customer = Customer::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'password' => Hash::make($validated['password']),
-            'email_verified_at' => now(),
-        ]);
+        DB::beginTransaction();
 
-        Auth::guard('client')->login($customer);
+        try {
+            // Create customer
+            $customer = Customer::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'password' => Hash::make($validated['password']),
+                'email_verified_at' => now(),
+            ]);
 
-        return redirect('/beranda')->with('success', 'Akun berhasil dibuat!');
+            // Handle MLM network placement
+            $sponsorId = null;
+
+            if (! empty($validated['ref_code'])) {
+                $sponsor = Customer::where('ref_code', $validated['ref_code'])->first();
+
+                if ($sponsor) {
+                    $sponsorId = $sponsor->id;
+
+                    // Place new member in binary tree under sponsor
+                    // This will automatically find the best available position
+                    CustomerNetwork::placeNewMember($customer->id, $sponsorId);
+                }
+            } else {
+                // No ref_code provided, check if this is the first customer (root)
+                $hasRootMember = CustomerNetwork::whereNull('upline_id')->exists();
+
+                if (! $hasRootMember) {
+                    // This is the first customer, make them root
+                    CustomerNetwork::placeNewMember($customer->id, null);
+                } else {
+                    // Find the first available position in the entire tree
+                    $rootMember = CustomerNetwork::whereNull('upline_id')->first();
+                    if ($rootMember) {
+                        CustomerNetwork::placeNewMember($customer->id, $rootMember->member_id);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            Auth::guard('client')->login($customer);
+
+            return redirect('/beranda')->with('success', 'Akun berhasil dibuat!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->withErrors([
+                'error' => 'Terjadi kesalahan saat membuat akun: '.$e->getMessage(),
+            ])->withInput();
+        }
     }
 
     /**
@@ -81,10 +128,18 @@ class LogRegController extends Controller
      */
     public function logout(Request $request)
     {
+        // Logout from client guard
         Auth::guard('client')->logout();
 
+        // Ensure web guard is also logged out to prevent data leakage
+        Auth::guard('web')->logout();
+
+        // Invalidate session and regenerate token
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        // Clear any cached authentication data
+        $request->session()->forget('auth');
 
         return redirect()->route('client.login');
     }

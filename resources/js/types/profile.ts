@@ -16,6 +16,12 @@ export interface Order {
     grand_total: number;
     placed_at: string | null;
     paid_at: string | null;
+    items?: Array<{
+        id: number;
+        product_id: number;
+        product_name: string;
+        product_image?: string;
+    }>;
 }
 
 export interface Customer {

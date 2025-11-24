@@ -22,10 +22,29 @@ class UpdatePageRequest extends FormRequest
     public function rules(): array
     {
         $pageId = $this->route('page');
+        $page = \App\Models\Page::find($pageId);
+        $protectedSlugs = ['terms', 'about', 'privacy', 'faq'];
+
+        // If this is a protected page, only allow title, content, and blocks to be updated
+        if ($page && in_array($page->slug, $protectedSlugs)) {
+            return [
+                'title' => ['required', 'string', 'max:255'],
+                'content' => ['nullable', 'string'],
+                'blocks' => ['nullable', 'json'],
+                // Slug cannot be changed for protected pages
+                'slug' => ['required', 'string', 'in:'.$page->slug],
+            ];
+        }
 
         return [
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', 'unique:pages,slug,' . $pageId],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:pages,slug,'.$pageId,
+                'not_in:terms,about,privacy,faq',
+            ],
             'content' => ['nullable', 'string'],
             'blocks' => ['nullable', 'json'],
             'seo_title' => ['nullable', 'string', 'max:255'],
@@ -42,6 +61,8 @@ class UpdatePageRequest extends FormRequest
             'title.required' => 'Judul halaman wajib diisi.',
             'slug.required' => 'Slug halaman wajib diisi.',
             'slug.unique' => 'Slug ini sudah digunakan.',
+            'slug.not_in' => 'Slug ini dilindungi dan tidak dapat digunakan (terms, about, privacy, faq).',
+            'slug.in' => 'Slug halaman sistem tidak dapat diubah.',
             'template.in' => 'Template tidak valid.',
         ];
     }

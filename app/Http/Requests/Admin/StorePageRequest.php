@@ -23,7 +23,13 @@ class StorePageRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', 'unique:pages,slug'],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                'unique:pages,slug',
+                'not_in:terms,about,privacy,faq',
+            ],
             'content' => ['nullable', 'string'],
             'blocks' => ['nullable', 'json'],
             'seo_title' => ['nullable', 'string', 'max:255'],
@@ -40,6 +46,7 @@ class StorePageRequest extends FormRequest
             'title.required' => 'Judul halaman wajib diisi.',
             'slug.required' => 'Slug halaman wajib diisi.',
             'slug.unique' => 'Slug ini sudah digunakan.',
+            'slug.not_in' => 'Slug ini dilindungi dan tidak dapat digunakan (terms, about, privacy, faq).',
             'template.in' => 'Template tidak valid.',
         ];
     }

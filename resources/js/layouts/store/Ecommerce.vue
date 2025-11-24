@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CheckoutSheet from '@/components/ecommerce/checkout/CheckoutSheet.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,7 +12,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import CheckoutSheet from '@/components/ecommerce/checkout/CheckoutSheet.vue';
 import { Separator } from '@/components/ui/separator';
 import {
     Sheet,
@@ -22,29 +22,29 @@ import {
 } from '@/components/ui/sheet';
 import { useAppearance } from '@/composables/useAppearance';
 import { Link, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import {
-    Menu,
-    Search,
-    ShoppingCart,
-    User,
-    Package,
-    Tv,
-    Laptop,
-    Home,
-    Smartphone,
-    LogOut,
-    UserCircle,
-    Moon,
-    Sun,
     Heart,
-    Shield,
+    Home,
     Info,
-    Trash2,
-    Plus,
+    Laptop,
+    LogOut,
+    Menu,
     Minus,
+    Moon,
+    Package,
+    Plus,
+    Search,
+    Shield,
+    ShoppingCart,
+    Smartphone,
+    Sun,
+    Trash2,
+    Tv,
+    User,
+    UserCircle,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import axios from 'axios';
 
 interface Props {
     title?: string;
@@ -129,14 +129,32 @@ const selectedCartItems = ref<number[]>([]);
 const checkoutItems = ref<CartItem[]>([]);
 
 // Get data from shared Inertia props
-const ecommerceData = computed(() => (page.props.ecommerce as EcommerceData) || { categories: [] });
+const ecommerceData = computed(
+    () => (page.props.ecommerce as EcommerceData) || { categories: [] },
+);
 const cartData = computed(() => ecommerceData.value.cart);
 const wishlistData = computed(() => ecommerceData.value.wishlist);
-const navigationCategories = computed(() => ecommerceData.value.categories || []);
-const settings = computed(() => (page.props.settings as Record<string, any>) || {});
+const navigationCategories = computed(
+    () => ecommerceData.value.categories || [],
+);
+const settings = computed(
+    () => (page.props.settings as Record<string, any>) || {},
+);
 const siteName = computed(() => settings.value.site_name || 'PURANUSA');
-const siteDescription = computed(() => settings.value.site_description || 'Puranusa adalah destinasi belanja online terpercaya');
-const paymentMethods = computed(() => settings.value.payment_methods || ['VISA', 'Mastercard', 'GoPay', 'OVO']);
+const siteDescription = computed(
+    () =>
+        settings.value.site_description ||
+        'Puranusa adalah destinasi belanja online terpercaya',
+);
+const paymentMethods = computed(
+    () =>
+        settings.value.payment_methods || [
+            'VISA',
+            'Mastercard',
+            'GoPay',
+            'OVO',
+        ],
+);
 const siteLogo = computed(() => settings.value.site_logo);
 
 const cartItemCount = computed(() => {
@@ -170,7 +188,10 @@ const formatCurrency = (amount: number) => {
 };
 
 const isAuthenticated = computed(() => {
-    return !!page.props.auth?.user;
+    // Only consider authenticated if user has client-specific data (ewallet_saldo)
+    // This prevents web guard data from being treated as client authentication
+    const user = page.props.auth?.user;
+    return !!user && 'ewallet_saldo' in (user as any);
 });
 
 const isDark = computed(() => {
@@ -199,7 +220,10 @@ const subscribeNewsletter = async () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'X-CSRF-TOKEN':
+                    document
+                        .querySelector('meta[name="csrf-token"]')
+                        ?.getAttribute('content') || '',
             },
             body: JSON.stringify({
                 email: newsletterEmail.value,
@@ -240,7 +264,8 @@ const addToCartFromWishlist = async (item: WishlistItem) => {
         }
     } catch (error: any) {
         console.error('Failed to add to cart:', error);
-        const message = error.response?.data?.message || 'Gagal menambahkan ke keranjang';
+        const message =
+            error.response?.data?.message || 'Gagal menambahkan ke keranjang';
         alert(message);
     }
 };
@@ -254,7 +279,9 @@ const removeFromWishlist = async (itemId: number, productId: number) => {
         if (response.data.success) {
             // Remove item from local wishlist without reload
             if (wishlistData.value?.items) {
-                const index = wishlistData.value.items.findIndex(i => i.id === itemId);
+                const index = wishlistData.value.items.findIndex(
+                    (i) => i.id === itemId,
+                );
                 if (index > -1) {
                     wishlistData.value.items.splice(index, 1);
                 }
@@ -262,7 +289,8 @@ const removeFromWishlist = async (itemId: number, productId: number) => {
         }
     } catch (error: any) {
         console.error('Failed to remove from wishlist:', error);
-        const message = error.response?.data?.message || 'Gagal menghapus dari wishlist';
+        const message =
+            error.response?.data?.message || 'Gagal menghapus dari wishlist';
         alert(message);
     }
 };
@@ -279,7 +307,7 @@ const updateCartQuantity = async (itemId: number, newQuantity: number) => {
 
         if (response.data.success) {
             // Update local cart data without reload
-            const item = cartItems.value.find(i => i.id === itemId);
+            const item = cartItems.value.find((i) => i.id === itemId);
             if (item) {
                 item.quantity = newQuantity;
             }
@@ -305,7 +333,9 @@ const removeFromCart = async (itemId: number) => {
         if (response.data.success) {
             // Remove item from local cart without reload
             if (cartData.value?.items) {
-                const index = cartData.value.items.findIndex(i => i.id === itemId);
+                const index = cartData.value.items.findIndex(
+                    (i) => i.id === itemId,
+                );
                 if (index > -1) {
                     cartData.value.items.splice(index, 1);
                 }
@@ -344,20 +374,23 @@ const toggleCartItemSelection = (itemId: number, checked: boolean) => {
 
 const toggleSelectAll = (checked: boolean) => {
     if (checked) {
-        selectedCartItems.value = cartItems.value.map(item => item.id);
+        selectedCartItems.value = cartItems.value.map((item) => item.id);
     } else {
         selectedCartItems.value = [];
     }
 };
 
 const isAllSelected = computed(() => {
-    return cartItems.value.length > 0 && selectedCartItems.value.length === cartItems.value.length;
+    return (
+        cartItems.value.length > 0 &&
+        selectedCartItems.value.length === cartItems.value.length
+    );
 });
 
 const selectedItemsTotal = computed(() => {
     return cartItems.value
-        .filter(item => selectedCartItems.value.includes(item.id))
-        .reduce((total, item) => total + (item.price * item.quantity), 0);
+        .filter((item) => selectedCartItems.value.includes(item.id))
+        .reduce((total, item) => total + item.price * item.quantity, 0);
 });
 
 const selectedItemsCount = computed(() => {
@@ -366,7 +399,9 @@ const selectedItemsCount = computed(() => {
 
 // Handle checkout with selected items
 const handleCheckout = () => {
-    const selectedItems = cartItems.value.filter(item => selectedCartItems.value.includes(item.id));
+    const selectedItems = cartItems.value.filter((item) =>
+        selectedCartItems.value.includes(item.id),
+    );
 
     if (selectedItems.length === 0) {
         alert('Pilih minimal satu produk untuk checkout');
@@ -391,10 +426,14 @@ const socialLinks = computed(() => ecommerceData.value.socialLinks || []);
 
 // Social icon SVG paths
 const socialIconPaths: Record<string, string> = {
-    facebook: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z',
-    twitter: 'M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z',
-    instagram: 'M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z',
-    youtube: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
+    facebook:
+        'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z',
+    twitter:
+        'M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z',
+    instagram:
+        'M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z',
+    youtube:
+        'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
 };
 
 // Build product categories for mega menu from database categories
@@ -418,7 +457,7 @@ const productCategories = computed(() => {
             name: category.name,
             slug: category.slug,
             icon: iconMap[category.name] || Package,
-            items: category.items.map(item => ({
+            items: category.items.map((item) => ({
                 ...item,
                 href: `/toko?category=${category.slug}&subcategory=${item.slug}`,
             })),
@@ -442,7 +481,7 @@ const searchSuggestions = computed(() => {
         const popularSearches: Array<{ label: string; query: string }> = [];
 
         // Get top-level categories
-        navigationCategories.value.slice(0, 3).forEach(category => {
+        navigationCategories.value.slice(0, 3).forEach((category) => {
             popularSearches.push({
                 label: category.name,
                 query: category.name.toLowerCase(),
@@ -450,8 +489,8 @@ const searchSuggestions = computed(() => {
         });
 
         // Get some popular subcategories from first categories
-        navigationCategories.value.slice(0, 2).forEach(category => {
-            category.items.slice(0, 1).forEach(item => {
+        navigationCategories.value.slice(0, 2).forEach((category) => {
+            category.items.slice(0, 1).forEach((item) => {
                 popularSearches.push({
                     label: item.name,
                     query: item.name.toLowerCase(),
@@ -465,7 +504,7 @@ const searchSuggestions = computed(() => {
     const suggestions: Array<{ label: string; query: string }> = [];
 
     // Add matching categories
-    navigationCategories.value.forEach(category => {
+    navigationCategories.value.forEach((category) => {
         if (category.name.toLowerCase().includes(query)) {
             suggestions.push({
                 label: category.name,
@@ -474,7 +513,7 @@ const searchSuggestions = computed(() => {
         }
 
         // Add matching subcategories
-        category.items.forEach(item => {
+        category.items.forEach((item) => {
             if (item.name.toLowerCase().includes(query)) {
                 suggestions.push({
                     label: item.name,
@@ -492,16 +531,17 @@ const searchSuggestions = computed(() => {
             { label: `${query} murah`, query: `${query} murah` },
         ];
 
-        variations.forEach(variation => {
-            if (!suggestions.find(s => s.query === variation.query)) {
+        variations.forEach((variation) => {
+            if (!suggestions.find((s) => s.query === variation.query)) {
                 suggestions.push(variation);
             }
         });
     }
 
     // Return unique suggestions, limited to 5
-    const uniqueSuggestions = suggestions.filter((item, index, self) =>
-        index === self.findIndex((t) => t.query === item.query)
+    const uniqueSuggestions = suggestions.filter(
+        (item, index, self) =>
+            index === self.findIndex((t) => t.query === item.query),
     );
 
     return uniqueSuggestions.slice(0, 5);
@@ -510,32 +550,51 @@ const searchSuggestions = computed(() => {
 
 <template>
     <div class="min-h-screen">
-
         <!-- Samsung-style Main Header -->
-        <header class="sticky top-0 z-50 bg-white dark:bg-gray-950 shadow-sm border-b dark:border-gray-800">
+        <header
+            class="sticky top-0 z-50 border-b bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950"
+        >
             <div class="container mx-auto px-4 lg:px-6">
-                <div class="h-16 flex items-center justify-between gap-4">
+                <div class="flex h-16 items-center justify-between gap-4">
                     <!-- Logo -->
-                    <Link href="/" class="flex items-center gap-2 flex-shrink-0">
-                        <img v-if="siteLogo" :src="siteLogo" :alt="siteName" class="h-15 w-15 object-contain" />
-                        <Package v-else class="h-7 w-7 text-primary" />
-                        <span class="text-2xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">{{ siteName }}</span>
+                    <Link
+                        href="/"
+                        class="flex min-w-0 flex-shrink-0 items-center gap-2"
+                    >
+                        <img
+                            v-if="siteLogo"
+                            :src="siteLogo"
+                            :alt="siteName"
+                            class="h-8 w-8 shrink-0 object-contain md:h-10 md:w-10"
+                        />
+                        <Package
+                            v-else
+                            class="h-6 w-6 shrink-0 text-primary md:h-7 md:w-7"
+                        />
+
+                        <span
+                            class="truncate bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-base font-bold tracking-tight whitespace-nowrap text-transparent sm:text-lg md:text-xl md:whitespace-normal lg:text-2xl xl:text-3xl"
+                        >
+                            {{ siteName }}
+                        </span>
                     </Link>
 
                     <!-- Center: Search Bar (Desktop) -->
-                    <div class="hidden lg:flex flex-1 max-w-2xl mx-4">
+                    <div class="mx-4 hidden max-w-2xl flex-1 lg:flex">
                         <div class="relative w-full">
-                            <Search class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Search
+                                class="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                            />
                             <Input
                                 v-model="searchQuery"
                                 placeholder="Cari produk, kategori, atau brand..."
-                                class="w-full h-11 pl-11 pr-24"
+                                class="h-11 w-full pr-24 pl-11"
                                 @keydown.enter="handleSearch"
                             />
                             <Button
                                 @click="handleSearch"
                                 size="sm"
-                                class="absolute right-1 top-1/2 -translate-y-1/2 h-9"
+                                class="absolute top-1/2 right-1 h-9 -translate-y-1/2"
                             >
                                 Cari
                             </Button>
@@ -543,13 +602,13 @@ const searchSuggestions = computed(() => {
                     </div>
 
                     <!-- Right Actions -->
-                    <div class="flex items-center gap-1 flex-shrink-0">
+                    <div class="flex flex-shrink-0 items-center gap-1">
                         <!-- Search Button (Mobile) -->
                         <Button
                             variant="ghost"
                             size="icon"
                             @click="searchOpen = !searchOpen"
-                            class="lg:hidden rounded-full"
+                            class="rounded-full lg:hidden"
                             aria-label="Search"
                         >
                             <Search class="h-5 w-5" />
@@ -560,7 +619,7 @@ const searchSuggestions = computed(() => {
                             variant="ghost"
                             size="icon"
                             @click="toggleTheme"
-                            class="hidden sm:flex items-center justify-center rounded-full"
+                            class="hidden items-center justify-center rounded-full sm:flex"
                             aria-label="Toggle theme"
                         >
                             <Sun v-if="isDark" class="h-5 w-5" />
@@ -569,66 +628,125 @@ const searchSuggestions = computed(() => {
                         <!-- Wishlist Dropdown -->
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <Button variant="ghost" size="icon" class="relative rounded-full" aria-label="Wishlist">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="relative rounded-full"
+                                    aria-label="Wishlist"
+                                >
                                     <Heart class="h-5 w-5" />
                                     <Badge
                                         v-if="wishlistItemCount > 0"
-                                        class="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]"
+                                        class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
                                     >
                                         {{ wishlistItemCount }}
                                     </Badge>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" class="w-150">
-                                <DropdownMenuLabel class="flex items-center justify-between">
+                                <DropdownMenuLabel
+                                    class="flex items-center justify-between"
+                                >
                                     <span>Wishlist Saya</span>
-                                    <Badge variant="secondary">{{ wishlistItemCount }} item</Badge>
+                                    <Badge variant="secondary"
+                                        >{{ wishlistItemCount }} item</Badge
+                                    >
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <div class="max-h-96 overflow-y-auto">
-                                    <div v-if="wishlistItems.length > 0" class="space-y-1">
+                                    <div
+                                        v-if="wishlistItems.length > 0"
+                                        class="space-y-1"
+                                    >
                                         <div
                                             v-for="item in wishlistItems"
                                             :key="item.id"
-                                            class="group p-3 hover:bg-accent rounded-md transition-colors"
+                                            class="group rounded-md p-3 transition-colors hover:bg-accent"
                                         >
-                                            <div class="flex items-center gap-3">
-                                                <Link :href="`/produk/${item.slug}`" class="flex-shrink-0">
-                                                    <img :src="item.image" :alt="item.name" class="w-16 h-16 object-cover rounded" />
+                                            <div
+                                                class="flex items-center gap-3"
+                                            >
+                                                <Link
+                                                    :href="`/produk/${item.slug}`"
+                                                    class="flex-shrink-0"
+                                                >
+                                                    <img
+                                                        :src="item.image"
+                                                        :alt="item.name"
+                                                        class="h-16 w-16 rounded object-cover"
+                                                    />
                                                 </Link>
-                                                <div class="flex-1 min-w-0">
-                                                    <Link :href="`/produk/${item.slug}`" class="text-sm font-medium line-clamp-2 hover:underline block">
+                                                <div class="min-w-0 flex-1">
+                                                    <Link
+                                                        :href="`/produk/${item.slug}`"
+                                                        class="line-clamp-2 block text-sm font-medium hover:underline"
+                                                    >
                                                         {{ item.name }}
                                                     </Link>
-                                                    <p class="text-sm font-bold text-primary mt-1">{{ formatCurrency(item.price) }}</p>
+                                                    <p
+                                                        class="mt-1 text-sm font-bold text-primary"
+                                                    >
+                                                        {{
+                                                            formatCurrency(
+                                                                item.price,
+                                                            )
+                                                        }}
+                                                    </p>
                                                 </div>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    @click.stop="removeFromWishlist(item.id, item.product_id)"
+                                                    class="flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                                    @click.stop="
+                                                        removeFromWishlist(
+                                                            item.id,
+                                                            item.product_id,
+                                                        )
+                                                    "
                                                     aria-label="Remove from wishlist"
                                                 >
-                                                    <Trash2 class="h-4 w-4 text-destructive" />
+                                                    <Trash2
+                                                        class="h-4 w-4 text-destructive"
+                                                    />
                                                 </Button>
                                                 <Button
                                                     size="sm"
-                                                    @click.stop="addToCartFromWishlist(item)"
+                                                    @click.stop="
+                                                        addToCartFromWishlist(
+                                                            item,
+                                                        )
+                                                    "
                                                 >
-                                                    +<ShoppingCart class="h-3.5 w-3.5" />
+                                                    +
+                                                    <ShoppingCart
+                                                        class="h-3.5 w-3.5"
+                                                    />
                                                 </Button>
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-else class="p-8 text-center text-sm text-muted-foreground">
-                                        <Heart class="h-12 w-12 mx-auto mb-2 opacity-20" />
+                                    <div
+                                        v-else
+                                        class="p-8 text-center text-sm text-muted-foreground"
+                                    >
+                                        <Heart
+                                            class="mx-auto mb-2 h-12 w-12 opacity-20"
+                                        />
                                         <p>Wishlist masih kosong</p>
                                     </div>
                                 </div>
-                                <DropdownMenuSeparator v-if="wishlistItems.length > 0" />
-                                <div v-if="wishlistItems.length > 0" class="p-2">
+                                <DropdownMenuSeparator
+                                    v-if="wishlistItems.length > 0"
+                                />
+                                <div
+                                    v-if="wishlistItems.length > 0"
+                                    class="p-2"
+                                >
                                     <Link href="/wishlist">
-                                        <Button class="w-full" variant="outline">
+                                        <Button
+                                            class="w-full"
+                                            variant="outline"
+                                        >
                                             Lihat Semua Wishlist
                                         </Button>
                                     </Link>
@@ -639,79 +757,159 @@ const searchSuggestions = computed(() => {
                         <!-- Cart Dropdown -->
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <Button variant="ghost" size="icon" class="relative rounded-full" aria-label="Cart">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="relative rounded-full"
+                                    aria-label="Cart"
+                                >
                                     <ShoppingCart class="h-5 w-5" />
                                     <Badge
                                         v-if="cartItemCount > 0"
-                                        class="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px]"
+                                        class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
                                     >
                                         {{ cartItemCount }}
                                     </Badge>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" class="w-96">
-                                <DropdownMenuLabel class="flex items-center justify-between">
+                                <DropdownMenuLabel
+                                    class="flex items-center justify-between"
+                                >
                                     <div class="flex items-center gap-2">
                                         <Checkbox
                                             v-if="cartItems.length > 0"
                                             :model-value="isAllSelected"
-                                            @update:model-value="(checked) => toggleSelectAll(checked === true)"
+                                            @update:model-value="
+                                                (checked) =>
+                                                    toggleSelectAll(
+                                                        checked === true,
+                                                    )
+                                            "
                                         />
                                         <span>Keranjang Belanja</span>
                                     </div>
-                                    <Badge variant="secondary">{{ cartItemCount }} item</Badge>
+                                    <Badge variant="secondary"
+                                        >{{ cartItemCount }} item</Badge
+                                    >
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <div class="max-h-96 overflow-y-auto">
-                                    <div v-if="cartItems.length > 0" class="space-y-1">
+                                    <div
+                                        v-if="cartItems.length > 0"
+                                        class="space-y-1"
+                                    >
                                         <div
                                             v-for="item in cartItems"
                                             :key="item.id"
-                                            class="group p-3 hover:bg-accent rounded-md transition-colors"
+                                            class="group rounded-md p-3 transition-colors hover:bg-accent"
                                         >
-                                            <div class="flex items-center gap-3">
+                                            <div
+                                                class="flex items-center gap-3"
+                                            >
                                                 <Checkbox
-                                                    :model-value="selectedCartItems.includes(item.id)"
-                                                    @update:model-value="(checked) => toggleCartItemSelection(item.id, checked === true)"
+                                                    :model-value="
+                                                        selectedCartItems.includes(
+                                                            item.id,
+                                                        )
+                                                    "
+                                                    @update:model-value="
+                                                        (checked) =>
+                                                            toggleCartItemSelection(
+                                                                item.id,
+                                                                checked ===
+                                                                    true,
+                                                            )
+                                                    "
                                                     @click.stop
                                                 />
-                                                <Link :href="`/produk/${item.slug}`" class="flex-shrink-0">
-                                                    <img :src="item.image" :alt="item.name" class="w-16 h-16 object-cover rounded" />
+                                                <Link
+                                                    :href="`/produk/${item.slug}`"
+                                                    class="flex-shrink-0"
+                                                >
+                                                    <img
+                                                        :src="item.image"
+                                                        :alt="item.name"
+                                                        class="h-16 w-16 rounded object-cover"
+                                                    />
                                                 </Link>
-                                                <div class="flex-1 min-w-0">
-                                                    <Link :href="`/produk/${item.slug}`" class="text-sm font-medium line-clamp-2 hover:underline block">
+                                                <div class="min-w-0 flex-1">
+                                                    <Link
+                                                        :href="`/produk/${item.slug}`"
+                                                        class="line-clamp-2 block text-sm font-medium hover:underline"
+                                                    >
                                                         {{ item.name }}
                                                     </Link>
-                                                    <p class="text-sm font-bold text-primary mt-1">{{ formatCurrency(item.price) }}</p>
+                                                    <p
+                                                        class="mt-1 text-sm font-bold text-primary"
+                                                    >
+                                                        {{
+                                                            formatCurrency(
+                                                                item.price,
+                                                            )
+                                                        }}
+                                                    </p>
                                                 </div>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    @click.stop="removeFromCart(item.id)"
+                                                    class="flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                                    @click.stop="
+                                                        removeFromCart(item.id)
+                                                    "
                                                     aria-label="Remove from cart"
                                                 >
-                                                    <Trash2 class="h-4 w-4 text-destructive" />
+                                                    <Trash2
+                                                        class="h-4 w-4 text-destructive"
+                                                    />
                                                 </Button>
                                             </div>
-                                            <div class="flex items-center justify-between mt-2">
-                                                <span class="text-xs text-muted-foreground">Jumlah:</span>
-                                                <div class="flex items-center gap-2">
+                                            <div
+                                                class="mt-2 flex items-center justify-between"
+                                            >
+                                                <span
+                                                    class="text-xs text-muted-foreground"
+                                                    >Jumlah:</span
+                                                >
+                                                <div
+                                                    class="flex items-center gap-2"
+                                                >
                                                     <Button
                                                         variant="outline"
                                                         size="icon"
                                                         class="h-7 w-7"
-                                                        @click.stop="updateCartQuantity(item.id, item.quantity - 1)"
-                                                        :disabled="item.quantity <= 1"
+                                                        @click.stop="
+                                                            updateCartQuantity(
+                                                                item.id,
+                                                                item.quantity -
+                                                                    1,
+                                                            )
+                                                        "
+                                                        :disabled="
+                                                            item.quantity <= 1
+                                                        "
                                                     >
-                                                        <Minus class="h-3 w-3" />
+                                                        <Minus
+                                                            class="h-3 w-3"
+                                                        />
                                                     </Button>
-                                                    <span class="text-sm font-medium w-8 text-center">{{ item.quantity }}</span>
+                                                    <span
+                                                        class="w-8 text-center text-sm font-medium"
+                                                        >{{
+                                                            item.quantity
+                                                        }}</span
+                                                    >
                                                     <Button
                                                         variant="outline"
                                                         size="icon"
                                                         class="h-7 w-7"
-                                                        @click.stop="updateCartQuantity(item.id, item.quantity + 1)"
+                                                        @click.stop="
+                                                            updateCartQuantity(
+                                                                item.id,
+                                                                item.quantity +
+                                                                    1,
+                                                            )
+                                                        "
                                                     >
                                                         <Plus class="h-3 w-3" />
                                                     </Button>
@@ -719,26 +917,61 @@ const searchSuggestions = computed(() => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-else class="p-8 text-center text-sm text-muted-foreground">
-                                        <ShoppingCart class="h-12 w-12 mx-auto mb-2 opacity-20" />
+                                    <div
+                                        v-else
+                                        class="p-8 text-center text-sm text-muted-foreground"
+                                    >
+                                        <ShoppingCart
+                                            class="mx-auto mb-2 h-12 w-12 opacity-20"
+                                        />
                                         <p>Keranjang masih kosong</p>
                                     </div>
                                 </div>
-                                <DropdownMenuSeparator v-if="cartItems.length > 0" />
-                                <div v-if="cartItems.length > 0" class="p-3 space-y-3">
+                                <DropdownMenuSeparator
+                                    v-if="cartItems.length > 0"
+                                />
+                                <div
+                                    v-if="cartItems.length > 0"
+                                    class="space-y-3 p-3"
+                                >
                                     <div class="space-y-2">
-                                        <div class="flex items-center justify-between text-sm">
-                                            <span class="text-muted-foreground">Total ({{ cartItemCount }} item):</span>
-                                            <span class="text-sm">{{ formatCurrency(cartTotal) }}</span>
+                                        <div
+                                            class="flex items-center justify-between text-sm"
+                                        >
+                                            <span class="text-muted-foreground"
+                                                >Total ({{
+                                                    cartItemCount
+                                                }}
+                                                item):</span
+                                            >
+                                            <span class="text-sm">{{
+                                                formatCurrency(cartTotal)
+                                            }}</span>
                                         </div>
-                                        <div v-if="selectedItemsCount > 0" class="flex items-center justify-between text-sm">
-                                            <span class="font-medium">Dipilih ({{ selectedItemsCount }} item):</span>
-                                            <span class="font-bold text-lg">{{ formatCurrency(selectedItemsTotal) }}</span>
+                                        <div
+                                            v-if="selectedItemsCount > 0"
+                                            class="flex items-center justify-between text-sm"
+                                        >
+                                            <span class="font-medium"
+                                                >Dipilih ({{
+                                                    selectedItemsCount
+                                                }}
+                                                item):</span
+                                            >
+                                            <span class="text-lg font-bold">{{
+                                                formatCurrency(
+                                                    selectedItemsTotal,
+                                                )
+                                            }}</span>
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-2 gap-2">
                                         <Link href="/cart">
-                                            <Button class="w-full" variant="outline" size="sm">
+                                            <Button
+                                                class="w-full"
+                                                variant="outline"
+                                                size="sm"
+                                            >
                                                 Lihat Keranjang
                                             </Button>
                                         </Link>
@@ -758,18 +991,34 @@ const searchSuggestions = computed(() => {
                         <!-- User Account Dropdown -->
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <Button variant="ghost" size="icon" class="rounded-full" aria-label="Account">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="rounded-full"
+                                    aria-label="Account"
+                                >
                                     <User class="h-5 w-5" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" class="w-56">
                                 <DropdownMenuLabel v-if="isAuthenticated">
                                     <div class="flex flex-col space-y-1">
-                                        <p class="text-sm font-medium">{{ page.props.auth?.user?.name || 'User' }}</p>
-                                        <p class="text-xs text-muted-foreground">{{ page.props.auth?.user?.email }}</p>
+                                        <p class="text-sm font-medium">
+                                            {{
+                                                page.props.auth?.user?.name ||
+                                                'Customer'
+                                            }}
+                                        </p>
+                                        <p
+                                            class="text-xs text-muted-foreground"
+                                        >
+                                            {{ page.props.auth?.user?.email }}
+                                        </p>
                                     </div>
                                 </DropdownMenuLabel>
-                                <DropdownMenuLabel v-else>Akun Saya</DropdownMenuLabel>
+                                <DropdownMenuLabel v-else
+                                    >Akun Saya</DropdownMenuLabel
+                                >
                                 <DropdownMenuSeparator />
                                 <template v-if="isAuthenticated">
                                     <Link href="/client/profile">
@@ -803,7 +1052,11 @@ const searchSuggestions = computed(() => {
                                         </DropdownMenuItem>
                                     </Link>
                                     <DropdownMenuSeparator />
-                                    <Link href="/client/logout" method="post" as="button">
+                                    <Link
+                                        href="/client/logout"
+                                        method="post"
+                                        as="button"
+                                    >
                                         <DropdownMenuItem>
                                             <LogOut class="mr-2 h-4 w-4" />
                                             <span>Keluar</span>
@@ -833,34 +1086,62 @@ const searchSuggestions = computed(() => {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    class="lg:hidden rounded-full"
+                                    class="rounded-full lg:hidden"
                                     aria-label="Menu"
                                 >
                                     <Menu class="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent side="left" class="w-full sm:w-96 p-0">
-                                <SheetHeader class="px-6 py-4 border-b">
-                                    <SheetTitle class="text-xl font-bold flex items-center gap-2">
-                                        <img v-if="siteLogo" :src="siteLogo" :alt="siteName" class="h-6 w-6 object-contain" />
+                            <SheetContent
+                                side="left"
+                                class="w-full p-0 sm:w-96"
+                            >
+                                <SheetHeader class="border-b px-6 py-4">
+                                    <SheetTitle
+                                        class="flex items-center gap-2 text-xl font-bold"
+                                    >
+                                        <img
+                                            v-if="siteLogo"
+                                            :src="siteLogo"
+                                            :alt="siteName"
+                                            class="h-6 w-6 object-contain"
+                                        />
                                         <Package v-else class="h-6 w-6" />
                                         {{ siteName }}
                                     </SheetTitle>
                                 </SheetHeader>
-                                <div class="p-6 overflow-y-auto">
+                                <div class="overflow-y-auto p-6">
                                     <nav class="space-y-6">
-                                        <div v-for="category in productCategories" :key="category.name">
-                                            <div class="flex items-center gap-2 mb-3">
-                                                <component :is="category.icon" class="h-5 w-5" />
-                                                <h3 class="font-bold text-base">{{ category.name }}</h3>
+                                        <div
+                                            v-for="category in productCategories"
+                                            :key="category.name"
+                                        >
+                                            <div
+                                                class="mb-3 flex items-center gap-2"
+                                            >
+                                                <component
+                                                    :is="category.icon"
+                                                    class="h-5 w-5"
+                                                />
+                                                <h3 class="text-base font-bold">
+                                                    {{ category.name }}
+                                                </h3>
                                             </div>
                                             <Separator class="my-3" />
-                                            <ul v-if="category.items.length > 0" class="space-y-2 ml-7">
-                                                <li v-for="item in category.items" :key="item.name">
+                                            <ul
+                                                v-if="category.items.length > 0"
+                                                class="ml-7 space-y-2"
+                                            >
+                                                <li
+                                                    v-for="item in category.items"
+                                                    :key="item.name"
+                                                >
                                                     <Link
                                                         :href="item.href"
-                                                        class="text-sm text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors block py-1"
-                                                        @click="mobileMenuOpen = false"
+                                                        class="block py-1 text-sm text-gray-600 transition-colors hover:text-black dark:text-gray-400 dark:hover:text-white"
+                                                        @click="
+                                                            mobileMenuOpen = false
+                                                        "
                                                     >
                                                         {{ item.name }}
                                                     </Link>
@@ -876,46 +1157,72 @@ const searchSuggestions = computed(() => {
             </div>
 
             <!-- Secondary Navigation Bar (Desktop) -->
-            <div class="hidden lg:block border-t dark:border-gray-800">
+            <div class="hidden border-t lg:block dark:border-gray-800">
                 <div class="container mx-auto px-6">
-                    <div class="flex items-center h-12 gap-6">
-                        <!-- Beranda -->
-                        <Link href="/" class="text-sm font-medium hover:text-primary transition-colors px-3 py-2 rounded-md hover:bg-accent">
-                            Beranda
-                        </Link>
-
+                    <div class="flex h-12 items-center gap-6">
                         <!-- Mega Menu Kategori -->
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <Button variant="ghost" class="text-sm font-medium h-auto px-3 py-2">
+                                <Button
+                                    variant="ghost"
+                                    class="h-auto px-3 py-2 text-sm font-medium"
+                                >
                                     Semua Kategori
-                                    <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    <svg
+                                        class="ml-1 h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M19 9l-7 7-7-7"
+                                        />
                                     </svg>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" class="w-[800px] p-6">
+                            <DropdownMenuContent
+                                align="start"
+                                class="w-[800px] p-6"
+                            >
                                 <div class="grid grid-cols-4 gap-6">
-                                    <div v-for="category in productCategories" :key="category.name" class="space-y-3">
-                                        <Link :href="`/toko?category=${category.slug}`" class="group">
-                                            <div class="flex items-center gap-2 mb-3 font-semibold text-sm hover:text-primary transition-colors">
-                                                <component :is="category.icon" class="h-4 w-4 text-primary" />
+                                    <div
+                                        v-for="category in productCategories"
+                                        :key="category.name"
+                                        class="space-y-3"
+                                    >
+                                        <Link
+                                            :href="`/toko?category=${category.slug}`"
+                                            class="group"
+                                        >
+                                            <div
+                                                class="mb-3 flex items-center gap-2 text-sm font-semibold transition-colors hover:text-primary"
+                                            >
+                                                <component
+                                                    :is="category.icon"
+                                                    class="h-4 w-4 text-primary"
+                                                />
                                                 <span>{{ category.name }}</span>
                                             </div>
                                         </Link>
                                         <div class="space-y-1.5">
                                             <Link
-                                                v-for="item in category.items.slice(0, 5)"
+                                                v-for="item in category.items.slice(
+                                                    0,
+                                                    5,
+                                                )"
                                                 :key="item.name"
                                                 :href="item.href"
-                                                class="block text-xs text-muted-foreground hover:text-primary transition-colors py-1 hover:underline"
+                                                class="block py-1 text-xs text-muted-foreground transition-colors hover:text-primary hover:underline"
                                             >
                                                 {{ item.name }}
                                             </Link>
                                             <Link
                                                 v-if="category.items.length > 5"
                                                 :href="`/toko?category=${category.slug}`"
-                                                class="block text-xs text-primary font-medium py-1 hover:underline"
+                                                class="block py-1 text-xs font-medium text-primary hover:underline"
                                             >
                                                 Lihat Semua →
                                             </Link>
@@ -930,7 +1237,7 @@ const searchSuggestions = computed(() => {
                             v-for="category in productCategories.slice(0, 5)"
                             :key="category.name"
                             :href="`/toko?category=${category.slug}`"
-                            class="text-sm font-medium hover:text-primary transition-colors px-3 py-2 rounded-md hover:bg-accent flex items-center gap-1.5"
+                            class="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-primary"
                         >
                             <component :is="category.icon" class="h-4 w-4" />
                             {{ category.name }}
@@ -940,9 +1247,22 @@ const searchSuggestions = computed(() => {
                         <div class="flex-1"></div>
 
                         <!-- Artikel Badge -->
-                        <Link href="/artikel" class="flex items-center gap-2 text-sm font-semibold text-primary dark:text-primary hover:underline">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        <Link
+                            href="/artikel"
+                            class="flex items-center gap-2 text-sm font-semibold text-primary hover:underline dark:text-primary"
+                        >
+                            <svg
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                                />
                             </svg>
                             Artikel & Blog
                         </Link>
@@ -959,15 +1279,20 @@ const searchSuggestions = computed(() => {
                 leave-from-class="opacity-100 translate-y-0"
                 leave-to-class="opacity-0 -translate-y-2"
             >
-                <div v-if="searchOpen" class="border-t dark:border-gray-800 bg-white dark:bg-gray-950 shadow-lg">
+                <div
+                    v-if="searchOpen"
+                    class="border-t bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950"
+                >
                     <div class="container mx-auto px-6 py-6">
-                        <div class="w-full mx-auto">
+                        <div class="mx-auto w-full">
                             <div class="relative">
-                                <Search class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                <Search
+                                    class="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-muted-foreground"
+                                />
                                 <Input
                                     v-model="searchQuery"
                                     placeholder="Cari produk, model, atau kata kunci..."
-                                    class="w-full h-12 pl-12 pr-12 text-base"
+                                    class="h-12 w-full pr-12 pl-12 text-base"
                                     @keydown.escape="searchOpen = false"
                                     @keydown.enter="handleSearch"
                                     autofocus
@@ -976,15 +1301,19 @@ const searchSuggestions = computed(() => {
                                     variant="ghost"
                                     size="icon"
                                     @click="searchOpen = false"
-                                    class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full"
+                                    class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full"
                                 >
                                     ✕
                                 </Button>
                             </div>
                             <div class="mt-4">
                                 <Separator class="my-4" />
-                                <p class="text-sm font-medium mb-3">
-                                    {{ searchQuery.trim() ? 'Saran Pencarian:' : 'Pencarian Populer:' }}
+                                <p class="mb-3 text-sm font-medium">
+                                    {{
+                                        searchQuery.trim()
+                                            ? 'Saran Pencarian:'
+                                            : 'Pencarian Populer:'
+                                    }}
                                 </p>
                                 <div class="flex flex-wrap gap-2">
                                     <Link
@@ -992,7 +1321,10 @@ const searchSuggestions = computed(() => {
                                         :key="suggestion.query"
                                         :href="`/toko?search=${encodeURIComponent(suggestion.query)}`"
                                     >
-                                        <Badge variant="secondary" class="cursor-pointer hover:bg-accent">
+                                        <Badge
+                                            variant="secondary"
+                                            class="cursor-pointer hover:bg-accent"
+                                        >
                                             {{ suggestion.label }}
                                         </Badge>
                                     </Link>
@@ -1010,23 +1342,42 @@ const searchSuggestions = computed(() => {
         </main>
 
         <!-- Modern Ecommerce Footer -->
-        <footer class="bg-gradient-to-b from-background to-muted/20 border-t">
+        <footer class="border-t bg-gradient-to-b from-background to-muted/20">
             <div class="container mx-auto px-6">
                 <!-- Newsletter Section -->
-                <div class="py-12 border-b">
-                    <div class="max-w-3xl mx-auto text-center">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-6">
-                            <svg class="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                <div class="border-b py-12">
+                    <div class="mx-auto max-w-3xl text-center">
+                        <div
+                            class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+                        >
+                            <svg
+                                class="h-8 w-8 text-primary"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                />
                             </svg>
                         </div>
-                        <h3 class="text-2xl md:text-3xl font-bold mb-3">Dapatkan Penawaran Eksklusif</h3>
-                        <p class="text-muted-foreground mb-6 text-sm md:text-base">
-                            Berlangganan newsletter kami dan dapatkan diskon hingga 20% untuk pembelian pertama Anda
+                        <h3 class="mb-3 text-2xl font-bold md:text-3xl">
+                            Dapatkan Penawaran Eksklusif
+                        </h3>
+                        <p
+                            class="mb-6 text-sm text-muted-foreground md:text-base"
+                        >
+                            Berlangganan newsletter kami dan dapatkan diskon
+                            hingga 20% untuk pembelian pertama Anda
                         </p>
 
-                        <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                            <div class="flex-1 relative">
+                        <div
+                            class="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
+                        >
+                            <div class="relative flex-1">
                                 <Input
                                     v-model="newsletterEmail"
                                     type="email"
@@ -1039,48 +1390,104 @@ const searchSuggestions = computed(() => {
                             <Button
                                 @click="subscribeNewsletter"
                                 class="h-12 px-8 font-semibold"
-                                :disabled="newsletterSubmitting || !newsletterEmail"
+                                :disabled="
+                                    newsletterSubmitting || !newsletterEmail
+                                "
                             >
-                                <span v-if="!newsletterSubmitting && !newsletterSuccess">Berlangganan</span>
-                                <span v-else-if="newsletterSubmitting" class="flex items-center gap-2">
-                                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <span
+                                    v-if="
+                                        !newsletterSubmitting &&
+                                        !newsletterSuccess
+                                    "
+                                    >Berlangganan</span
+                                >
+                                <span
+                                    v-else-if="newsletterSubmitting"
+                                    class="flex items-center gap-2"
+                                >
+                                    <svg
+                                        class="h-4 w-4 animate-spin"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            class="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            stroke-width="4"
+                                        ></circle>
+                                        <path
+                                            class="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
                                     </svg>
                                     Memproses...
                                 </span>
                                 <span v-else class="flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    <svg
+                                        class="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M5 13l4 4L19 7"
+                                        />
                                     </svg>
                                     Berhasil!
                                 </span>
                             </Button>
                         </div>
 
-                        <p class="text-xs text-muted-foreground mt-4">
-                            Dengan berlangganan, Anda menyetujui <Link href="/page/privacy" class="underline hover:text-foreground">Kebijakan Privasi</Link> kami
+                        <p class="mt-4 text-xs text-muted-foreground">
+                            Dengan berlangganan, Anda menyetujui
+                            <Link
+                                href="/page/privacy"
+                                class="underline hover:text-foreground"
+                                >Kebijakan Privasi</Link
+                            >
+                            kami
                         </p>
                     </div>
                 </div>
 
                 <!-- Main Footer Content -->
                 <div class="py-12">
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                    <div
+                        class="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12"
+                    >
                         <!-- Brand Section -->
                         <div class="lg:col-span-4">
-                            <Link href="/" class="flex items-center gap-2 mb-4">
-                                <img v-if="siteLogo" :src="siteLogo" :alt="siteName" class="h-15 w-15 object-contain" />
+                            <Link href="/" class="mb-4 flex items-center gap-2">
+                                <img
+                                    v-if="siteLogo"
+                                    :src="siteLogo"
+                                    :alt="siteName"
+                                    class="h-15 w-15 object-contain"
+                                />
                                 <Package v-else class="h-8 w-8 text-primary" />
-                                <span class="text-2xl font-bold">{{ siteName }}</span>
+                                <span class="text-2xl font-bold">{{
+                                    siteName
+                                }}</span>
                             </Link>
-                            <p class="text-muted-foreground text-sm mb-6 leading-relaxed">
+                            <p
+                                class="mb-6 text-sm leading-relaxed text-muted-foreground"
+                            >
                                 {{ siteDescription }}
                             </p>
 
                             <!-- Social Links -->
                             <div class="flex items-center gap-3">
-                                <span class="text-sm font-semibold">Ikuti Kami:</span>
+                                <span class="text-sm font-semibold"
+                                    >Ikuti Kami:</span
+                                >
                                 <div class="flex gap-2">
                                     <Button
                                         v-for="social in socialLinks"
@@ -1088,11 +1495,26 @@ const searchSuggestions = computed(() => {
                                         variant="outline"
                                         size="icon"
                                         as-child
-                                        class="rounded-full hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+                                        class="rounded-full transition-all hover:border-primary hover:bg-primary hover:text-primary-foreground"
                                     >
-                                        <a :href="social.href" :aria-label="social.name" target="_blank" rel="noopener noreferrer">
-                                            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                                                <path :d="socialIconPaths[social.icon]" />
+                                        <a
+                                            :href="social.href"
+                                            :aria-label="social.name"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <svg
+                                                class="h-4 w-4"
+                                                fill="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    :d="
+                                                        socialIconPaths[
+                                                            social.icon
+                                                        ]
+                                                    "
+                                                />
                                             </svg>
                                         </a>
                                     </Button>
@@ -1102,15 +1524,40 @@ const searchSuggestions = computed(() => {
 
                         <!-- Footer Links Grid -->
                         <div class="lg:col-span-8">
-                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                                <div v-for="menu in footerMenus.slice(0, 4)" :key="menu.title">
-                                    <h4 class="font-bold text-sm mb-4 text-foreground">{{ menu.title }}</h4>
+                            <div
+                                class="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4"
+                            >
+                                <div
+                                    v-for="menu in footerMenus.slice(0, 4)"
+                                    :key="menu.title"
+                                >
+                                    <h4
+                                        class="mb-4 text-sm font-bold text-foreground"
+                                    >
+                                        {{ menu.title }}
+                                    </h4>
                                     <ul class="space-y-3 text-sm">
-                                        <li v-for="link in menu.links" :key="link.href">
-                                            <Link :href="link.href" class="text-muted-foreground hover:text-primary transition-colors inline-flex items-center group">
+                                        <li
+                                            v-for="link in menu.links"
+                                            :key="link.href"
+                                        >
+                                            <Link
+                                                :href="link.href"
+                                                class="group inline-flex items-center text-muted-foreground transition-colors hover:text-primary"
+                                            >
                                                 <span>{{ link.name }}</span>
-                                                <svg class="w-3 h-3 ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                <svg
+                                                    class="ml-1 h-3 w-3 -translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M9 5l7 7-7 7"
+                                                    />
                                                 </svg>
                                             </Link>
                                         </li>
@@ -1123,26 +1570,69 @@ const searchSuggestions = computed(() => {
 
                 <!-- Bottom Footer Bar -->
                 <div class="border-t py-6">
-                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div class="flex flex-col md:flex-row items-center gap-4 text-sm text-muted-foreground">
-                            <p>© {{ new Date().getFullYear() }} Puranusa. All rights reserved.</p>
-                            <div class="flex items-center gap-4">
-                                <Link href="/page/privacy" class="hover:text-foreground transition-colors">Privasi</Link>
-                                <span class="text-muted-foreground/50">•</span>
-                                <Link href="/page/terms" class="hover:text-foreground transition-colors">Syarat & Ketentuan</Link>
-                                <span class="text-muted-foreground/50">•</span>
-                                <Link href="/page/about" class="hover:text-foreground transition-colors">Tentang Kami</Link>
+                    <div
+                        class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+                    >
+                        <!-- Info & Links -->
+                        <div
+                            class="flex w-full flex-col gap-3 text-xs text-muted-foreground sm:text-sm"
+                        >
+                            <p class="text-center md:text-left">
+                                © {{ new Date().getFullYear() }} Puranusa. All
+                                rights reserved.
+                            </p>
+
+                            <div
+                                class="flex flex-wrap justify-center gap-x-4 gap-y-2 md:justify-start"
+                            >
+                                <Link
+                                    href="/page/privacy"
+                                    class="transition-colors hover:text-foreground"
+                                >
+                                    Privasi
+                                </Link>
+                                <span
+                                    class="hidden text-muted-foreground/50 sm:inline"
+                                    >•</span
+                                >
+
+                                <Link
+                                    href="/page/terms"
+                                    class="transition-colors hover:text-foreground"
+                                >
+                                    Syarat &amp; Ketentuan
+                                </Link>
+                                <span
+                                    class="hidden text-muted-foreground/50 sm:inline"
+                                    >•</span
+                                >
+
+                                <Link
+                                    href="/page/about"
+                                    class="transition-colors hover:text-foreground"
+                                >
+                                    Tentang Kami
+                                </Link>
                             </div>
                         </div>
 
                         <!-- Payment Methods -->
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs text-muted-foreground">Metode Pembayaran:</span>
-                            <div class="flex items-center gap-2">
+                        <div
+                            class="flex w-full flex-col items-center gap-2 md:w-auto md:items-end"
+                        >
+                            <span
+                                class="text-center text-xs text-muted-foreground md:text-right"
+                            >
+                                Metode Pembayaran:
+                            </span>
+
+                            <div
+                                class="flex flex-wrap justify-center gap-2 md:justify-end"
+                            >
                                 <div
                                     v-for="method in paymentMethods"
                                     :key="method"
-                                    class="px-3 py-1.5 bg-background border rounded text-xs font-medium"
+                                    class="rounded border bg-background px-3 py-1.5 text-xs font-medium whitespace-nowrap"
                                 >
                                     {{ method }}
                                 </div>

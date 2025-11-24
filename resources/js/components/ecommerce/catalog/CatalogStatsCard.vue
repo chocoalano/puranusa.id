@@ -22,7 +22,9 @@ withDefaults(defineProps<Props>(), {
             </div>
             <div>
                 <p class="text-sm text-muted-foreground">{{ label }}</p>
-                <p class="text-xl font-bold">{{ value }}</p>
+                <p class="font-bold text-base sm:text-lg md:text-xl break-words">
+                    {{ value }}
+                </p>
             </div>
         </CardContent>
     </Card>

@@ -5,9 +5,11 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
+use function Pest\Laravel\actingAs;
+
 beforeEach(function () {
-    $this->user = User::factory()->create();
-    $this->actingAs($this->user);
+    $user = User::factory()->create();
+    actingAs($user);
 
     Setting::create(['key' => 'site_logo', 'value' => null, 'type' => 'string', 'group' => 'general']);
 });
@@ -50,7 +52,7 @@ it('can upload logo file', function () {
     $setting = Setting::where('key', 'site_logo')->first();
     expect($setting->value)->toContain('/storage/logos/');
 
-    Storage::disk('public')->assertExists(str_replace('/storage/', '', $setting->value));
+    Storage::assertExists('public/'.str_replace('/storage/', '', $setting->value));
 });
 
 it('deletes old logo when uploading new one', function () {
@@ -59,7 +61,7 @@ it('deletes old logo when uploading new one', function () {
     // Upload first logo
     $oldFile = UploadedFile::fake()->image('old-logo.png');
     $oldPath = $oldFile->store('logos', 'public');
-    Setting::where('key', 'site_logo')->update(['value' => '/storage/' . $oldPath]);
+    Setting::where('key', 'site_logo')->update(['value' => '/storage/'.$oldPath]);
 
     // Upload new logo
     $newFile = UploadedFile::fake()->image('new-logo.png');
@@ -73,11 +75,11 @@ it('deletes old logo when uploading new one', function () {
     $response->assertRedirect('/admin/settings');
 
     // Old file should be deleted
-    Storage::disk('public')->assertMissing($oldPath);
+    Storage::assertMissing('public/'.$oldPath);
 
     // New file should exist
     $setting = Setting::where('key', 'site_logo')->first();
-    Storage::disk('public')->assertExists(str_replace('/storage/', '', $setting->value));
+    Storage::assertExists('public/'.str_replace('/storage/', '', $setting->value));
 });
 
 it('validates logo file type and size', function () {

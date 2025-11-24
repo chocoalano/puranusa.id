@@ -198,12 +198,17 @@ class ProfileController extends Controller
     {
         $customer = Auth::guard('client')->user();
 
+        // Logout from both guards
         Auth::guard('client')->logout();
+        Auth::guard('web')->logout();
 
+        // Delete customer
         $customer->delete();
 
+        // Clear session completely
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+        request()->session()->forget('auth');
 
         return redirect()->route('client.login')->with('success', 'Akun berhasil dihapus.');
     }

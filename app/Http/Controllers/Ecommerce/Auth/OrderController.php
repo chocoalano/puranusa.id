@@ -453,6 +453,7 @@ class OrderController extends Controller
         // Only allow completion if order is currently shipped
         if (strtoupper($order->status) !== 'SHIPPED') {
             return response()->json([
+                'success' => false,
                 'message' => 'Pesanan hanya dapat ditandai sebagai selesai jika dalam status dikirim',
             ], 422);
         }
@@ -461,9 +462,89 @@ class OrderController extends Controller
             'status' => 'COMPLETED',
         ]);
 
+        // Load items for review
+        $order->load('items.product');
+
         return response()->json([
+            'success' => true,
             'message' => 'Pesanan berhasil ditandai sebagai diterima',
             'data' => $order,
+            'items' => $order->items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'product_name' => $item->name,
+                    'product_image' => $item->product && $item->product->primaryMedia
+                        ? $item->product->primaryMedia->url
+                        : null,
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * Submit product review for order item.
+     */
+    public function submitReview(Request $request, Order $order): JsonResponse
+    {
+        // Ensure the order belongs to the authenticated user
+        if ($order->customer_id !== auth('client')->id()) {
+            abort(403, 'Unauthorized access to this order');
+        }
+
+        // Only allow reviews for completed orders
+        if (strtoupper($order->status) !== 'COMPLETED') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Review hanya dapat diberikan untuk pesanan yang sudah selesai',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'order_item_id' => ['required', 'exists:order_items,id'],
+            'product_id' => ['required', 'exists:products,id'],
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'title' => ['nullable', 'string', 'max:100'],
+            'comment' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        // Verify order item belongs to this order
+        $orderItem = $order->items()->find($validated['order_item_id']);
+        if (! $orderItem) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item tidak ditemukan dalam pesanan ini',
+            ], 404);
+        }
+
+        // Check if review already exists
+        $existingReview = \App\Models\ProductReview::where('order_item_id', $validated['order_item_id'])
+            ->where('customer_id', auth('client')->id())
+            ->first();
+
+        if ($existingReview) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda sudah memberikan review untuk produk ini',
+            ], 422);
+        }
+
+        // Create review
+        $review = \App\Models\ProductReview::create([
+            'customer_id' => auth('client')->id(),
+            'product_id' => $validated['product_id'],
+            'order_item_id' => $validated['order_item_id'],
+            'rating' => $validated['rating'],
+            'title' => $validated['title'] ?? null,
+            'comment' => $validated['comment'] ?? null,
+            'is_verified_purchase' => true,
+            'is_approved' => false, // Pending approval
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Review berhasil dikirim dan menunggu persetujuan',
+            'data' => $review,
         ]);
     }
 

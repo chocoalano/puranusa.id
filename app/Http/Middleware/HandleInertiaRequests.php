@@ -312,26 +312,33 @@ class HandleInertiaRequests extends Middleware
 
     /**
      * Get authenticated user data.
+     * Prioritizes client guard for ecommerce routes.
      *
      * @return array<string, mixed>|null
      */
     protected function getAuthUser(Request $request): ?array
     {
+        // For client routes, only check client guard
+        if ($request->is('client/*') || $request->is('toko') || $request->is('toko/*') || $request->is('produk/*') || $request->is('/')) {
+            if (auth('client')->check()) {
+                return [
+                    'id' => auth('client')->user()->id,
+                    'name' => auth('client')->user()->name,
+                    'email' => auth('client')->user()->email,
+                    'ewallet_saldo' => auth('client')->user()->ewallet_saldo ?? 0,
+                ];
+            }
+
+            return null;
+        }
+
+        // For admin/web routes, check web guard
         if ($request->user()) {
             return [
                 'id' => $request->user()->id,
                 'name' => $request->user()->name,
                 'email' => $request->user()->email,
                 'avatar' => $request->user()->avatar ?? null,
-            ];
-        }
-
-        if (auth('client')->user()) {
-            return [
-                'id' => auth('client')->user()->id,
-                'name' => auth('client')->user()->name,
-                'email' => auth('client')->user()->email,
-                'ewallet_saldo' => auth('client')->user()->ewallet_saldo ?? 0,
             ];
         }
 

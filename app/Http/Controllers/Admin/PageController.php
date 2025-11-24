@@ -72,13 +72,23 @@ class PageController extends Controller
     public function update(UpdatePageRequest $request, Page $page)
     {
         $data = $request->validated();
+        $protectedSlugs = ['terms', 'about', 'privacy', 'faq'];
 
         // Decode blocks if it's a JSON string
         if (isset($data['blocks']) && is_string($data['blocks'])) {
             $data['blocks'] = json_decode($data['blocks'], true);
         }
 
-        $page->update($data);
+        // If this is a protected page, only update title, content, and blocks
+        if (in_array($page->slug, $protectedSlugs)) {
+            $page->update([
+                'title' => $data['title'],
+                'content' => $data['content'] ?? null,
+                'blocks' => $data['blocks'] ?? null,
+            ]);
+        } else {
+            $page->update($data);
+        }
 
         return redirect()->route('admin.pages.edit', $page)
             ->with('success', 'Halaman berhasil diperbarui.');
@@ -86,6 +96,14 @@ class PageController extends Controller
 
     public function destroy(Page $page)
     {
+        $protectedSlugs = ['terms', 'about', 'privacy', 'faq'];
+
+        // Prevent deletion of protected system pages
+        if (in_array($page->slug, $protectedSlugs)) {
+            return redirect()->route('admin.pages.index')
+                ->with('error', 'Halaman sistem tidak dapat dihapus.');
+        }
+
         $page->delete();
 
         return redirect()->route('admin.pages.index')

@@ -45,7 +45,48 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin Users
+        $this->command->info('Seeding users...');
+        $this->seedUsers();
+
+        $this->command->info('Seeding categories...');
+        $this->seedCategories();
+
+        $this->command->info('Seeding products...');
+        $this->seedProducts();
+
+        $this->command->info('Seeding payment methods...');
+        $this->seedPaymentMethods();
+
+        $this->command->info('Seeding settings...');
+        $this->seedSettings();
+
+        $this->command->info('Seeding customers...');
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Customer> $customers */
+        $customers = $this->seedCustomers();
+
+        $this->command->info('Seeding customer addresses...');
+        $this->seedCustomerAddresses($customers);
+
+        $this->command->info('Seeding customer network...');
+        $this->seedCustomerNetwork($customers);
+
+        $this->command->info('Seeding customer bonuses...');
+        $this->seedCustomerBonuses($customers);
+
+        $this->command->info('Seeding e-commerce data...');
+        $this->seedEcommerceData($customers);
+
+        $this->command->info('Seeding additional data...');
+        $this->seedAdditionalData();
+
+        $this->command->info('Database seeding completed!');
+    }
+
+    /**
+     * Seed admin and regular users.
+     */
+    protected function seedUsers(): void
+    {
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@puranusa.id',
@@ -54,42 +95,60 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::factory(5)->create();
+    }
 
-        // Categories - Real data from production
+    /**
+     * Seed categories with real production data.
+     */
+    protected function seedCategories(): void
+    {
         $categoriesData = [
             [
-                'name'       => 'Health Therapy',
-                'slug'       => 'health-therapy',
+                'name' => 'Health Therapy',
+                'slug' => 'health-therapy',
                 'sort_order' => 1,
-                'image'      => 'images/category-products/01K8NCS0E3H5C7C4WEP1ZXE6FK.png',
+                'image' => 'images/category-products/01K8NCS0E3H5C7C4WEP1ZXE6FK.png',
             ],
             [
-                'name'       => 'Beauty Care',
-                'slug'       => 'beauty-care',
+                'name' => 'Beauty Care',
+                'slug' => 'beauty-care',
                 'sort_order' => 1,
-                'image'      => 'images/category-products/01K8NCW90F80Q7W4WR84R50XK6.jpg',
+                'image' => 'images/category-products/01K8NCW90F80Q7W4WR84R50XK6.jpg',
             ],
             [
-                'name'       => 'Health Care',
-                'slug'       => 'health-care',
+                'name' => 'Health Care',
+                'slug' => 'health-care',
                 'sort_order' => 2,
-                'image'      => 'images/category-products/01K8METSTFYZHAVWSMBQ39EGQR.jpg',
+                'image' => 'images/category-products/01K8METSTFYZHAVWSMBQ39EGQR.jpg',
             ],
             [
-                'name'       => 'Fashion',
-                'slug'       => 'fashion',
+                'name' => 'Fashion',
+                'slug' => 'fashion',
                 'sort_order' => 4,
-                'image'      => 'images/category-products/01K8ND4299C9FEH9P4YTJRV6DM.png',
+                'image' => 'images/category-products/01K8ND4299C9FEH9P4YTJRV6DM.png',
             ],
         ];
 
         foreach ($categoriesData as $catData) {
             Category::create($catData);
         }
+    }
 
-        $categories = Category::all();
+    /**
+     * Seed products with real production data.
+     */
+    protected function seedProducts(): void
+    {
+        $this->seedProductsData();
+        $this->seedProductMedia();
+        $this->seedProductCategories();
+    }
 
-        // Products - Real data from production (hanya yang ada di SQL dump)
+    /**
+     * Seed product data records.
+     */
+    protected function seedProductsData(): void
+    {
         $productsData = [
             ['id' => 1, 'sku' => 'SKU-NPKBOGBUQD', 'slug' => 'puranusa-beauty-care-paket-lengkap', 'name' => 'Puranusa Beauty Care, Brightening Soap, Feminime Spray, Feminime Wash', 'short_desc' => 'Kami memadukan warisan kecantikan dengan inovasi mutakhir. Formula sabun premium ini membersihkan sekaligus meremajakan.', 'long_desc' => 'Kami memadukan warisan kecantikan dengan inovasi mutakhir. Formula sabun premium ini membersihkan sekaligus meremajakan.\nDirancang untuk wanita aktif yang mengutamakan kebersihan dan kesehatan holistik. Produk ini memberikan perlindungan pH seimbang dan kesegaran alami.', 'brand' => 'PURANUSA', 'warranty_months' => 23, 'base_price' => 300000.00, 'currency' => 'IDR', 'stock' => 122, 'weight_gram' => 2954, 'length_mm' => 352, 'width_mm' => 395, 'height_mm' => 49, 'is_active' => 1],
             ['id' => 2, 'sku' => 'SKU-SMYBVSTSJF', 'slug' => 'puranusa-beauty-care-paket-alami', 'name' => 'Puranusa Beauty Care, Brightening Soap, Feminime Spray, Feminime Wash', 'short_desc' => 'Kami memadukan warisan kecantikan dengan inovasi mutakhir. Formula sabun premium ini membersihkan sekaligus meremajakan', 'long_desc' => 'Kami memadukan warisan kecantikan dengan inovasi mutakhir. Formula sabun premium ini membersihkan sekaligus meremajakan.\nDirancang untuk wanita aktif yang mengutamakan kebersihan dan kesehatan holistik. Produk ini memberikan perlindungan pH seimbang dan kesegaran alami.', 'brand' => 'PURANUSA', 'warranty_months' => 21, 'base_price' => 300000.00, 'currency' => 'IDR', 'stock' => 235, 'weight_gram' => 131, 'length_mm' => 205, 'width_mm' => 132, 'height_mm' => 270, 'is_active' => 1],
@@ -114,10 +173,13 @@ class DatabaseSeeder extends Seeder
         foreach ($productsData as $productData) {
             Product::create($productData);
         }
+    }
 
-        $products = Product::all();
-
-        // Product Media - Real data from production
+    /**
+     * Seed product media records.
+     */
+    protected function seedProductMedia(): void
+    {
         $productMediaData = [
             ['id' => 1, 'product_id' => 1, 'url' => 'images/products/01K7EAZB04W3JCW0413WXKMY5H.png', 'type' => 'image', 'alt_text' => 'Asperiores Adipisci Excepturi Quos Quia Expedita Soluta. Image 1', 'sort_order' => 1, 'is_primary' => 1],
             ['id' => 4, 'product_id' => 2, 'url' => 'images/products/01K7EB9WY51RKWNBX5N953T75K.png', 'type' => 'image', 'alt_text' => 'Sed Voluptatem Deleniti Vel In Nulla Sunt Ut. Image 1', 'sort_order' => 2, 'is_primary' => 1],
@@ -155,8 +217,13 @@ class DatabaseSeeder extends Seeder
         foreach ($productMediaData as $mediaData) {
             ProductMedia::create($mediaData);
         }
+    }
 
-        // Product Categories - Real data from production
+    /**
+     * Seed product categories pivot records.
+     */
+    protected function seedProductCategories(): void
+    {
         $productCategoriesData = [
             ['product_id' => 1, 'category_id' => 3],
             ['product_id' => 1, 'category_id' => 2],
@@ -197,11 +264,69 @@ class DatabaseSeeder extends Seeder
         foreach ($productCategoriesData as $pcData) {
             \DB::table('product_categories')->insert($pcData);
         }
+    }
 
-        // Customers dengan MLM Network
-        $customers = Customer::factory(20)->create();
+    /**
+     * Seed payment methods.
+     */
+    protected function seedPaymentMethods(): void
+    {
+        $paymentMethods = [
+            ['code' => 'bank_transfer', 'name' => 'Transfer Bank'],
+            ['code' => 'bca', 'name' => 'BCA Virtual Account'],
+            ['code' => 'mandiri', 'name' => 'Mandiri Virtual Account'],
+            ['code' => 'bni', 'name' => 'BNI Virtual Account'],
+            ['code' => 'gopay', 'name' => 'GoPay'],
+            ['code' => 'ovo', 'name' => 'OVO'],
+            ['code' => 'dana', 'name' => 'DANA'],
+            ['code' => 'shopeepay', 'name' => 'ShopeePay'],
+            ['code' => 'qris', 'name' => 'QRIS'],
+            ['code' => 'cod', 'name' => 'Cash on Delivery'],
+        ];
 
-        // Customer Addresses (1-3 per customer)
+        foreach ($paymentMethods as $method) {
+            PaymentMethod::create($method);
+        }
+    }
+
+    /**
+     * Seed application settings.
+     */
+    protected function seedSettings(): void
+    {
+        $settings = [
+            ['key' => 'site_name', 'value' => 'PURANUSA', 'type' => 'string', 'group' => 'general'],
+            ['key' => 'site_description', 'value' => 'Platform E-commerce MLM Terpercaya', 'type' => 'string', 'group' => 'general'],
+            ['key' => 'site_logo', 'value' => null, 'type' => 'string', 'group' => 'general'],
+            ['key' => 'social_facebook', 'value' => 'https://facebook.com/puranusa', 'type' => 'string', 'group' => 'social'],
+            ['key' => 'social_twitter', 'value' => 'https://twitter.com/puranusa', 'type' => 'string', 'group' => 'social'],
+            ['key' => 'social_instagram', 'value' => 'https://instagram.com/puranusa', 'type' => 'string', 'group' => 'social'],
+            ['key' => 'social_youtube', 'value' => 'https://youtube.com/@puranusa', 'type' => 'string', 'group' => 'social'],
+            ['key' => 'payment_methods', 'value' => json_encode(['VISA', 'Mastercard', 'GoPay', 'OVO', 'DANA']), 'type' => 'json', 'group' => 'payment'],
+        ];
+
+        foreach ($settings as $setting) {
+            Setting::firstOrCreate(['key' => $setting['key']], $setting);
+        }
+    }
+
+    /**
+     * Seed customers with MLM network.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, Customer>
+     */
+    protected function seedCustomers(): \Illuminate\Database\Eloquent\Collection
+    {
+        return Customer::factory(20)->create();
+    }
+
+    /**
+     * Seed customer addresses.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Customer>  $customers
+     */
+    protected function seedCustomerAddresses(\Illuminate\Database\Eloquent\Collection $customers): void
+    {
         foreach ($customers as $customer) {
             CustomerAddress::factory(rand(1, 3))->create([
                 'customer_id' => $customer->id,
@@ -210,8 +335,19 @@ class DatabaseSeeder extends Seeder
 
             // Set one as default
             $customer->addresses()->first()->update(['is_default' => true]);
+        }
+    }
 
-            // Wishlist
+    /**
+     * Seed customer wishlists.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Customer>  $customers
+     */
+    protected function seedCustomerWishlists(\Illuminate\Database\Eloquent\Collection $customers): void
+    {
+        $products = Product::all();
+
+        foreach ($customers as $customer) {
             $wishlist = Wishlist::factory()->create([
                 'customer_id' => $customer->id,
             ]);
@@ -228,7 +364,15 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+    }
 
+    /**
+     * Seed MLM network structure (Binary Tree).
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Customer>  $customers
+     */
+    protected function seedCustomerNetwork(\Illuminate\Database\Eloquent\Collection $customers): void
+    {
         // MLM Network Structure (Binary Tree) - Simple version without factory
         $rootCustomer = $customers->first();
         CustomerNetwork::create([
@@ -264,7 +408,15 @@ class DatabaseSeeder extends Seeder
                 $currentLevel->push($customer);
             }
         }
+    }
 
+    /**
+     * Seed customer bonuses (Regular, Sponsor, Matching, Pairing).
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Customer>  $customers
+     */
+    protected function seedCustomerBonuses(\Illuminate\Database\Eloquent\Collection $customers): void
+    {
         // MLM Bonuses - Simple creation without factory
         foreach ($customers->random(10) as $customer) {
             // Regular Bonus
@@ -317,24 +469,30 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+    }
 
-        // Payment Methods
-        $paymentMethods = [
-            ['code' => 'bank_transfer', 'name' => 'Transfer Bank'],
-            ['code' => 'bca', 'name' => 'BCA Virtual Account'],
-            ['code' => 'mandiri', 'name' => 'Mandiri Virtual Account'],
-            ['code' => 'bni', 'name' => 'BNI Virtual Account'],
-            ['code' => 'gopay', 'name' => 'GoPay'],
-            ['code' => 'ovo', 'name' => 'OVO'],
-            ['code' => 'dana', 'name' => 'DANA'],
-            ['code' => 'shopeepay', 'name' => 'ShopeePay'],
-            ['code' => 'qris', 'name' => 'QRIS'],
-            ['code' => 'cod', 'name' => 'Cash on Delivery'],
-        ];
+    /**
+     * Seed e-commerce data (orders, payments, shipments, returns, carts).
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Customer>  $customers
+     */
+    protected function seedEcommerceData(\Illuminate\Database\Eloquent\Collection $customers): void
+    {
+        $this->seedCustomerWishlists($customers);
+        $this->seedOrders($customers);
+        $this->seedReturnsAndRefunds();
+        $this->seedActiveCarts($customers);
+        $this->seedPromotions();
+    }
 
-        foreach ($paymentMethods as $method) {
-            PaymentMethod::create($method);
-        }
+    /**
+     * Seed orders with complete flow.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Customer>  $customers
+     */
+    protected function seedOrders(\Illuminate\Database\Eloquent\Collection $customers): void
+    {
+        $products = Product::all();
 
         // Orders with complete flow
         foreach ($customers->random(15) as $customer) {
@@ -377,33 +535,47 @@ class DatabaseSeeder extends Seeder
 
             // Shipment (for paid orders)
             if ($payment->status === 'completed') {
-                $shipment = Shipment::factory()->create([
-                    'order_id' => $order->id,
-                ]);
-
-                // Shipment Items
-                foreach ($order->items as $orderItem) {
-                    ShipmentItem::factory()->create([
-                        'shipment_id' => $shipment->id,
-                        'order_item_id' => $orderItem->id,
-                        'qty' => $orderItem->qty,
-                    ]);
-                }
-
-                // Product Reviews (for delivered orders)
-                if ($shipment->status === 'delivered') {
-                    foreach ($order->items->random(rand(1, 2)) as $orderItem) {
-                        ProductReview::factory()->create([
-                            'customer_id' => $customer->id,
-                            'product_id' => $orderItem->product_id,
-                            'order_item_id' => $orderItem->id,
-                            'is_verified_purchase' => true,
-                        ]);
-                    }
-                }
+                $this->seedShipmentForOrder($order);
             }
         }
+    }
 
+    /**
+     * Seed shipment for a specific order.
+     */
+    protected function seedShipmentForOrder(Order $order): void
+    {
+        $shipment = Shipment::factory()->create([
+            'order_id' => $order->id,
+        ]);
+
+        // Shipment Items
+        foreach ($order->items as $orderItem) {
+            ShipmentItem::factory()->create([
+                'shipment_id' => $shipment->id,
+                'order_item_id' => $orderItem->id,
+                'qty' => $orderItem->qty,
+            ]);
+        }
+
+        // Product Reviews (for delivered orders)
+        if ($shipment->status === 'delivered') {
+            foreach ($order->items->random(rand(1, 2)) as $orderItem) {
+                ProductReview::factory()->create([
+                    'customer_id' => $order->customer_id,
+                    'product_id' => $orderItem->product_id,
+                    'order_item_id' => $orderItem->id,
+                    'is_verified_purchase' => true,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Seed returns and refunds for completed orders.
+     */
+    protected function seedReturnsAndRefunds(): void
+    {
         // Returns & Refunds (for some completed orders)
         $completedOrders = Order::whereHas('payments', function ($q) {
             $q->where('status', 'completed');
@@ -428,6 +600,16 @@ class DatabaseSeeder extends Seeder
                 'payment_id' => $order->payments->first()->id,
             ]);
         }
+    }
+
+    /**
+     * Seed active shopping carts for customers.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Customer>  $customers
+     */
+    protected function seedActiveCarts(\Illuminate\Database\Eloquent\Collection $customers): void
+    {
+        $products = Product::all();
 
         // Active Carts (for some customers)
         foreach ($customers->random(8) as $customer) {
@@ -454,8 +636,14 @@ class DatabaseSeeder extends Seeder
                 'grand_total' => $cartTotal,
             ]);
         }
+    }
 
-        // Promotions with Products
+    /**
+     * Seed promotions with associated products.
+     */
+    protected function seedPromotions(): void
+    {
+        $products = Product::all();
         $promotions = Promotion::factory(5)->create();
 
         foreach ($promotions as $promotion) {
@@ -466,7 +654,13 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+    }
 
+    /**
+     * Seed additional data (articles, newsletters, pages).
+     */
+    protected function seedAdditionalData(): void
+    {
         // Articles with Content
         $articles = Article::factory(20)->create();
 

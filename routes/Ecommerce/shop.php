@@ -89,6 +89,7 @@ Route::middleware(['client.auth'])->prefix('api/client/orders')->name('api.clien
     Route::get('/{order}', [OrderController::class, 'show'])->name('show');
     Route::post('/{order}/complete', [OrderController::class, 'complete'])->name('complete');
     Route::post('/{order}/check-payment-status', [OrderController::class, 'checkPaymentStatus'])->name('check-payment-status');
+    Route::post('/{order}/reviews', [OrderController::class, 'submitReview'])->name('reviews.submit');
 });
 
 // Checkout routes (require authentication)

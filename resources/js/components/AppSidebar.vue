@@ -43,7 +43,6 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import {
     BookOpen,
-    Folder,
     LayoutGrid,
     Settings,
     Users,
@@ -288,11 +287,6 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Github Repo',
-        href: 'https://chocoalano.github.io/',
-        icon: Folder,
-    },
     {
         title: 'Documentation',
         href: documentationIndex(),
