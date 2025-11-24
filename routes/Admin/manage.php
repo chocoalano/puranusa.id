@@ -22,6 +22,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('manage.customers.top-up');
     Route::post('manage/customers/{customer}/deduct', [CustomerController::class, 'deduct'])
         ->name('manage.customers.deduct');
+    Route::post('manage/customers/{customer}/login-as', [CustomerController::class, 'loginAsCustomer'])
+        ->name('manage.customers.login-as');
+    Route::post('manage/customers/stop-impersonating', [CustomerController::class, 'stopImpersonating'])
+        ->name('manage.customers.stop-impersonating');
     Route::get('manage/customers/placement/find-position', [CustomerController::class, 'findPosition'])
         ->name('manage.customers.find-position');
     Route::post('manage/customers/placement/validate', [CustomerController::class, 'validatePosition'])

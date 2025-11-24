@@ -260,6 +260,18 @@ const subscribeNewsletter = async () => {
     }
 };
 
+// Stop impersonating function
+const stopImpersonating = () => {
+    router.post('/admin/manage/customers/stop-impersonating', {}, {
+        onSuccess: () => {
+            toast.success('Kembali ke akun admin');
+        },
+        onError: () => {
+            toast.error('Gagal kembali ke akun admin');
+        },
+    });
+};
+
 // Wishlist management
 const addToCartFromWishlist = async (item: WishlistItem) => {
     try {
@@ -581,9 +593,29 @@ const searchSuggestions = computed(() => {
 
 <template>
     <div class="min-h-screen">
+        <!-- Impersonation Banner -->
+        <div
+            v-if="page.props.impersonating"
+            class="bg-yellow-500 dark:bg-yellow-600 text-black dark:text-white py-2 px-4 text-center text-sm font-medium sticky top-0 z-[60] flex items-center justify-center gap-4"
+        >
+            <span>
+                🔒 Anda login sebagai <strong>{{ (page.props.impersonating as any)?.customer_name }}</strong>
+                (Admin: {{ (page.props.impersonating as any)?.admin_name }})
+            </span>
+            <Button
+                size="sm"
+                variant="secondary"
+                @click="stopImpersonating"
+                class="h-7 text-xs"
+            >
+                Kembali ke Admin
+            </Button>
+        </div>
+
         <!-- Samsung-style Main Header -->
         <header
-            class="sticky top-0 z-50 border-b bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950"
+            class="sticky z-50 border-b bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950"
+            :class="page.props.impersonating ? 'top-10' : 'top-0'"
         >
             <div class="container mx-auto px-4 lg:px-6">
                 <div class="flex h-16 items-center justify-between gap-4">

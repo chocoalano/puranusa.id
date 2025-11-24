@@ -28,11 +28,24 @@ import {
     Plus,
     Search,
     Trash2,
+    LogIn,
 } from 'lucide-vue-next';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Pagination from '@/components/Pagination.vue';
 import { index, show, edit, create, destroy } from '@/actions/App/Http/Controllers/Admin/CustomerController';
 import { toast } from 'vue-sonner';
+
+// Login as customer action
+const loginAsCustomer = (id: number, name: string) => {
+    router.post(`/admin/manage/customers/${id}/login-as`, {}, {
+        onSuccess: () => {
+            toast.success(`Login sebagai ${name}`);
+        },
+        onError: () => {
+            toast.error('Gagal login sebagai customer');
+        },
+    });
+};
 
 interface Customer {
     id: number;
@@ -231,6 +244,16 @@ const columns: ColumnDef<Customer>[] = [
         cell: ({ row }) => {
             const customer = row.original;
             return h('div', { class: 'flex items-center justify-center gap-2' }, [
+                h(
+                    Button,
+                    {
+                        variant: 'ghost',
+                        size: 'icon',
+                        onClick: () => loginAsCustomer(customer.id, customer.name),
+                        title: 'Login sebagai customer',
+                    },
+                    () => h(LogIn, { class: 'h-4 w-4 text-primary' })
+                ),
                 h(
                     Link,
                     {

@@ -8,6 +8,7 @@ use App\Http\Requests\Manage\UpdateCustomerRequest;
 use App\Models\Manage\Customer;
 use App\Services\MLMService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -424,5 +425,51 @@ class CustomerController extends Controller
             'valid' => $isValid,
             'message' => $isValid ? 'Posisi tersedia' : 'Posisi sudah terisi',
         ]);
+    }
+
+    /**
+     * Login as customer without logging out from admin
+     */
+    public function loginAsCustomer(Customer $customer)
+    {
+        // Store current admin session data
+        $adminId = Auth::guard('web')->id();
+        $adminName = Auth::guard('web')->user()->name;
+
+        // Login to client guard without logging out from web guard
+        Auth::guard('client')->login($customer);
+
+        // Store flag that this is an impersonation session
+        session()->put('impersonating', [
+            'admin_id' => $adminId,
+            'admin_name' => $adminName,
+            'customer_id' => $customer->id,
+            'customer_name' => $customer->name,
+        ]);
+
+        return redirect('/beranda')->with('success', "Login sebagai {$customer->name}");
+    }
+
+    /**
+     * Stop impersonating and return to admin
+     */
+    public function stopImpersonating()
+    {
+        // Get impersonation data
+        $impersonating = session()->get('impersonating');
+
+        if (! $impersonating) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Logout from client guard
+        Auth::guard('client')->logout();
+
+        // Clear impersonation flag
+        session()->forget('impersonating');
+
+        return redirect()
+            ->route('admin.customers.index')
+            ->with('success', 'Kembali ke akun admin');
     }
 }
