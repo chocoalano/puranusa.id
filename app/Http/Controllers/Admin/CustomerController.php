@@ -467,21 +467,31 @@ class CustomerController extends Controller
      */
     public function stopImpersonating()
     {
-        // Get impersonation data
-        $impersonating = session()->get('impersonating');
+        try {
+            // Get impersonation data
+            $impersonating = session()->get('impersonating');
 
-        if (! $impersonating) {
-            return redirect()->route('admin.dashboard');
+            if (! $impersonating) {
+                return redirect()->route('dashboard');
+            }
+
+            // Logout from client guard
+            Auth::guard('client')->logout();
+
+            // Clear impersonation flag
+            session()->forget('impersonating');
+
+            return redirect()
+                ->route('customers.index')
+                ->with('success', 'Kembali ke akun admin');
+        } catch (\Exception $e) {
+            \Log::error('Stop impersonating failed', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->route('dashboard')
+                ->with('error', 'Gagal kembali ke akun admin: '.$e->getMessage());
         }
-
-        // Logout from client guard
-        Auth::guard('client')->logout();
-
-        // Clear impersonation flag
-        session()->forget('impersonating');
-
-        return redirect()
-            ->route('admin.customers.index')
-            ->with('success', 'Kembali ke akun admin');
     }
 }
