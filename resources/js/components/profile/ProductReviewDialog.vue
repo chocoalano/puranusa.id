@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from '@inertiajs/vue3';
 import { AlertCircle, CheckCircle2, Loader2, Star } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface OrderItem {
     id: number;
@@ -82,7 +83,7 @@ const submitReview = async () => {
                 type: 'success',
                 message: successMessage,
             };
-
+            toast.success(successMessage);
             // If there are more items, move to next item after a short delay
             if (hasMoreItems.value) {
                 setTimeout(() => {
@@ -120,7 +121,7 @@ const submitReview = async () => {
                 type: 'error',
                 message: errorMessage,
             };
-
+            toast.error(errorMessage);
             // Don't auto-clear error, let user read it
         },
     });

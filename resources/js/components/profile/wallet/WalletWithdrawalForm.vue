@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useForm } from '@inertiajs/vue3';
 import { CreditCard } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
 defineProps<{
     maxAmount: number;
@@ -28,6 +29,7 @@ const submitForm = () => {
         onSuccess: () => {
             form.reset();
             emit('cancel');
+            toast.success('Permintaan penarikan berhasil diajukan.');
         },
     });
 };

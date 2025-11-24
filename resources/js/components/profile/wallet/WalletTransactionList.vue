@@ -5,6 +5,7 @@ import type { WalletTransaction } from '@/types/profile';
 import WalletTransactionCard from './WalletTransactionCard.vue';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { toast } from 'vue-sonner';
 
 defineProps<{
     transactions: WalletTransaction[];
@@ -19,16 +20,20 @@ const continuePayment = (snapToken: string) => {
         (window as any).snap.pay(snapToken, {
             onSuccess: function(result: any) {
                 console.log('Payment success:', result);
+                toast.success('Pembayaran berhasil.');
                 window.location.href = '/client/profile?tab=wallet';
             },
             onPending: function(result: any) {
                 console.log('Payment pending:', result);
+                toast.info('Pembayaran sedang diproses.');
                 window.location.href = '/client/profile?tab=wallet';
             },
             onError: function(result: any) {
+                toast.error('Pembayaran gagal.');
                 console.error('Payment error:', result);
             },
             onClose: function() {
+                toast('Pembayaran ditutup sebelum selesai.');
                 console.log('Payment modal closed');
             }
         });

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Eye, EyeOff, Lock, Mail, ShoppingBag } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{
     token: string;
@@ -23,7 +24,12 @@ const showPassword = ref(false);
 const showPasswordConfirmation = ref(false);
 
 const submit = () => {
-    form.post('/client/reset-password');
+    form.post('/client/reset-password', {
+        onFinish: () => {
+            form.reset('password', 'password_confirmation');
+            toast.success('Password berhasil direset.');
+        },
+    });
 };
 </script>
 

@@ -7,6 +7,7 @@ import { useForm } from '@inertiajs/vue3';
 import { CreditCard, AlertCircle } from 'lucide-vue-next';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { toast } from 'vue-sonner';
 
 const emit = defineEmits<{
     (e: 'cancel'): void;
@@ -60,14 +61,17 @@ const openSnapModal = (snapToken: string) => {
         (window as any).snap.pay(snapToken, {
             onSuccess: function(result: any) {
                 console.log('Payment success:', result);
+                toast.success('Pembayaran berhasil.');
                 window.location.href = '/client/profile?tab=wallet';
             },
             onPending: function(result: any) {
                 console.log('Payment pending:', result);
+                toast.info('Pembayaran sedang diproses.');
                 window.location.href = '/client/profile?tab=wallet';
             },
             onError: function(result: any) {
                 console.error('Payment error (Midtrans):', result);
+                toast.error('Pembayaran gagal.');
                 try {
                     console.log('Midtrans raw error JSON:', JSON.stringify(result, null, 2));
                 } catch {
@@ -85,12 +89,14 @@ const openSnapModal = (snapToken: string) => {
             },
             onClose: function() {
                 console.log('Payment modal closed');
+                toast('Pembayaran ditutup sebelum selesai.');
                 emit('cancel');
             }
         });
     } catch (error) {
         console.error('Error opening Snap modal:', error);
         alert('Terjadi kesalahan saat membuka pembayaran. Silakan coba lagi.');
+        toast.error('Terjadi kesalahan saat membuka pembayaran. Silakan coba lagi.');
         emit('cancel');
     }
 };
@@ -100,11 +106,9 @@ const submitForm = async () => {
 
     // Check if Snap is loaded before submitting
     if (!snapLoaded.value || !(window as any).snap) {
-        alert('Sistem pembayaran belum siap. Silakan tunggu beberapa saat atau refresh halaman.');
+        toast.error('Sistem pembayaran belum siap. Silakan tunggu beberapa saat atau refresh halaman.');
         return;
     }
-
-    console.log('Submitting topup form...');
 
     try {
         form.processing = true;
@@ -117,17 +121,14 @@ const submitForm = async () => {
 
         const data = response.data;
 
-        console.log('Response received:', data);
-
         const snapToken = data.snap_token;
 
         if (data.success === false && data.message) {
-            alert(data.message);
+            toast.error(data.message);
             form.processing = false;
+
             return;
         }
-
-        console.log('Snap token:', snapToken);
 
         if (snapToken && typeof snapToken === 'string' && snapToken.trim() !== '') {
             form.reset();
@@ -139,23 +140,23 @@ const submitForm = async () => {
             form.processing = false;
             console.error('Invalid snap token:', snapToken);
             console.error('Full response:', data);
-            alert('Gagal mendapatkan token pembayaran. Silakan coba lagi.');
+            toast.error('Gagal mendapatkan token pembayaran. Silakan coba lagi.');
             form.reset();
             emit('cancel');
         }
     } catch (error: any) {
         form.processing = false;
         console.error('Form submission error:', error);
-
+        toast.error('Terjadi kesalahan saat mengirim formulir.');
         // Handle validation errors
         if (error.response?.status === 422 && error.response?.data?.errors) {
             const errors = error.response.data.errors;
             const firstError = Object.values(errors)[0];
             const errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
-            alert(errorMessage);
+            toast.error(errorMessage);
         } else {
             const errorMessage = error.response?.data?.message || error.message || 'Terjadi kesalahan. Silakan coba lagi.';
-            alert(errorMessage);
+            toast.error(errorMessage);
         }
         form.reset();
     }
@@ -178,16 +179,17 @@ const retryAlternate = async (method: string) => {
         const data = response.data;
         const snapToken = data.snap_token;
         if (!data.success || !snapToken) {
-            alert(data.message || 'Retry gagal mendapatkan token.');
+            toast.error(data.message || 'Retry gagal mendapatkan token.');
             form.processing = false;
+
             return;
         }
         form.processing = false;
-        alert('Metode dialihkan ke ' + method.toUpperCase() + '. Silakan lanjutkan pembayaran.');
+        toast.success('Metode dialihkan ke ' + method.toUpperCase() + '. Silakan lanjutkan pembayaran.');
         openSnapModal(snapToken);
     } catch (e: any) {
         form.processing = false;
-        alert(e?.response?.data?.message || e.message || 'Retry gagal.');
+        toast.error(e?.response?.data?.message || e.message || 'Retry gagal.');
     }
 };
 </script>

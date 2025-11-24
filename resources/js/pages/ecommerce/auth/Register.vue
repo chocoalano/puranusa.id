@@ -24,6 +24,7 @@ import {
     Users,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface Props {
     ref_code?: string;
@@ -52,6 +53,7 @@ const submit = () => {
     form.post('/client/register', {
         onFinish: () => {
             form.reset('password', 'password_confirmation');
+            toast.success('Berhasil mendaftar. Silakan cek email Anda untuk verifikasi.');
         },
     });
 };

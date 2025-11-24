@@ -33,6 +33,7 @@ import {
     Wallet,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface Province {
     id: number;
@@ -176,11 +177,8 @@ const formatCurrency = (amount: number): string => {
 const loadProvinces = async () => {
     loadingProvinces.value = true;
     try {
-        console.log('Fetching provinces from API...');
         const response = await fetch('/api/shipping/provinces');
-        console.log('Provinces response status:', response.status);
         const data = await response.json();
-        console.log('Provinces data:', data);
         if (data.success) {
             provinces.value = data.data;
             console.log(
@@ -188,10 +186,12 @@ const loadProvinces = async () => {
                 provinces.value.length,
             );
         } else {
-            console.error('Failed to load provinces: success=false');
+            console.error('gagal load provinces: success=false');
+            toast.error('Gagal memuat provinsi: success=false');
         }
     } catch (error) {
-        console.error('Failed to load provinces:', error);
+        console.error('Gagal memuat provinsi:', error);
+        toast.error('Gagal memuat provinsi');
     } finally {
         loadingProvinces.value = false;
     }
@@ -222,10 +222,12 @@ watch(
             console.log('Cities response:', data);
             if (data.success) {
                 cities.value = data.data;
-                console.log('Cities loaded:', cities.value.length);
+            } else {
+                toast.error('Gagal memuat kota: success=false');
             }
         } catch (error) {
-            console.error('Failed to load cities:', error);
+            console.error('Gagal memuat kota:', error);
+            toast.error('Gagal memuat kota');
         } finally {
             loadingCities.value = false;
         }
@@ -253,13 +255,6 @@ watch(
 
         loadingShipping.value = true;
         try {
-            console.log(
-                'Calculating shipping for city:',
-                newCityId,
-                'weight:',
-                props.item.weight * props.item.quantity,
-            );
-
             // Get CSRF token from cookie for axios
             const response = await axios.post('/api/shipping/calculate', {
                 destination_city_id: parseInt(newCityId),
@@ -267,16 +262,13 @@ watch(
             });
 
             const data = response.data;
-            console.log('Shipping response:', data);
             if (data.success) {
                 shippingMethods.value = data.data;
-                console.log(
-                    'Shipping methods loaded:',
-                    shippingMethods.value.length,
-                );
             }
         } catch (error) {
-            console.error('Failed to calculate shipping:', error);
+            toast.error('Gagal menghitung ongkos kirim:');
+            console.log(error);
+
         } finally {
             loadingShipping.value = false;
         }
@@ -358,13 +350,13 @@ const handleCheckout = async () => {
         });
 
         const data = response.data;
-        console.log('Checkout response:', data);
 
         if (data.success) {
             alertMessage.value = {
                 type: 'success',
                 message: data.message || 'Pesanan berhasil dibuat!',
             };
+            toast.success(data.message || 'Pesanan berhasil dibuat!');
 
             // Close the checkout sheet
             emit('update:open', false);
@@ -381,15 +373,15 @@ const handleCheckout = async () => {
                 const snapInstance = (window as any).snap;
                 snapInstance.pay(data.snap_token, {
                     onSuccess: function (result: any) {
-                        console.log('Payment success:', result);
+                        toast.success('Pembayaran berhasil '+result.order_id);
                         window.location.href = `/checkout/finish?order_no=${data.order_no}`;
                     },
                     onPending: function (result: any) {
-                        console.log('Payment pending:', result);
+                        toast.info('Pembayaran tertunda '+result.order_id);
                         window.location.href = `/checkout/finish?order_no=${data.order_no}`;
                     },
                     onError: function (result: any) {
-                        console.error('Payment error:', result);
+                        toast.error('Pembayaran gagal. Silakan coba lagi. '+result.order_id);
                         alertMessage.value = {
                             type: 'error',
                             message: 'Pembayaran gagal. Silakan coba lagi.',
@@ -397,7 +389,7 @@ const handleCheckout = async () => {
                         processingOrder.value = false;
                     },
                     onClose: function () {
-                        console.log('Payment modal closed');
+                        toast.info('Pembayaran dibatalkan.');
                         processingOrder.value = false;
                     },
                 });
@@ -425,17 +417,18 @@ const handleCheckout = async () => {
                     data.message ||
                     'Gagal memproses checkout. Silakan coba lagi.',
             };
+            toast.error(
+                data.message || 'Gagal memproses checkout. Silakan coba lagi.',
+            );
         }
     } catch (error: any) {
-        console.error('Checkout error:', error);
-
         // Handle 401 Unauthorized - redirect to login
         if (error.response?.status === 401) {
             const message =
                 error.response?.data?.message ||
                 'Anda harus login terlebih dahulu.';
             alertMessage.value = { type: 'error', message };
-
+            toast.error(message);
             // Close the checkout sheet after a delay
             setTimeout(() => {
                 emit('update:open', false);
@@ -454,6 +447,10 @@ const handleCheckout = async () => {
                 error.response?.data?.message ||
                 'Gagal memproses checkout. Silakan coba lagi.',
         };
+        toast.error(
+            error.response?.data?.message ||
+                'Gagal memproses checkout. Silakan coba lagi.',
+        );
     } finally {
         processingOrder.value = false;
     }
@@ -464,9 +461,7 @@ watch(
     () => props.open,
     (isOpen) => {
         if (isOpen) {
-            console.log('Checkout sheet opened');
             if (provinces.value.length === 0) {
-                console.log('Loading provinces...');
                 loadProvinces();
             } else {
                 console.log(

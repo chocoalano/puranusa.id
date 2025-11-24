@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Mail, ShoppingBag } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
 defineProps<{
     status?: string;
@@ -15,7 +16,12 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post('/client/forgot-password');
+    form.post('/client/forgot-password', {
+        onFinish: () => {
+            form.reset('email');
+            toast.success('Link reset password telah dikirim ke email Anda.');
+        },
+    });
 };
 </script>
 

@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from '@inertiajs/vue3';
 import { CheckCircle, Mail, Phone, User } from 'lucide-vue-next';
 import type { Customer } from '@/types/profile';
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{
     customer: Customer;
@@ -22,7 +23,11 @@ const form = useForm({
 const submitForm = () => {
     form.patch('/client/profile', {
         preserveScroll: true,
+        onSuccess: () => {
+            toast.success('Informasi profil berhasil diperbarui');
+        },
     });
+
 };
 </script>
 

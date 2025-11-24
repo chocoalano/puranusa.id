@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Eye, EyeOff, Lock, Mail, ShoppingBag } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 const form = useForm({
     email: '',
@@ -20,6 +21,7 @@ const submit = () => {
     form.post('/client/login', {
         onFinish: () => {
             form.reset('password');
+            toast.success('Berhasil masuk.');
         },
     });
 };

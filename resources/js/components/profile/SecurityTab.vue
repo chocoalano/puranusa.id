@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { useForm } from '@inertiajs/vue3';
 import { Eye, EyeOff, Lock, ShieldCheck } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 const form = useForm({
     current_password: '',
@@ -26,6 +27,7 @@ const submitForm = () => {
             showCurrentPassword.value = false;
             showNewPassword.value = false;
             showConfirmPassword.value = false;
+            toast.success('Password berhasil diubah');
         },
     });
 };

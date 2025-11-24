@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Link, router } from '@inertiajs/vue3';
 import { Heart, Info, ShoppingCart, Star } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
+import axios from 'axios';
 
 interface Product {
     id: number;
@@ -50,40 +52,32 @@ const addToCart = async (e: Event) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (addingToCart.value) return;
+    if (addingToCart.value || !isInStock.value) return;
 
     addingToCart.value = true;
 
     try {
-        router.post('/cart/add', {
+        const response = await axios.post('/cart/add', {
             product_id: props.product.id,
             quantity: 1,
-        }, {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                // Show success notification
-                console.log('Product added to cart');
-            },
-            onError: (errors) => {
-                console.error('Failed to add to cart:', errors);
-
-                // Check if it's a 419 error, the interceptor will handle retry
-                if (typeof errors === 'object' && errors !== null) {
-                    const errorObj = errors as Record<string, any>;
-                    if (errorObj.status !== 419) {
-                        alert('Gagal menambahkan ke keranjang. Silakan coba lagi.');
-                    }
-                } else {
-                    alert('Gagal menambahkan ke keranjang. Silakan coba lagi.');
-                }
-            },
-            onFinish: () => {
-                addingToCart.value = false;
-            },
         });
+
+        if (response.data.success) {
+            toast.success('Berhasil', {
+                description: response.data.message || 'Produk berhasil ditambahkan ke keranjang.',
+            });
+            router.reload({ only: ['ecommerce'] });
+        } else {
+            toast.error('Gagal', {
+                description: response.data.message || 'Gagal menambahkan ke keranjang.',
+            });
+        }
     } catch (error) {
         console.error('Add to cart error:', error);
+        toast.error('Gagal', {
+            description: 'Gagal menambahkan ke keranjang. Silakan coba lagi.',
+        });
+    } finally {
         addingToCart.value = false;
     }
 };
@@ -98,35 +92,27 @@ const toggleWishlist = async (e: Event) => {
 
     try {
         const endpoint = isInWishlist.value ? '/wishlist/remove' : '/wishlist/add';
-
-        router.post(endpoint, {
+        const response = await axios.post(endpoint, {
             product_id: props.product.id,
-        }, {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                isInWishlist.value = !isInWishlist.value;
-                console.log(isInWishlist.value ? 'Added to wishlist' : 'Removed from wishlist');
-            },
-            onError: (errors) => {
-                console.error('Failed to update wishlist:', errors);
-
-                // Check if it's a 419 error, the interceptor will handle retry
-                if (typeof errors === 'object' && errors !== null) {
-                    const errorObj = errors as Record<string, any>;
-                    if (errorObj.status !== 419) {
-                        alert('Gagal mengubah wishlist. Silakan coba lagi.');
-                    }
-                } else {
-                    alert('Gagal mengubah wishlist. Silakan coba lagi.');
-                }
-            },
-            onFinish: () => {
-                addingToWishlist.value = false;
-            },
         });
+
+        if (response.data.success) {
+            isInWishlist.value = !isInWishlist.value;
+            toast.success('Berhasil', {
+                description: response.data.message || `Produk berhasil ${isInWishlist.value ? 'ditambahkan ke' : 'dihapus dari'} wishlist.`,
+            });
+            router.reload({ only: ['ecommerce'] });
+        } else {
+            toast.error('Gagal', {
+                description: response.data.message || 'Gagal memperbarui wishlist.',
+            });
+        }
     } catch (error) {
         console.error('Wishlist error:', error);
+        toast.error('Gagal', {
+            description: 'Gagal memperbarui wishlist. Silakan coba lagi.',
+        });
+    } finally {
         addingToWishlist.value = false;
     }
 };
@@ -184,7 +170,9 @@ const goToProduct = () => {
                         </Button>
 
                         <!-- Add to Cart -->
-                        <Button size="icon" variant="default" class="rounded-lg bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-11 lg:w-11" @click.prevent.stop="addToCart" :disabled="addingToCart || !isInStock"
+                        <Button size="icon" variant="default"
+                            class="rounded-lg bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-11 lg:w-11"
+                            @click.prevent.stop="addToCart" :disabled="addingToCart || !isInStock"
                             :aria-label="isInStock ? 'Tambah ke keranjang' : 'Stok habis'">
                             <ShoppingCart :class="[
                                 'transition-transform',
@@ -194,7 +182,9 @@ const goToProduct = () => {
                         </Button>
 
                         <!-- Detail produk -->
-                        <Button size="icon" variant="secondary" class="rounded-lg bg-white/95 p-0 text-foreground shadow-sm backdrop-blur hover:bg-white h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-11 lg:w-11 " @click.prevent.stop="goToProduct" aria-label="Lihat detail produk">
+                        <Button size="icon" variant="secondary"
+                            class="rounded-lg p-0 text-foreground shadow-sm backdrop-blur h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-11 lg:w-11 "
+                            @click.prevent.stop="goToProduct" aria-label="Lihat detail produk">
                             <Info class="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                         </Button>
                     </div>

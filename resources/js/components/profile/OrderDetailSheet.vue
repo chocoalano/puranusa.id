@@ -14,6 +14,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { CheckCircle, Package, MapPin, Truck, CreditCard, Loader2 } from 'lucide-vue-next';
 import { useFormatter } from '@/composables/useFormatter';
+import { toast } from 'vue-sonner';
 
 interface OrderItem {
     id: number;
@@ -103,7 +104,7 @@ const loadOrderDetail = async () => {
         orderDetail.value = response.data.data;
     } catch (error) {
         console.error('Failed to load order:', error);
-        alert('Gagal memuat detail pesanan');
+        toast.error('Gagal memuat detail pesanan');
     } finally {
         loadingOrder.value = false;
     }
@@ -121,11 +122,10 @@ const markAsCompleted = async () => {
 
         // Refresh the orders list on the profile page
         router.reload({ only: ['orders'] });
-
-        alert('Pesanan berhasil diselesaikan!');
+        toast.success('Status pesanan berhasil diperbarui menjadi "Selesai".');
     } catch (error: any) {
         console.error('Failed to update order status:', error);
-        alert(error.response?.data?.message || 'Gagal memperbarui status pesanan');
+        toast.error(error.response?.data?.message || 'Gagal memperbarui status pesanan');
     } finally {
         updatingStatus.value = false;
     }
