@@ -1,8 +1,20 @@
 <script setup lang="ts">
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, Clock, UserPlus } from 'lucide-vue-next';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { CheckCircle, Clock, UserPlus, GitBranch } from 'lucide-vue-next';
+import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 
 interface NetworkMember {
     id: number;
@@ -21,6 +33,53 @@ defineProps<{
     passiveMembers: NetworkMember[];
     prospectMembers: NetworkMember[];
 }>();
+
+const showPlacementDialog = ref(false);
+const selectedMember = ref<NetworkMember | null>(null);
+const selectedPosition = ref<'left' | 'right' | null>(null);
+const isPlacing = ref(false);
+
+const openPlacementDialog = (member: NetworkMember) => {
+    selectedMember.value = member;
+    selectedPosition.value = null;
+    showPlacementDialog.value = true;
+};
+
+const closePlacementDialog = () => {
+    showPlacementDialog.value = false;
+    selectedMember.value = null;
+    selectedPosition.value = null;
+};
+
+const placeToBinaryTree = () => {
+    if (!selectedMember.value || !selectedPosition.value) {
+        toast.error('Pilih posisi terlebih dahulu');
+        return;
+    }
+
+    isPlacing.value = true;
+
+    router.post(
+        '/client/profile/place-member',
+        {
+            member_id: selectedMember.value.id,
+            position: selectedPosition.value,
+        },
+        {
+            onSuccess: () => {
+                toast.success(`${selectedMember.value?.name} berhasil ditempatkan di posisi ${selectedPosition.value}`);
+                closePlacementDialog();
+            },
+            onError: (errors) => {
+                const errorMessage = errors.error || 'Gagal menempatkan member ke binary tree';
+                toast.error(errorMessage);
+            },
+            onFinish: () => {
+                isPlacing.value = false;
+            },
+        },
+    );
+};
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -117,7 +176,7 @@ const getPositionBadge = (position: string | null): {
                     >
                         <Clock class="w-12 h-12 mx-auto mb-4 opacity-20" />
                         <p>Belum ada member pasif</p>
-                        <p class="text-sm mt-2">Member pasif adalah member yang sudah melakukan pembelian tapi belum masuk binary tree</p>
+                        <p class="text-sm mt-2">Member pasif adalah member yang mendaftar menggunakan kode referral Anda tapi belum ditempatkan di binary tree</p>
                     </div>
                     <Card
                         v-for="member in passiveMembers"
@@ -145,6 +204,18 @@ const getPositionBadge = (position: string | null): {
                                     <Badge variant="default" v-if="member.has_purchase">
                                         Ada Pembelian
                                     </Badge>
+                                    <Badge variant="secondary" v-else>
+                                        Belum Belanja
+                                    </Badge>
+                                    <Button
+                                        size="sm"
+                                        variant="default"
+                                        class="mt-2"
+                                        @click="openPlacementDialog(member)"
+                                    >
+                                        <GitBranch class="w-3 h-3 mr-1" />
+                                        Tempatkan ke Binary
+                                    </Button>
                                 </div>
                             </div>
                         </CardContent>
@@ -159,7 +230,7 @@ const getPositionBadge = (position: string | null): {
                     >
                         <UserPlus class="w-12 h-12 mx-auto mb-4 opacity-20" />
                         <p>Belum ada member prospek</p>
-                        <p class="text-sm mt-2">Member prospek adalah member yang baru mendaftar dan sudah melakukan pembelian</p>
+                        <p class="text-sm mt-2">Member prospek adalah member yang baru bergabung dalam 30 hari terakhir dan belum ditempatkan di binary tree</p>
                     </div>
                     <Card
                         v-for="member in prospectMembers"
@@ -187,6 +258,9 @@ const getPositionBadge = (position: string | null): {
                                     <Badge variant="default" v-if="member.has_purchase">
                                         Ada Pembelian
                                     </Badge>
+                                    <Badge variant="secondary" v-else>
+                                        Belum Belanja
+                                    </Badge>
                                 </div>
                             </div>
                         </CardContent>
@@ -195,4 +269,62 @@ const getPositionBadge = (position: string | null): {
             </Tabs>
         </CardContent>
     </Card>
+
+    <!-- Placement Dialog -->
+    <Dialog :open="showPlacementDialog" @update:open="closePlacementDialog">
+        <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Tempatkan Member ke Binary Tree</DialogTitle>
+                <DialogDescription>
+                    Pilih posisi untuk menempatkan
+                    <span class="font-semibold">{{ selectedMember?.name }}</span>
+                    di jaringan binary tree Anda.
+                </DialogDescription>
+            </DialogHeader>
+
+            <div class="grid grid-cols-2 gap-4 py-4">
+                <button
+                    type="button"
+                    :class="[
+                        'flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all',
+                        selectedPosition === 'left'
+                            ? 'border-primary bg-primary/10'
+                            : 'border-gray-200 hover:border-gray-300',
+                    ]"
+                    @click="selectedPosition = 'left'"
+                >
+                    <GitBranch class="w-8 h-8 mb-2 rotate-90" />
+                    <span class="font-semibold">Posisi Kiri</span>
+                    <span class="text-xs text-muted-foreground mt-1">Left Position</span>
+                </button>
+
+                <button
+                    type="button"
+                    :class="[
+                        'flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all',
+                        selectedPosition === 'right'
+                            ? 'border-primary bg-primary/10'
+                            : 'border-gray-200 hover:border-gray-300',
+                    ]"
+                    @click="selectedPosition = 'right'"
+                >
+                    <GitBranch class="w-8 h-8 mb-2 -rotate-90" />
+                    <span class="font-semibold">Posisi Kanan</span>
+                    <span class="text-xs text-muted-foreground mt-1">Right Position</span>
+                </button>
+            </div>
+
+            <DialogFooter>
+                <Button variant="outline" @click="closePlacementDialog" :disabled="isPlacing">
+                    Batal
+                </Button>
+                <Button
+                    @click="placeToBinaryTree"
+                    :disabled="!selectedPosition || isPlacing"
+                >
+                    {{ isPlacing ? 'Memproses...' : 'Tempatkan' }}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Ecommerce\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Manage\Customer;
-use App\Models\Manage\CustomerNetwork;
+use App\Models\Manage\CustomerNetworkMatrix;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +80,7 @@ class LogRegController extends Controller
                 'email_verified_at' => now(),
             ]);
 
-            // Handle MLM network placement
+            // Handle sponsor relationship (matrix)
             $sponsorId = null;
 
             if (! empty($validated['ref_code'])) {
@@ -88,26 +88,26 @@ class LogRegController extends Controller
 
                 if ($sponsor) {
                     $sponsorId = $sponsor->id;
-
-                    // Place new member in binary tree under sponsor
-                    // This will automatically find the best available position
-                    CustomerNetwork::placeNewMember($customer->id, $sponsorId);
+                    CustomerNetworkMatrix::addToMatrix($customer->id, $sponsorId);
                 }
             } else {
-                // No ref_code provided, check if this is the first customer (root)
-                $hasRootMember = CustomerNetwork::whereNull('upline_id')->exists();
-
-                if (! $hasRootMember) {
-                    // This is the first customer, make them root
-                    CustomerNetwork::placeNewMember($customer->id, null);
-                } else {
-                    // Find the first available position in the entire tree
-                    $rootMember = CustomerNetwork::whereNull('upline_id')->first();
-                    if ($rootMember) {
-                        CustomerNetwork::placeNewMember($customer->id, $rootMember->member_id);
-                    }
-                }
+                CustomerNetworkMatrix::addToMatrix($customer->id, null);
             }
+
+            // Handle MLM network placement (binary tree)
+            // if ($sponsorId) {
+            //     CustomerNetwork::placeNewMember($customer->id, $sponsorId);
+            // } else {
+            //     $hasRootMember = CustomerNetwork::whereNull('upline_id')->exists();
+            //     if (! $hasRootMember) {
+            //         CustomerNetwork::placeNewMember($customer->id, null);
+            //     } else {
+            //         $rootMember = CustomerNetwork::whereNull('upline_id')->first();
+            //         if ($rootMember) {
+            //             CustomerNetwork::placeNewMember($customer->id, $rootMember->member_id);
+            //         }
+            //     }
+            // }
 
             DB::commit();
 

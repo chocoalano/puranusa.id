@@ -49,6 +49,7 @@ Route::middleware(['client.auth'])->group(function () {
     Route::patch('/client/profile', [ProfileController::class, 'update'])->name('client.profile.update');
     Route::patch('/client/profile/password', [ProfileController::class, 'updatePassword'])->name('client.profile.password');
     Route::delete('/client/profile', [ProfileController::class, 'destroy'])->name('client.profile.destroy');
+    Route::post('/client/profile/place-member', [ProfileController::class, 'placeMember'])->name('client.profile.place-member');
 
     // Wallet Routes
     Route::post('/client/wallet/topup', [WalletController::class, 'topup'])->name('client.wallet.topup');

@@ -2,16 +2,20 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, CheckCircle } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, CheckCircle, Copy, Share2, Check } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import type { Customer } from '@/types/profile';
 import { useFormatter } from '@/composables/useFormatter';
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{
     customer: Customer;
 }>();
 
 const { formatCurrency } = useFormatter();
+
+const copied = ref(false);
 
 const initials = computed(() => {
     return props.customer.name
@@ -21,6 +25,46 @@ const initials = computed(() => {
         .toUpperCase()
         .slice(0, 2);
 });
+
+const referralLink = computed(() => {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/client/register?ref=${props.customer.ref_code}`;
+});
+
+const copyReferralLink = async () => {
+    try {
+        await navigator.clipboard.writeText(referralLink.value);
+        copied.value = true;
+        toast.success('Link referral telah disalin ke clipboard');
+        setTimeout(() => {
+            copied.value = false;
+        }, 2000);
+    } catch {
+        toast.error('Tidak dapat menyalin link ke clipboard');
+    }
+};
+
+const shareReferralLink = async () => {
+    const shareData = {
+        title: 'Bergabung dengan Referral Saya',
+        text: `Gunakan kode referral saya: ${props.customer.ref_code}`,
+        url: referralLink.value,
+    };
+
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+            toast.success('Link referral berhasil dibagikan');
+        } catch (err) {
+            if ((err as Error).name !== 'AbortError') {
+                console.error('Error sharing:', err);
+            }
+        }
+    } else {
+        // Fallback to copy if share is not supported
+        await copyReferralLink();
+    }
+};
 </script>
 
 <template>
@@ -52,6 +96,41 @@ const initials = computed(() => {
                 </Badge>
 
                 <div class="mt-4 w-full space-y-2 text-sm">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-600 dark:text-gray-400">Referral Link</span>
+                            <div class="flex gap-1">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    class="h-6 px-2 text-[10px]"
+                                    @click="copyReferralLink"
+                                >
+                                    <Check v-if="copied" class="w-3 h-3 mr-1" />
+                                    <Copy v-else class="w-3 h-3 mr-1" />
+                                    {{ copied ? 'Tersalin' : 'Salin' }}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    class="h-6 px-2 text-[10px]"
+                                    @click="shareReferralLink"
+                                >
+                                    <Share2 class="w-3 h-3 mr-1" />
+                                    Bagikan
+                                </Button>
+                            </div>
+                        </div>
+                        <div class="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600 dark:text-gray-400">Kode Referral</span>
+                                <span class="font-mono font-semibold">{{ customer.ref_code }}</span>
+                            </div>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 break-all">
+                                {{ referralLink }}
+                            </p>
+                        </div>
+                    </div>
                     <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <span class="text-gray-600 dark:text-gray-400">E-Wallet ID</span>
                         <span class="font-mono font-semibold">{{ customer.ewallet_id }}</span>

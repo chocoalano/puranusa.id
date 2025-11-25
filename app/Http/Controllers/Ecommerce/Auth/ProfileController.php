@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Ecommerce\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ecommerce\UpdatePasswordRequest;
 use App\Http\Requests\Ecommerce\UpdateProfileRequest;
+use App\Models\Manage\Customer;
 use App\Models\Manage\CustomerNetwork;
+use App\Models\Manage\CustomerNetworkMatrix;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -26,9 +30,11 @@ class ProfileController extends Controller
             'networkPosition.upline',
             'matrixPosition.sponsor',
             'bonuses' => fn ($q) => $q->latest()->limit(5),
-            'bonusMatchings' => fn ($q) => $q->latest()->limit(5),
-            'bonusPairings' => fn ($q) => $q->latest()->limit(5),
-            'bonusSponsors' => fn ($q) => $q->latest()->limit(5),
+            'bonusMatchings' => fn ($q) => $q->with('fromMember:id,name,email')->latest()->limit(50),
+            'bonusPairings' => fn ($q) => $q->latest()->limit(50),
+            'bonusSponsors' => fn ($q) => $q->with('fromMember:id,name,email')->latest()->limit(50),
+            'bonusCashbacks' => fn ($q) => $q->latest()->limit(50),
+            'bonusRewards' => fn ($q) => $q->latest()->limit(50),
         ]);
 
         // Load recent orders
@@ -83,9 +89,10 @@ class ProfileController extends Controller
             ])
             ->values();
 
-        // Passive Members: sudah ada pembelian tapi belum masuk binary tree
+        // Passive Members: sudah register dengan ref_code tapi belum masuk binary tree
+        // Ini adalah member yang sponsor-nya adalah customer ini
         $passiveMembers = $allDownlines->filter(function ($member) {
-            return $member->networkPosition === null && $member->orders->isNotEmpty();
+            return $member->networkPosition === null;
         })
             ->map(fn ($member) => [
                 'id' => $member->id,
@@ -95,17 +102,16 @@ class ProfileController extends Controller
                 'position' => null,
                 'level' => null,
                 'has_placement' => false,
-                'has_purchase' => true,
+                'has_purchase' => $member->orders->isNotEmpty(),
                 'joined_at' => $member->created_at,
             ])
             ->values();
 
-        // Prospect Members: baru mendaftar dan sudah ada pembelian
+        // Prospect Members: baru mendaftar dalam 30 hari dan belum masuk binary tree
         $prospectMembers = $allDownlines->filter(function ($member) {
             $isNewMember = $member->created_at->diffInDays(now()) <= 30;
-            $hasPurchase = $member->orders->isNotEmpty();
 
-            return $isNewMember && $hasPurchase && $member->networkPosition === null;
+            return $isNewMember && $member->networkPosition === null;
         })
             ->map(fn ($member) => [
                 'id' => $member->id,
@@ -115,7 +121,7 @@ class ProfileController extends Controller
                 'position' => null,
                 'level' => null,
                 'has_placement' => false,
-                'has_purchase' => true,
+                'has_purchase' => $member->orders->isNotEmpty(),
                 'joined_at' => $member->created_at,
             ])
             ->values();
@@ -129,6 +135,7 @@ class ProfileController extends Controller
                 'name' => $customer->name,
                 'email' => $customer->email,
                 'phone' => $customer->phone,
+                'ref_code' => $customer->ref_code,
                 'ewallet_id' => $customer->ewallet_id,
                 'ewallet_saldo' => $customer->ewallet_saldo,
                 'description' => $customer->description,
@@ -163,6 +170,55 @@ class ProfileController extends Controller
             'totalDownlines' => $binaryTree['totalDownlines'],
             'totalLeft' => $binaryTree['totalLeft'],
             'totalRight' => $binaryTree['totalRight'],
+            'bonusSponsors' => $customer->bonusSponsors->map(fn ($bonus) => [
+                'id' => $bonus->id,
+                'from_member_id' => $bonus->from_member_id,
+                'amount' => $bonus->amount,
+                'status' => $bonus->status,
+                'description' => $bonus->description,
+                'created_at' => $bonus->created_at,
+                'from_member' => $bonus->fromMember ? [
+                    'name' => $bonus->fromMember->name,
+                    'email' => $bonus->fromMember->email,
+                ] : null,
+            ]),
+            'bonusMatchings' => $customer->bonusMatchings->map(fn ($bonus) => [
+                'id' => $bonus->id,
+                'from_member_id' => $bonus->from_member_id,
+                'level' => $bonus->level,
+                'amount' => $bonus->amount,
+                'status' => $bonus->status,
+                'description' => $bonus->description,
+                'created_at' => $bonus->created_at,
+                'from_member' => $bonus->fromMember ? [
+                    'name' => $bonus->fromMember->name,
+                    'email' => $bonus->fromMember->email,
+                ] : null,
+            ]),
+            'bonusPairings' => $customer->bonusPairings->map(fn ($bonus) => [
+                'id' => $bonus->id,
+                'pair' => $bonus->pair,
+                'amount' => $bonus->amount,
+                'status' => $bonus->status,
+                'description' => $bonus->description,
+                'created_at' => $bonus->created_at,
+            ]),
+            'bonusCashbacks' => $customer->bonusCashbacks->map(fn ($bonus) => [
+                'id' => $bonus->id,
+                'order_id' => $bonus->order_id,
+                'amount' => $bonus->amount,
+                'status' => $bonus->status,
+                'description' => $bonus->description,
+                'created_at' => $bonus->created_at,
+            ]),
+            'bonusRewards' => $customer->bonusRewards->map(fn ($bonus) => [
+                'id' => $bonus->id,
+                'reward_type' => $bonus->reward_type,
+                'amount' => $bonus->amount,
+                'status' => $bonus->status,
+                'description' => $bonus->description,
+                'created_at' => $bonus->created_at,
+            ]),
         ]);
     }
 
@@ -222,9 +278,72 @@ class ProfileController extends Controller
     }
 
     /**
+     * Place passive member to binary tree.
+     */
+    public function placeMember(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'member_id' => ['required', 'integer', 'exists:customers,id'],
+            'position' => ['required', 'string', 'in:left,right'],
+        ]);
+
+        $sponsor = Auth::guard('client')->user();
+        $memberId = $validated['member_id'];
+        $position = $validated['position'];
+
+        DB::beginTransaction();
+
+        try {
+            // Verify member is in sponsor's downline
+            $member = Customer::find($memberId);
+            if (! $member) {
+                throw new \Exception('Member tidak ditemukan.');
+            }
+
+            // Check if member already placed
+            if ($member->networkPosition !== null) {
+                throw new \Exception('Member sudah ditempatkan di binary tree.');
+            }
+
+            // Verify member is in sponsor's matrix downlines
+            $isInMatrix = CustomerNetworkMatrix::where('member_id', $memberId)
+                ->where('sponsor_id', $sponsor->id)
+                ->exists();
+
+            if (! $isInMatrix) {
+                throw new \Exception('Member bukan bagian dari jaringan Anda.');
+            }
+
+            // Validate position availability
+            if (! CustomerNetwork::validatePlacement($sponsor->id, $position)) {
+                throw new \Exception("Posisi {$position} sudah terisi. Silakan pilih posisi lain.");
+            }
+
+            // Place member to binary tree
+            CustomerNetwork::create([
+                'member_id' => $memberId,
+                'upline_id' => $sponsor->id,
+                'position' => $position,
+                'level' => ($sponsor->networkPosition?->level ?? 0) + 1,
+                'status' => true,
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', "Member {$member->name} berhasil ditempatkan di posisi {$position}!");
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->withErrors([
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Build binary tree structure for visualization.
      */
-    private function buildBinaryTree($customer, int $maxDepth = 4): array
+    private function buildBinaryTree($customer, int $maxDepth = 15): array
     {
         // Get customer's network position
         $networkPosition = CustomerNetwork::where('member_id', $customer->id)

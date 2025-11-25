@@ -32,6 +32,7 @@ const refreshCsrfToken = async (): Promise<string | null> => {
 
 // Configure axios defaults
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.withCredentials = true;
 
 // Set initial CSRF token
@@ -107,13 +108,9 @@ axios.interceptors.response.use(
             }
         }
 
-        // Handle 401/403 - redirect to login
-        if (error.response?.status === 401 || error.response?.status === 403) {
-            // Check if not already on login page
-            if (!window.location.pathname.includes('/login')) {
-                window.location.href = '/login';
-            }
-        }
+        // Don't auto-redirect on 401/403 - let components handle it
+        // This allows components to check the response and redirect appropriately
+        // (e.g., client routes should redirect to /client/login, admin to /login)
 
         return Promise.reject(error);
     }

@@ -1,7 +1,20 @@
 <script setup lang="ts">
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { User, Users, TrendingUp } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Users, TrendingUp, UserPlus } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
+import TreeNodeComponent from './TreeNodeComponent.vue';
 
 interface TreeNode {
     id: number;
@@ -15,32 +28,115 @@ interface TreeNode {
     right?: TreeNode | null;
 }
 
+interface PassiveMember {
+    id: number;
+    name: string;
+    email: string;
+    phone: string | null;
+    has_purchase: boolean;
+    joined_at: string;
+}
+
 interface Props {
     binaryTree: TreeNode;
     totalDownlines: number;
     totalLeft: number;
     totalRight: number;
+    passiveMembers: PassiveMember[];
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
-const maxVisibleLevels = 4;
+const maxVisibleLevels = 15;
 
-const getNodeColor = (level: number, status: boolean) => {
-    if (!status) return 'bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600';
+const showPlacementDialog = ref(false);
+const selectedUplineId = ref<number | null>(null);
+const selectedPosition = ref<'left' | 'right' | null>(null);
+const selectedMember = ref<PassiveMember | null>(null);
+const isPlacing = ref(false);
 
-    const colors = [
-        'bg-primary/10 border-primary/30',
-        'bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800',
-        'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800',
-        'bg-purple-50 border-purple-200 dark:bg-purple-950 dark:border-purple-800',
-    ];
+// Build complete tree structure with empty nodes up to max level
+const buildCompleteTree = (node: TreeNode | null, parentId: number | null, position: 'left' | 'right' | null, currentLevel: number): TreeNode | null => {
+    // Stop if we've reached max visible levels
+    if (currentLevel > maxVisibleLevels) {
+        return null;
+    }
 
-    return colors[Math.min(level - 1, colors.length - 1)] || colors[colors.length - 1];
+    if (node) {
+        const shouldShowChildren = currentLevel < maxVisibleLevels;
+        return {
+            ...node,
+            left: shouldShowChildren ? buildCompleteTree(node.left || null, node.member_id, 'left', currentLevel + 1) : undefined,
+            right: shouldShowChildren ? buildCompleteTree(node.right || null, node.member_id, 'right', currentLevel + 1) : undefined,
+        };
+    }
+
+    // Don't create empty placeholders - just return null
+    // This way we only show actual nodes and their immediate empty positions
+    return null;
 };
-</script>
 
-<template>
+const completeTree = computed(() => {
+    const tree = buildCompleteTree(props.binaryTree, null, null, props.binaryTree.level);
+    return tree || props.binaryTree;
+});
+
+const openPlacementDialog = (uplineId: number, position: 'left' | 'right') => {
+    selectedUplineId.value = uplineId;
+    selectedPosition.value = position;
+    selectedMember.value = null;
+    showPlacementDialog.value = true;
+};
+
+const closePlacementDialog = () => {
+    showPlacementDialog.value = false;
+    selectedUplineId.value = null;
+    selectedPosition.value = null;
+    selectedMember.value = null;
+};
+
+const selectMember = (member: PassiveMember) => {
+    selectedMember.value = member;
+};
+
+const placeMemberToBinaryTree = () => {
+    if (!selectedMember.value || !selectedPosition.value) {
+        toast.error('Pilih member terlebih dahulu');
+        return;
+    }
+
+    isPlacing.value = true;
+
+    router.post(
+        '/client/profile/place-member',
+        {
+            member_id: selectedMember.value.id,
+            position: selectedPosition.value,
+        },
+        {
+            onSuccess: () => {
+                toast.success(`${selectedMember.value?.name} berhasil ditempatkan di posisi ${selectedPosition.value}`);
+                closePlacementDialog();
+            },
+            onError: (errors) => {
+                const errorMessage = errors.error || 'Gagal menempatkan member ke binary tree';
+                toast.error(errorMessage);
+            },
+            onFinish: () => {
+                isPlacing.value = false;
+            },
+        },
+    );
+};
+
+const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    });
+};
+</script><template>
     <div class="space-y-6">
         <!-- Stats Overview -->
         <div class="grid gap-4 md:grid-cols-3">
@@ -89,189 +185,12 @@ const getNodeColor = (level: number, status: boolean) => {
             <CardContent>
                 <div class="overflow-x-auto pb-4">
                     <div class="min-w-max">
-                        <!-- Root Node (You) -->
-                        <div class="flex justify-center mb-8">
-                            <div
-                                :class="[
-                                    'relative px-6 py-4 rounded-lg border-2 shadow-lg transition-all hover:shadow-xl',
-                                    getNodeColor(binaryTree.level, binaryTree.status)
-                                ]"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                                        <User class="h-6 w-6" />
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold">{{ binaryTree.name }}</div>
-                                        <div class="text-xs text-muted-foreground">{{ binaryTree.email }}</div>
-                                        <Badge variant="outline" class="mt-1">Level {{ binaryTree.level }}</Badge>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Level 1 - Direct Downlines -->
-                        <div v-if="binaryTree.left || binaryTree.right" class="flex justify-center gap-32 mb-8 relative">
-                            <!-- Connection Lines -->
-                            <svg class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-8" width="300" height="40">
-                                <line v-if="binaryTree.left" x1="150" y1="0" x2="50" y2="40" stroke="currentColor" stroke-width="2" class="text-border" />
-                                <line v-if="binaryTree.right" x1="150" y1="0" x2="250" y2="40" stroke="currentColor" stroke-width="2" class="text-border" />
-                            </svg>
-
-                            <!-- Left Node -->
-                            <div class="w-64">
-                                <div
-                                    v-if="binaryTree.left"
-                                    :class="[
-                                        'relative px-4 py-3 rounded-lg border-2 shadow-md transition-all hover:shadow-lg',
-                                        getNodeColor(binaryTree.left.level, binaryTree.left.status)
-                                    ]"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                                            <User class="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="font-medium text-sm truncate">{{ binaryTree.left.name }}</div>
-                                            <div class="text-xs text-muted-foreground truncate">{{ binaryTree.left.email }}</div>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <Badge variant="secondary" class="text-xs">Kiri</Badge>
-                                                <Badge variant="outline" class="text-xs">L{{ binaryTree.left.level }}</Badge>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="px-4 py-3 rounded-lg border-2 border-dashed bg-muted/50">
-                                    <div class="text-center text-sm text-muted-foreground">
-                                        Posisi Kiri Kosong
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Right Node -->
-                            <div class="w-64">
-                                <div
-                                    v-if="binaryTree.right"
-                                    :class="[
-                                        'relative px-4 py-3 rounded-lg border-2 shadow-md transition-all hover:shadow-lg',
-                                        getNodeColor(binaryTree.right.level, binaryTree.right.status)
-                                    ]"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-                                            <User class="h-5 w-5 text-green-600 dark:text-green-400" />
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="font-medium text-sm truncate">{{ binaryTree.right.name }}</div>
-                                            <div class="text-xs text-muted-foreground truncate">{{ binaryTree.right.email }}</div>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <Badge variant="secondary" class="text-xs">Kanan</Badge>
-                                                <Badge variant="outline" class="text-xs">L{{ binaryTree.right.level }}</Badge>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="px-4 py-3 rounded-lg border-2 border-dashed bg-muted/50">
-                                    <div class="text-center text-sm text-muted-foreground">
-                                        Posisi Kanan Kosong
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Level 2 - Second Level Downlines -->
-                        <div v-if="(binaryTree.left?.left || binaryTree.left?.right) || (binaryTree.right?.left || binaryTree.right?.right)"
-                             class="flex justify-center gap-8 mb-6">
-                            <!-- Left Branch Level 2 -->
-                            <div class="flex gap-4">
-                                <div class="w-48">
-                                    <div
-                                        v-if="binaryTree.left?.left"
-                                        :class="[
-                                            'px-3 py-2 rounded-lg border shadow-sm',
-                                            getNodeColor(binaryTree.left.left.level, binaryTree.left.left.status)
-                                        ]"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <User class="h-4 w-4" />
-                                            <div class="flex-1 min-w-0">
-                                                <div class="text-xs font-medium truncate">{{ binaryTree.left.left.name }}</div>
-                                                <Badge variant="outline" class="text-[10px] mt-1">L{{ binaryTree.left.left.level }}</Badge>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else class="px-3 py-2 rounded-lg border-dashed border bg-muted/30">
-                                        <div class="text-xs text-center text-muted-foreground">Kosong</div>
-                                    </div>
-                                </div>
-
-                                <div class="w-48">
-                                    <div
-                                        v-if="binaryTree.left?.right"
-                                        :class="[
-                                            'px-3 py-2 rounded-lg border shadow-sm',
-                                            getNodeColor(binaryTree.left.right.level, binaryTree.left.right.status)
-                                        ]"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <User class="h-4 w-4" />
-                                            <div class="flex-1 min-w-0">
-                                                <div class="text-xs font-medium truncate">{{ binaryTree.left.right.name }}</div>
-                                                <Badge variant="outline" class="text-[10px] mt-1">L{{ binaryTree.left.right.level }}</Badge>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else class="px-3 py-2 rounded-lg border-dashed border bg-muted/30">
-                                        <div class="text-xs text-center text-muted-foreground">Kosong</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Right Branch Level 2 -->
-                            <div class="flex gap-4">
-                                <div class="w-48">
-                                    <div
-                                        v-if="binaryTree.right?.left"
-                                        :class="[
-                                            'px-3 py-2 rounded-lg border shadow-sm',
-                                            getNodeColor(binaryTree.right.left.level, binaryTree.right.left.status)
-                                        ]"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <User class="h-4 w-4" />
-                                            <div class="flex-1 min-w-0">
-                                                <div class="text-xs font-medium truncate">{{ binaryTree.right.left.name }}</div>
-                                                <Badge variant="outline" class="text-[10px] mt-1">L{{ binaryTree.right.left.level }}</Badge>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else class="px-3 py-2 rounded-lg border-dashed border bg-muted/30">
-                                        <div class="text-xs text-center text-muted-foreground">Kosong</div>
-                                    </div>
-                                </div>
-
-                                <div class="w-48">
-                                    <div
-                                        v-if="binaryTree.right?.right"
-                                        :class="[
-                                            'px-3 py-2 rounded-lg border shadow-sm',
-                                            getNodeColor(binaryTree.right.right.level, binaryTree.right.right.status)
-                                        ]"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <User class="h-4 w-4" />
-                                            <div class="flex-1 min-w-0">
-                                                <div class="text-xs font-medium truncate">{{ binaryTree.right.right.name }}</div>
-                                                <Badge variant="outline" class="text-[10px] mt-1">L{{ binaryTree.right.right.level }}</Badge>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div v-else class="px-3 py-2 rounded-lg border-dashed border bg-muted/30">
-                                        <div class="text-xs text-center text-muted-foreground">Kosong</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <TreeNodeComponent
+                            :node="completeTree"
+                            :is-root="true"
+                            :max-level="maxVisibleLevels"
+                            @open-placement="openPlacementDialog"
+                        />
 
                         <!-- Info -->
                         <div class="mt-6 p-4 rounded-lg bg-muted/50 text-center">
@@ -284,4 +203,78 @@ const getNodeColor = (level: number, status: boolean) => {
             </CardContent>
         </Card>
     </div>
+
+    <!-- Placement Dialog -->
+    <Dialog :open="showPlacementDialog" @update:open="closePlacementDialog">
+        <DialogContent class="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+                <DialogTitle>Pilih Member untuk Ditempatkan</DialogTitle>
+                <DialogDescription>
+                    Pilih member pasif untuk ditempatkan di posisi
+                    <span class="font-semibold">{{ selectedPosition === 'left' ? 'Kiri' : 'Kanan' }}</span>
+                </DialogDescription>
+            </DialogHeader>
+
+            <div class="flex-1 overflow-y-auto py-4">
+                <div v-if="passiveMembers.length === 0" class="text-center py-12 text-muted-foreground">
+                    <UserPlus class="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p>Tidak ada member pasif</p>
+                    <p class="text-sm mt-2">Semua member sudah ditempatkan di binary tree</p>
+                </div>
+
+                <div v-else class="space-y-2">
+                    <button
+                        v-for="member in passiveMembers"
+                        :key="member.id"
+                        type="button"
+                        :class="[
+                            'w-full p-4 rounded-lg border-2 text-left transition-all',
+                            selectedMember?.id === member.id
+                                ? 'border-primary bg-primary/10'
+                                : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600',
+                        ]"
+                        @click="selectMember(member)"
+                    >
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h4 class="font-semibold">{{ member.name }}</h4>
+                                    <Badge variant="default" v-if="member.has_purchase" class="text-xs">
+                                        Ada Pembelian
+                                    </Badge>
+                                    <Badge variant="secondary" v-else class="text-xs">
+                                        Belum Belanja
+                                    </Badge>
+                                </div>
+                                <div class="space-y-0.5 text-sm text-muted-foreground">
+                                    <p>{{ member.email }}</p>
+                                    <p v-if="member.phone">{{ member.phone }}</p>
+                                    <p class="text-xs">Bergabung: {{ formatDate(member.joined_at) }}</p>
+                                </div>
+                            </div>
+                            <div v-if="selectedMember?.id === member.id" class="ml-3">
+                                <div class="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <DialogFooter>
+                <Button variant="outline" @click="closePlacementDialog" :disabled="isPlacing">
+                    Batal
+                </Button>
+                <Button
+                    @click="placeMemberToBinaryTree"
+                    :disabled="!selectedMember || isPlacing"
+                >
+                    {{ isPlacing ? 'Memproses...' : 'Tempatkan Member' }}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>

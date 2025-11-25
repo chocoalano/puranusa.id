@@ -2,7 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EcommerceLayout from '@/layouts/store/Ecommerce.vue';
 import { Head, usePage } from '@inertiajs/vue3';
-import { AlertCircle, Lock, Package, User, Wallet, Network, GitBranch } from 'lucide-vue-next';
+import { AlertCircle, Lock, Package, User, Wallet, Network, GitBranch, Gift } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { Customer, Order, WalletTransaction } from '@/types/profile';
 import ProfileCard from '@/components/profile/ProfileCard.vue';
@@ -16,6 +16,7 @@ import SecurityTab from '@/components/profile/SecurityTab.vue';
 import DangerZoneTab from '@/components/profile/DangerZoneTab.vue';
 import NetworkMembersTab from '@/components/profile/NetworkMembersTab.vue';
 import BinaryTreeTab from '@/components/profile/BinaryTreeTab.vue';
+import BonusTab from '@/components/profile/BonusTab.vue';
 
 interface NetworkMember {
     id: number;
@@ -41,6 +42,42 @@ interface TreeNode {
     right: TreeNode | null;
 }
 
+interface BonusSponsor {
+    id: number;
+    from_member_id: number;
+    amount: number;
+    status: number;
+    description: string | null;
+    created_at: string;
+    from_member?: {
+        name: string;
+        email: string;
+    };
+}
+
+interface BonusMatching {
+    id: number;
+    from_member_id: number;
+    level: number;
+    amount: number;
+    status: number;
+    description: string | null;
+    created_at: string;
+    from_member?: {
+        name: string;
+        email: string;
+    };
+}
+
+interface BonusPairing {
+    id: number;
+    pair: number;
+    amount: number;
+    status: number;
+    description: string | null;
+    created_at: string;
+}
+
 defineProps<{
     customer: Customer;
     orders: Order[];
@@ -52,6 +89,11 @@ defineProps<{
     totalDownlines: number;
     totalLeft: number;
     totalRight: number;
+    bonusSponsors: BonusSponsor[];
+    bonusMatchings: BonusMatching[];
+    bonusPairings: BonusPairing[];
+    bonusCashbacks: any[];
+    bonusRewards: any[];
 }>();
 
 const page = usePage();
@@ -70,11 +112,11 @@ const activeTab = computed(() => {
 
         <!-- Hero Section -->
         <div class="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b">
-            <div class="container mx-auto px-4 py-12 max-w-7xl">
+            <div class="container mx-auto px-3 py-6 sm:px-4 sm:py-12 max-w-7xl">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-4xl font-bold text-foreground mb-2">Profile Saya</h1>
-                        <p class="text-lg text-muted-foreground">
+                        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1 sm:mb-2">Profile Saya</h1>
+                        <p class="text-sm sm:text-base md:text-lg text-muted-foreground">
                             Kelola informasi profil dan keamanan akun Anda
                         </p>
                     </div>
@@ -86,10 +128,10 @@ const activeTab = computed(() => {
             </div>
         </div>
 
-        <div class="container mx-auto px-4 py-8 max-w-7xl">
-            <div class="grid gap-6 lg:grid-cols-3">
+        <div class="container mx-auto px-3 py-4 sm:px-4 sm:py-8 max-w-7xl">
+            <div class="grid gap-4 sm:gap-6 lg:grid-cols-3">
                 <!-- Left Sidebar - Profile Summary -->
-                <div class="lg:col-span-1 space-y-6">
+                <div class="lg:col-span-1 space-y-4 sm:space-y-6">
                     <ProfileCard :customer="customer" />
                     <NetworkStatsCard :customer="customer" />
                     <BonusStatsCard :customer="customer" />
@@ -100,63 +142,69 @@ const activeTab = computed(() => {
                 <div class="lg:col-span-2">
                     <div class="rounded-xl border bg-card overflow-hidden">
                         <Tabs :default-value="activeTab" class="w-full">
-                            <!-- Stylish Tab Navigation -->
-                            <div class="border-b bg-muted/30 p-2">
-                                <TabsList class="inline-flex h-auto w-full bg-transparent gap-2 p-0">
-                                    <TabsTrigger
-                                        value="profile"
-                                        class="flex-1 flex-col gap-1 py-3 px-4 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg transition-all"
-                                    >
-                                        <User class="w-5 h-5" />
-                                        <span class="text-xs font-medium">Informasi</span>
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="orders"
-                                        class="flex-1 flex-col gap-1 py-3 px-4 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg transition-all"
-                                    >
-                                        <Package class="w-5 h-5" />
-                                        <span class="text-xs font-medium">Pesanan</span>
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="network"
-                                        class="flex-1 flex-col gap-1 py-3 px-4 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg transition-all"
-                                    >
-                                        <Network class="w-5 h-5" />
-                                        <span class="text-xs font-medium">Jaringan</span>
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="binary"
-                                        class="flex-1 flex-col gap-1 py-3 px-4 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg transition-all"
-                                    >
-                                        <GitBranch class="w-5 h-5" />
-                                        <span class="text-xs font-medium">Binary</span>
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="wallet"
-                                        class="flex-1 flex-col gap-1 py-3 px-4 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg transition-all"
-                                    >
-                                        <Wallet class="w-5 h-5" />
-                                        <span class="text-xs font-medium">E-Wallet</span>
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="security"
-                                        class="flex-1 flex-col gap-1 py-3 px-4 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg transition-all"
-                                    >
-                                        <Lock class="w-5 h-5" />
-                                        <span class="text-xs font-medium">Keamanan</span>
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="danger"
-                                        class="flex-1 flex-col gap-1 py-3 px-4 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg transition-all"
-                                    >
-                                        <AlertCircle class="w-5 h-5" />
-                                        <span class="text-xs font-medium">Bahaya</span>
-                                    </TabsTrigger>
-                                </TabsList>
+                            <div class="border-b bg-muted/30">
+                                <div class="overflow-x-auto text-center overflow-y-hidden px-1.5 py-1.5 sm:px-2 sm:py-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                                    <TabsList class="inline-flex h-auto w-max bg-transparent gap-1 sm:gap-1.5 p-0">
+                                        <TabsTrigger
+                                            value="profile"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <User class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Info</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="orders"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <Package class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Order</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="network"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <Network class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Net</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="binary"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <GitBranch class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Tree</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="bonus"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <Gift class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Bonus</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="wallet"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <Wallet class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Wallet</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="security"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <Lock class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Lock</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="danger"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <AlertCircle class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Del</span>
+                                        </TabsTrigger>
+                                    </TabsList>
+                                </div>
                             </div>
-
-                            <!-- Tab Content -->
-                            <div class="p-6">
+                            <div class="p-3 sm:p-4 md:p-6">
                                 <TabsContent value="profile" class="mt-0">
                                     <ProfileInformationTab :customer="customer" />
                                 </TabsContent>
@@ -180,6 +228,7 @@ const activeTab = computed(() => {
                                         :total-downlines="totalDownlines"
                                         :total-left="totalLeft"
                                         :total-right="totalRight"
+                                        :passive-members="passiveMembers"
                                     />
                                     <div v-else class="text-center py-12">
                                         <GitBranch class="w-12 h-12 mx-auto text-muted-foreground mb-4" />
@@ -188,6 +237,16 @@ const activeTab = computed(() => {
                                             Anda belum memiliki posisi dalam jaringan binary tree MLM.
                                         </p>
                                     </div>
+                                </TabsContent>
+
+                                <TabsContent value="bonus" class="mt-0">
+                                    <BonusTab
+                                        :bonus-sponsors="bonusSponsors"
+                                        :bonus-matchings="bonusMatchings"
+                                        :bonus-pairings="bonusPairings"
+                                        :bonus-cashbacks="bonusCashbacks"
+                                        :bonus-rewards="bonusRewards"
+                                    />
                                 </TabsContent>
 
                                 <TabsContent value="wallet" class="mt-0">

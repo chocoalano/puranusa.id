@@ -34,6 +34,7 @@ export interface Customer {
     description: string | null;
     email_verified_at: string | null;
     created_at: string;
+    ref_code: string;
     upline: {
         id: number;
         name: string;

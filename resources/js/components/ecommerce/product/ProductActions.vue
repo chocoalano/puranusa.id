@@ -60,6 +60,22 @@ const addToCart = async () => {
         }
     } catch (error: any) {
         console.error('Failed to add to cart:', error);
+
+        // Handle 401 Unauthenticated - redirect to client login
+        if (error.response?.status === 401) {
+            toast.error('Autentikasi Diperlukan', {
+                description: error.response.data.message || 'Anda harus login terlebih dahulu.',
+            });
+
+            // Redirect to client login page
+            if (error.response.data.redirect) {
+                router.visit(error.response.data.redirect);
+            } else {
+                router.visit('/client/login');
+            }
+            return;
+        }
+
         const message =
             error.response?.data?.message ||
             'Gagal menambahkan ke keranjang. Silakan coba lagi.';
@@ -102,6 +118,22 @@ const toggleWishlist = async () => {
         }
     } catch (error: any) {
         console.error('Failed to update wishlist:', error);
+
+        // Handle 401 Unauthenticated - redirect to client login
+        if (error.response?.status === 401) {
+            toast.error('Autentikasi Diperlukan', {
+                description: error.response.data.message || 'Anda harus login terlebih dahulu.',
+            });
+
+            // Redirect to client login page
+            if (error.response.data.redirect) {
+                router.visit(error.response.data.redirect);
+            } else {
+                router.visit('/client/login');
+            }
+            return;
+        }
+
         const message =
             error.response?.data?.message ||
             'Gagal mengubah wishlist. Silakan coba lagi.';

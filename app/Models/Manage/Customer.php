@@ -34,6 +34,8 @@ use Illuminate\Support\Str;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, CustomerBonusMatching> $bonusMatchings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, CustomerBonusPairing> $bonusPairings
  * @property-read \Illuminate\Database\Eloquent\Collection<int, CustomerBonusSponsor> $bonusSponsors
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, CustomerBonusCashback> $bonusCashbacks
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, CustomerBonusReward> $bonusRewards
  */
 class Customer extends Authenticatable
 {
@@ -258,6 +260,22 @@ class Customer extends Authenticatable
     public function bonusSponsors(): HasMany
     {
         return $this->hasMany(CustomerBonusSponsor::class, 'member_id');
+    }
+
+    /**
+     * Relasi ke bonus cashback
+     */
+    public function bonusCashbacks(): HasMany
+    {
+        return $this->hasMany(CustomerBonusCashback::class, 'member_id');
+    }
+
+    /**
+     * Relasi ke bonus reward
+     */
+    public function bonusRewards(): HasMany
+    {
+        return $this->hasMany(CustomerBonusReward::class, 'member_id');
     }
 
     /**
