@@ -176,7 +176,7 @@ const getPositionBadge = (position: string | null): {
                     >
                         <Clock class="w-12 h-12 mx-auto mb-4 opacity-20" />
                         <p>Belum ada member pasif</p>
-                        <p class="text-sm mt-2">Member pasif adalah member yang mendaftar menggunakan kode referral Anda tapi belum ditempatkan di binary tree</p>
+                        <p class="text-sm mt-2">Member pasif adalah member yang belum ditempatkan di binary tree tapi sudah memiliki pembelian/order</p>
                     </div>
                     <Card
                         v-for="member in passiveMembers"
@@ -201,11 +201,8 @@ const getPositionBadge = (position: string | null): {
                                         <Clock class="w-3 h-3 mr-1" />
                                         Pasif
                                     </Badge>
-                                    <Badge variant="default" v-if="member.has_purchase">
-                                        Ada Pembelian
-                                    </Badge>
-                                    <Badge variant="secondary" v-else>
-                                        Belum Belanja
+                                    <Badge variant="default">
+                                        Sudah Belanja
                                     </Badge>
                                     <Button
                                         size="sm"
@@ -230,7 +227,7 @@ const getPositionBadge = (position: string | null): {
                     >
                         <UserPlus class="w-12 h-12 mx-auto mb-4 opacity-20" />
                         <p>Belum ada member prospek</p>
-                        <p class="text-sm mt-2">Member prospek adalah member yang baru bergabung dalam 30 hari terakhir dan belum ditempatkan di binary tree</p>
+                        <p class="text-sm mt-2">Member prospek adalah member yang baru mendaftar, belum ditempatkan di binary tree dan belum memiliki pembelian/order</p>
                     </div>
                     <Card
                         v-for="member in prospectMembers"
@@ -255,10 +252,7 @@ const getPositionBadge = (position: string | null): {
                                         <UserPlus class="w-3 h-3 mr-1" />
                                         Prospek
                                     </Badge>
-                                    <Badge variant="default" v-if="member.has_purchase">
-                                        Ada Pembelian
-                                    </Badge>
-                                    <Badge variant="secondary" v-else>
+                                    <Badge variant="secondary">
                                         Belum Belanja
                                     </Badge>
                                 </div>

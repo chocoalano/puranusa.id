@@ -29,6 +29,7 @@ class ProfileController extends Controller
         $customer->load([
             'networkPosition.upline',
             'matrixPosition.sponsor',
+            'addresses' => fn ($q) => $q->orderBy('is_default', 'desc')->orderBy('created_at', 'desc'),
             'bonuses' => fn ($q) => $q->latest()->limit(5),
             'bonusMatchings' => fn ($q) => $q->with('fromMember:id,name,email')->latest()->limit(50),
             'bonusPairings' => fn ($q) => $q->latest()->limit(50),
@@ -219,6 +220,7 @@ class ProfileController extends Controller
                 'description' => $bonus->description,
                 'created_at' => $bonus->created_at,
             ]),
+            'addresses' => $customer->addresses,
         ]);
     }
 
@@ -426,5 +428,105 @@ class ProfileController extends Controller
             'left' => $leftChild,
             'right' => $rightChild,
         ];
+    }
+
+    /**
+     * Store a new address.
+     */
+    public function storeAddress(Request $request): RedirectResponse
+    {
+        $customer = Auth::guard('client')->user();
+
+        $validated = $request->validate([
+            'label' => 'nullable|string|max:255',
+            'is_default' => 'boolean',
+            'recipient_name' => 'required|string|max:255',
+            'recipient_phone' => 'required|string|max:20',
+            'address_line1' => 'required|string',
+            'address_line2' => 'nullable|string',
+            'province_label' => 'required|string|max:100',
+            'province_id' => 'required|integer',
+            'city_label' => 'required|string|max:100',
+            'city_id' => 'required|integer',
+            'postal_code' => 'nullable|string|max:10',
+            'country' => 'string|max:100',
+            'description' => 'nullable|string',
+        ]);
+
+        // If this address is set as default, unset other default addresses
+        if ($validated['is_default'] ?? false) {
+            $customer->addresses()->update(['is_default' => false]);
+        }
+
+        $customer->addresses()->create($validated);
+
+        return redirect()->back()->with('success', 'Alamat berhasil ditambahkan');
+    }
+
+    /**
+     * Update an existing address.
+     */
+    public function updateAddress(Request $request, int $addressId): RedirectResponse
+    {
+        $customer = Auth::guard('client')->user();
+
+        $address = $customer->addresses()->findOrFail($addressId);
+
+        $validated = $request->validate([
+            'label' => 'nullable|string|max:255',
+            'is_default' => 'boolean',
+            'recipient_name' => 'required|string|max:255',
+            'recipient_phone' => 'required|string|max:20',
+            'address_line1' => 'required|string',
+            'address_line2' => 'nullable|string',
+            'province_label' => 'required|string|max:100',
+            'province_id' => 'required|integer',
+            'city_label' => 'required|string|max:100',
+            'city_id' => 'required|integer',
+            'postal_code' => 'nullable|string|max:10',
+            'country' => 'string|max:100',
+            'description' => 'nullable|string',
+        ]);
+
+        // If this address is set as default, unset other default addresses
+        if ($validated['is_default'] ?? false) {
+            $customer->addresses()->where('id', '!=', $addressId)->update(['is_default' => false]);
+        }
+
+        $address->update($validated);
+
+        return redirect()->back()->with('success', 'Alamat berhasil diperbarui');
+    }
+
+    /**
+     * Delete an address.
+     */
+    public function deleteAddress(int $addressId): RedirectResponse
+    {
+        $customer = Auth::guard('client')->user();
+
+        $address = $customer->addresses()->findOrFail($addressId);
+
+        $address->delete();
+
+        return redirect()->back()->with('success', 'Alamat berhasil dihapus');
+    }
+
+    /**
+     * Set an address as default.
+     */
+    public function setDefaultAddress(int $addressId): RedirectResponse
+    {
+        $customer = Auth::guard('client')->user();
+
+        $address = $customer->addresses()->findOrFail($addressId);
+
+        // Unset all other default addresses
+        $customer->addresses()->update(['is_default' => false]);
+
+        // Set this address as default
+        $address->update(['is_default' => true]);
+
+        return redirect()->back()->with('success', 'Alamat utama berhasil diubah');
     }
 }

@@ -146,6 +146,8 @@ const toggleWishlist = async () => {
 };
 
 const shareProduct = async () => {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
+
     if (navigator.share) {
         try {
             await navigator.share({

@@ -364,21 +364,27 @@ const handleCheckout = async () => {
             // Handle based on payment method
             if (form.value.payment_method === 'wallet') {
                 // Wallet payment completed, redirect to success page
-                window.location.href = `/checkout/finish?order_no=${data.order_no}`;
+                if (typeof window !== 'undefined') {
+                    window.location.href = `/checkout/finish?order_no=${data.order_no}`;
+                }
                 return;
             }
 
             // Midtrans payment - open Snap modal
-            if (data.snap_token) {
+            if (typeof window !== 'undefined' && data.snap_token) {
                 const snapInstance = (window as any).snap;
                 snapInstance.pay(data.snap_token, {
                     onSuccess: function (result: any) {
                         toast.success('Pembayaran berhasil '+result.order_id);
-                        window.location.href = `/checkout/finish?order_no=${data.order_no}`;
+                        if (typeof window !== 'undefined') {
+                            window.location.href = `/checkout/finish?order_no=${data.order_no}`;
+                        }
                     },
                     onPending: function (result: any) {
                         toast.info('Pembayaran tertunda '+result.order_id);
-                        window.location.href = `/checkout/finish?order_no=${data.order_no}`;
+                        if (typeof window !== 'undefined') {
+                            window.location.href = `/checkout/finish?order_no=${data.order_no}`;
+                        }
                     },
                     onError: function (result: any) {
                         toast.error('Pembayaran gagal. Silakan coba lagi. '+result.order_id);
@@ -434,9 +440,11 @@ const handleCheckout = async () => {
                 emit('update:open', false);
 
                 // Redirect to login page
-                const redirectUrl =
-                    error.response?.data?.redirect || '/client/login';
-                window.location.href = redirectUrl;
+                if (typeof window !== 'undefined') {
+                    const redirectUrl =
+                        error.response?.data?.redirect || '/client/login';
+                    window.location.href = redirectUrl;
+                }
             }, 2000);
             return;
         }

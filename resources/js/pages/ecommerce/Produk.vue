@@ -143,6 +143,8 @@ const breadcrumbJsonLd = {
 
 // Inject structured data into head on mount
 onMounted(() => {
+    if (typeof document === 'undefined') return;
+
     // Add Product JSON-LD
     const productScript = document.createElement('script');
     productScript.type = 'application/ld+json';

@@ -90,15 +90,19 @@ const selectUpline = (customer: Customer) => {
 };
 
 const handleSponsorBlur = () => {
-    window.setTimeout(() => {
-        showSponsorDropdown.value = false;
-    }, 200);
+    if (typeof window !== 'undefined') {
+        window.setTimeout(() => {
+            showSponsorDropdown.value = false;
+        }, 200);
+    }
 };
 
 const handleUplineBlur = () => {
-    window.setTimeout(() => {
-        showUplineDropdown.value = false;
-    }, 200);
+    if (typeof window !== 'undefined') {
+        window.setTimeout(() => {
+            showUplineDropdown.value = false;
+        }, 200);
+    }
 };
 
 const suggestPosition = () => {

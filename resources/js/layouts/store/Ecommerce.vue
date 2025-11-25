@@ -223,9 +223,11 @@ const subscribeNewsletter = async () => {
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN':
-                    document
-                        .querySelector('meta[name="csrf-token"]')
-                        ?.getAttribute('content') || '',
+                    typeof document !== 'undefined'
+                        ? document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || ''
+                        : '',
             },
             body: JSON.stringify({
                 email: newsletterEmail.value,
@@ -459,8 +461,10 @@ const handleCheckout = () => {
         checkoutSheetOpen.value = true;
     } else {
         // For multiple items, redirect to checkout page
-        const itemIds = selectedCartItems.value.join(',');
-        window.location.href = `/checkout?items=${itemIds}`;
+        if (typeof window !== 'undefined') {
+            const itemIds = selectedCartItems.value.join(',');
+            window.location.href = `/checkout?items=${itemIds}`;
+        }
     }
 };
 
@@ -511,7 +515,7 @@ const productCategories = computed(() => {
 
 // Handle global search
 const handleSearch = () => {
-    if (searchQuery.value.trim()) {
+    if (typeof window !== 'undefined' && searchQuery.value.trim()) {
         window.location.href = `/toko?search=${encodeURIComponent(searchQuery.value.trim())}`;
     }
 };

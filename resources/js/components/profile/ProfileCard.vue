@@ -27,11 +27,18 @@ const initials = computed(() => {
 });
 
 const referralLink = computed(() => {
+    if (typeof window === 'undefined') {
+        return '';
+    }
     const baseUrl = window.location.origin;
     return `${baseUrl}/client/register?ref=${props.customer.ref_code}`;
 });
 
 const copyReferralLink = async () => {
+    if (typeof window === 'undefined' || !navigator.clipboard) {
+        toast.error('Tidak dapat menyalin link ke clipboard');
+        return;
+    }
     try {
         await navigator.clipboard.writeText(referralLink.value);
         copied.value = true;
@@ -45,6 +52,8 @@ const copyReferralLink = async () => {
 };
 
 const shareReferralLink = async () => {
+    if (typeof window === 'undefined') return;
+
     const shareData = {
         title: 'Bergabung dengan Referral Saya',
         text: `Gunakan kode referral saya: ${props.customer.ref_code}`,

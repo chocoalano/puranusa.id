@@ -212,7 +212,9 @@ const handleImageUpload = async (event: Event) => {
         const response = await fetch('/admin/upload-image', {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'X-CSRF-TOKEN': typeof document !== 'undefined'
+                    ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    : '',
                 'Accept': 'application/json',
             },
             body: formData,

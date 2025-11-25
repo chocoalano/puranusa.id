@@ -27,6 +27,8 @@ onMounted(() => {
         snapLoaded.value = true;
         return;
     }
+    if (typeof window === 'undefined') return;
+
     const handler = () => {
         if ((window as any).snap) {
             snapLoaded.value = true;
@@ -62,12 +64,16 @@ const openSnapModal = (snapToken: string) => {
             onSuccess: function(result: any) {
                 console.log('Payment success:', result);
                 toast.success('Pembayaran berhasil.');
-                window.location.href = '/client/profile?tab=wallet';
+                if (typeof window !== 'undefined') {
+                    window.location.href = '/client/profile?tab=wallet';
+                }
             },
             onPending: function(result: any) {
                 console.log('Payment pending:', result);
                 toast.info('Pembayaran sedang diproses.');
-                window.location.href = '/client/profile?tab=wallet';
+                if (typeof window !== 'undefined') {
+                    window.location.href = '/client/profile?tab=wallet';
+                }
             },
             onError: function(result: any) {
                 console.error('Payment error (Midtrans):', result);

@@ -6,7 +6,7 @@ import { AlertCircle, Lock, Package, User, Wallet, Network, GitBranch, Gift } fr
 import { computed } from 'vue';
 import type { Customer, Order, WalletTransaction } from '@/types/profile';
 import ProfileCard from '@/components/profile/ProfileCard.vue';
-import NetworkStatsCard from '@/components/profile/NetworkStatsCard.vue';
+import AddressManagement from '@/components/profile/AddressManagement.vue';
 import BonusStatsCard from '@/components/profile/BonusStatsCard.vue';
 import MemberSinceCard from '@/components/profile/MemberSinceCard.vue';
 import ProfileInformationTab from '@/components/profile/ProfileInformationTab.vue';
@@ -17,6 +17,7 @@ import DangerZoneTab from '@/components/profile/DangerZoneTab.vue';
 import NetworkMembersTab from '@/components/profile/NetworkMembersTab.vue';
 import BinaryTreeTab from '@/components/profile/BinaryTreeTab.vue';
 import BonusTab from '@/components/profile/BonusTab.vue';
+import NetworkStatsCard from '@/components/profile/NetworkStatsCard.vue';
 
 interface NetworkMember {
     id: number;
@@ -78,6 +79,26 @@ interface BonusPairing {
     created_at: string;
 }
 
+interface Address {
+    id: number;
+    customer_id: number;
+    label: string | null;
+    is_default: boolean;
+    recipient_name: string;
+    recipient_phone: string;
+    address_line1: string;
+    address_line2: string | null;
+    province_label: string;
+    province_id: number;
+    city_label: string;
+    city_id: number;
+    postal_code: string | null;
+    country: string;
+    description: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 defineProps<{
     customer: Customer;
     orders: Order[];
@@ -94,15 +115,25 @@ defineProps<{
     bonusPairings: BonusPairing[];
     bonusCashbacks: any[];
     bonusRewards: any[];
+    addresses: Address[];
 }>();
 
 const page = usePage();
 
 // Get active tab from URL query parameter (SSR-safe)
 const activeTab = computed(() => {
+    // Check if we're running in the browser
+    if (typeof window === 'undefined') {
+        return 'profile';
+    }
+
     const url = page.url;
-    const urlObj = new URL(url, 'https://preview.puranusa.id'); // Base URL to ensure URL parsing works
-    return urlObj.searchParams.get('tab') || 'profile';
+    try {
+        const urlObj = new URL(url, window.location.origin);
+        return urlObj.searchParams.get('tab') || 'profile';
+    } catch {
+        return 'profile';
+    }
 });
 </script>
 
@@ -133,8 +164,9 @@ const activeTab = computed(() => {
                 <!-- Left Sidebar - Profile Summary -->
                 <div class="lg:col-span-1 space-y-4 sm:space-y-6">
                     <ProfileCard :customer="customer" />
-                    <NetworkStatsCard :customer="customer" />
-                    <BonusStatsCard :customer="customer" />
+                    <NetworkStatsCard v-if="binaryTree" :customer="customer" />
+                    <AddressManagement :addresses="addresses" />
+                    <BonusStatsCard v-if="binaryTree" :customer="customer" />
                     <MemberSinceCard :created-at="customer.created_at" />
                 </div>
 

@@ -45,6 +45,8 @@ interface Props {
 const props = defineProps<Props>();
 
 const shareArticle = () => {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
+
     if (navigator.share) {
         navigator.share({
             title: props.article.title,

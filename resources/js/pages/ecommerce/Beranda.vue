@@ -118,6 +118,8 @@ const flashSaleTimeLeft = ref({ hours: 5, minutes: 0, seconds: 0 });
 let bannerInterval: ReturnType<typeof setInterval>;
 
 onMounted(() => {
+    if (typeof document === 'undefined') return;
+
     // Add structured data script tag to head
     const script = document.createElement('script');
     script.type = 'application/ld+json';

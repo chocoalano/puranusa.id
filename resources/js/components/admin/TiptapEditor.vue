@@ -68,6 +68,7 @@ watch(() => props.modelValue, (value) => {
 });
 
 const setLink = () => {
+    if (typeof window === 'undefined') return;
     const url = window.prompt('Enter URL');
     if (url && editor.value) {
         editor.value.chain().focus().setLink({ href: url }).run();

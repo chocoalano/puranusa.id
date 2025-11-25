@@ -51,6 +51,12 @@ Route::middleware(['client.auth'])->group(function () {
     Route::delete('/client/profile', [ProfileController::class, 'destroy'])->name('client.profile.destroy');
     Route::post('/client/profile/place-member', [ProfileController::class, 'placeMember'])->name('client.profile.place-member');
 
+    // Address Management Routes
+    Route::post('/client/profile/addresses', [ProfileController::class, 'storeAddress'])->name('client.profile.addresses.store');
+    Route::put('/client/profile/addresses/{address}', [ProfileController::class, 'updateAddress'])->name('client.profile.addresses.update');
+    Route::delete('/client/profile/addresses/{address}', [ProfileController::class, 'deleteAddress'])->name('client.profile.addresses.delete');
+    Route::post('/client/profile/addresses/{address}/set-default', [ProfileController::class, 'setDefaultAddress'])->name('client.profile.addresses.set-default');
+
     // Wallet Routes
     Route::post('/client/wallet/topup', [WalletController::class, 'topup'])->name('client.wallet.topup');
     Route::post('/client/wallet/check-status', [WalletController::class, 'checkStatus'])->name('client.wallet.check-status');

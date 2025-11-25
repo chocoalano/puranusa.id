@@ -99,6 +99,7 @@ const handleLogoUpload = (event: Event) => {
 
 // Trigger file input
 const triggerFileInput = () => {
+    if (typeof window === 'undefined') return;
     const input = window.document.getElementById('logo_upload') as HTMLInputElement;
     if (input) input.click();
 };
@@ -110,8 +111,10 @@ const removeLogo = () => {
     form.settings['site_logo'] = null;
 
     // Reset file input
-    const fileInput = document.getElementById('logo_upload') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
+    if (typeof document !== 'undefined') {
+        const fileInput = document.getElementById('logo_upload') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+    }
 };
 
 // Add payment method

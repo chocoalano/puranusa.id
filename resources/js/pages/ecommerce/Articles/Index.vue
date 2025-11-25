@@ -91,6 +91,9 @@ const pageDescription = computed(() => {
 });
 
 const canonicalUrl = computed(() => {
+    if (typeof window === 'undefined') {
+        return '/artikel';
+    }
     const base = window.location.origin + '/artikel';
     const params = new URLSearchParams();
     if (searchQuery.value) params.set('search', searchQuery.value);

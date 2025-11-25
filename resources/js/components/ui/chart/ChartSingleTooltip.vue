@@ -23,6 +23,7 @@ function template(d: any, i: number, elements: (HTMLElement | SVGElement)[]) {
       return wm.get(d)
     }
     else {
+      if (typeof document === 'undefined') return ''
       const componentDiv = document.createElement("div")
       const omittedData = Object.entries(omit(d, [props.index])).map(([key, value]) => {
         const legendReference = props.items?.find(i => i.name === key)
@@ -42,6 +43,7 @@ function template(d: any, i: number, elements: (HTMLElement | SVGElement)[]) {
       return wm.get(data)
     }
     else {
+      if (typeof document === 'undefined') return ''
       const style = getComputedStyle(elements[i])
       const omittedData = [{ name: data.name, value: valueFormatter(data[props.index]), color: style.fill }]
       const componentDiv = document.createElement("div")
