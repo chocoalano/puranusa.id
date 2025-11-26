@@ -11,13 +11,24 @@ import { edit } from '@/routes/profile';
 import type { User } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
 import { LogOut, Settings } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
 interface Props {
     user: User;
 }
 
 const handleLogout = () => {
-    router.flushAll();
+    router.post('/logout', {}, {
+        onStart: () => {
+            router.flushAll();
+        },
+        onSuccess: () => {
+            toast.success('Berhasil logout');
+        },
+        onError: () => {
+            toast.error('Gagal logout, silakan coba lagi');
+        },
+    });
 };
 
 defineProps<Props>();
@@ -40,15 +51,14 @@ defineProps<Props>();
     </DropdownMenuGroup>
     <DropdownMenuSeparator />
     <DropdownMenuItem :as-child="true">
-        <Link
-            class="block w-full"
-            :href="logout()"
+        <button
+            type="button"
+            class="w-full cursor-pointer"
             @click="handleLogout"
-            as="button"
             data-test="logout-button"
         >
             <LogOut class="mr-2 h-4 w-4" />
             Log out
-        </Link>
+        </button>
     </DropdownMenuItem>
 </template>

@@ -12,10 +12,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useForm } from '@inertiajs/vue3';
 import { AlertCircle, CheckCircle2, Loader2, Star } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
+import axios from 'axios';
 
 interface OrderItem {
     id: number;
@@ -40,6 +40,8 @@ const currentItemIndex = ref(0);
 const alertMessage = ref<{ type: 'success' | 'error'; message: string } | null>(
     null,
 );
+const processing = ref(false);
+const errors = ref<Record<string, string>>({});
 
 const currentItem = computed(() => props.orderItems[currentItemIndex.value]);
 const hasMoreItems = computed(
@@ -49,7 +51,7 @@ const isLastItem = computed(
     () => currentItemIndex.value === props.orderItems.length - 1,
 );
 
-const form = useForm({
+const formData = ref({
     order_item_id: 0,
     product_id: 0,
     rating: 5,
@@ -60,36 +62,39 @@ const form = useForm({
 const hoverRating = ref(0);
 
 const setRating = (rating: number) => {
-    form.rating = rating;
+    formData.value.rating = rating;
 };
 
 const submitReview = async () => {
     if (!currentItem.value) return;
 
-    form.order_item_id = currentItem.value.id;
-    form.product_id = currentItem.value.product_id;
+    formData.value.order_item_id = currentItem.value.id;
+    formData.value.product_id = currentItem.value.product_id;
 
     alertMessage.value = null;
+    errors.value = {};
+    processing.value = true;
 
-    form.post(`/api/client/orders/${props.orderId}/reviews`, {
-        preserveScroll: true,
-        onSuccess: (response) => {
-            // Extract message from response
-            const successMessage =
-                (response as any)?.props?.flash?.success ||
-                'Review berhasil dikirim dan menunggu persetujuan!';
+    try {
+        const response = await axios.post(
+            `/api/client/orders/${props.orderId}/reviews`,
+            formData.value,
+        );
+
+        if (response.data.success) {
+            const successMessage = response.data.message || 'Review berhasil dikirim dan menunggu persetujuan!';
 
             alertMessage.value = {
                 type: 'success',
                 message: successMessage,
             };
             toast.success(successMessage);
+
             // If there are more items, move to next item after a short delay
             if (hasMoreItems.value) {
                 setTimeout(() => {
                     currentItemIndex.value++;
-                    form.reset();
-                    form.rating = 5; // Reset to default rating
+                    resetForm();
                     alertMessage.value = null;
                 }, 1500);
             } else {
@@ -100,37 +105,47 @@ const submitReview = async () => {
                     resetDialog();
                 }, 2000);
             }
-        },
-        onError: (errors) => {
-            // Handle various error types
-            let errorMessage = 'Gagal mengirim review. Silakan coba lagi.';
+        }
+    } catch (error: any) {
+        console.error('Submit review error:', error);
 
-            if (errors.message) {
-                errorMessage = errors.message;
-            } else if (errors.rating) {
-                errorMessage = `Rating: ${errors.rating}`;
-            } else if (errors.title) {
-                errorMessage = `Judul: ${errors.title}`;
-            } else if (errors.comment) {
-                errorMessage = `Komentar: ${errors.comment}`;
-            } else if (errors.order_item_id) {
-                errorMessage = 'Item pesanan tidak valid';
+        // Handle validation errors and JSON response errors
+        let errorMessage = 'Gagal mengirim review. Silakan coba lagi.';
+
+        if (error.response?.data) {
+            const data = error.response.data;
+
+            // Check for error message from JSON response
+            if (data.message) {
+                errorMessage = data.message;
             }
 
-            alertMessage.value = {
-                type: 'error',
-                message: errorMessage,
-            };
-            toast.error(errorMessage);
-            // Don't auto-clear error, let user read it
-        },
-    });
-};
+            // Check for validation errors
+            if (data.errors) {
+                errors.value = data.errors;
 
-const skipReview = () => {
+                // Use first validation error as toast message
+                const firstError = Object.values(data.errors)[0];
+                if (Array.isArray(firstError) && firstError.length > 0) {
+                    errorMessage = firstError[0];
+                } else if (typeof firstError === 'string') {
+                    errorMessage = firstError;
+                }
+            }
+        }
+
+        alertMessage.value = {
+            type: 'error',
+            message: errorMessage,
+        };
+        toast.error(errorMessage);
+    } finally {
+        processing.value = false;
+    }
+};const skipReview = () => {
     if (hasMoreItems.value) {
         currentItemIndex.value++;
-        form.reset();
+        resetForm();
         alertMessage.value = null;
     } else {
         emit('update:open', false);
@@ -139,10 +154,20 @@ const skipReview = () => {
     }
 };
 
+const resetForm = () => {
+    formData.value = {
+        order_item_id: 0,
+        product_id: 0,
+        rating: 5,
+        title: '',
+        comment: '',
+    };
+    errors.value = {};
+};
+
 const resetDialog = () => {
     currentItemIndex.value = 0;
-    form.reset();
-    form.rating = 5; // Reset to default rating
+    resetForm();
     alertMessage.value = null;
 };
 
@@ -239,14 +264,14 @@ const handleOpenChange = (value: boolean) => {
                                 <Star
                                     :class="[
                                         'h-8 w-8 transition-colors',
-                                        (hoverRating || form.rating) >= star
+                                        (hoverRating || formData.rating) >= star
                                             ? 'fill-yellow-400 text-yellow-400'
                                             : 'text-gray-300',
                                     ]"
                                 />
                             </button>
                             <span class="ml-2 text-sm text-muted-foreground">
-                                {{ form.rating }} / 5
+                                {{ formData.rating }} / 5
                             </span>
                         </div>
                     </div>
@@ -256,15 +281,15 @@ const handleOpenChange = (value: boolean) => {
                         <Label for="title">Judul Review (Opsional)</Label>
                         <Input
                             id="title"
-                            v-model="form.title"
+                            v-model="formData.title"
                             placeholder="Ringkasan singkat pengalaman Anda"
                             maxlength="100"
                         />
                         <p
-                            v-if="form.errors.title"
+                            v-if="errors.title"
                             class="text-sm text-destructive"
                         >
-                            {{ form.errors.title }}
+                            {{ errors.title }}
                         </p>
                     </div>
 
@@ -273,19 +298,19 @@ const handleOpenChange = (value: boolean) => {
                         <Label for="comment">Komentar (Opsional)</Label>
                         <Textarea
                             id="comment"
-                            v-model="form.comment"
+                            v-model="formData.comment"
                             placeholder="Ceritakan pengalaman Anda dengan produk ini..."
                             rows="4"
                             maxlength="500"
                         />
                         <p class="text-right text-xs text-muted-foreground">
-                            {{ form.comment?.length || 0 }} / 500 karakter
+                            {{ formData.comment?.length || 0 }} / 500 karakter
                         </p>
                         <p
-                            v-if="form.errors.comment"
+                            v-if="errors.comment"
                             class="text-sm text-destructive"
                         >
-                            {{ form.errors.comment }}
+                            {{ errors.comment }}
                         </p>
                     </div>
                 </template>
@@ -298,18 +323,18 @@ const handleOpenChange = (value: boolean) => {
                         type="button"
                         variant="outline"
                         @click="skipReview"
-                        :disabled="form.processing"
+                        :disabled="processing"
                     >
                         {{ hasMoreItems ? 'Lewati' : 'Tutup' }}
                     </Button>
                     <Button
                         type="button"
                         @click="submitReview"
-                        :disabled="form.processing || form.rating === 0"
+                        :disabled="processing || formData.rating === 0"
                         class="w-full sm:w-auto"
                     >
                         <Loader2
-                            v-if="form.processing"
+                            v-if="processing"
                             class="mr-2 h-4 w-4 animate-spin"
                         />
                         {{ hasMoreItems ? 'Kirim & Lanjut' : 'Kirim Review' }}

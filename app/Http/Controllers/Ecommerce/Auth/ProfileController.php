@@ -7,7 +7,6 @@ use App\Http\Requests\Ecommerce\UpdatePasswordRequest;
 use App\Http\Requests\Ecommerce\UpdateProfileRequest;
 use App\Models\Manage\Customer;
 use App\Models\Manage\CustomerNetwork;
-use App\Models\Manage\CustomerNetworkMatrix;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,18 +40,50 @@ class ProfileController extends Controller
 
         // Load recent orders
         $orders = $customer->orders()
+            ->with(['items.product.media'])
             ->latest('placed_at')
             ->limit(10)
             ->get()
-            ->map(fn ($order) => [
-                'id' => $order->id,
-                'order_no' => $order->order_no,
-                'status' => $order->status,
-                'subtotal_amount' => $order->subtotal_amount,
-                'grand_total' => $order->grand_total,
-                'placed_at' => $order->placed_at,
-                'paid_at' => $order->paid_at,
-            ]);
+            ->map(function ($order) use ($customer) {
+                // Check if order is completed and has items that haven't been reviewed
+                $hasUnreviewedItems = false;
+                $items = [];
+
+                if (strtoupper($order->status) === 'COMPLETED') {
+                    $items = $order->items->map(function ($item) use ($customer) {
+                        $hasReview = \App\Models\ProductReview::where('order_item_id', $item->id)
+                            ->where('customer_id', $customer->id)
+                            ->exists();
+
+                        $imageUrl = null;
+                        if ($item->product && $item->product->primaryImage) {
+                            $imageUrl = '/storage/'.$item->product->primaryImage->url;
+                        }
+
+                        return [
+                            'id' => $item->id,
+                            'product_id' => $item->product_id,
+                            'product_name' => $item->name,
+                            'product_image' => $imageUrl,
+                            'has_review' => $hasReview,
+                        ];
+                    })->toArray();
+
+                    $hasUnreviewedItems = collect($items)->contains('has_review', false);
+                }
+
+                return [
+                    'id' => $order->id,
+                    'order_no' => $order->order_no,
+                    'status' => $order->status,
+                    'subtotal_amount' => $order->subtotal_amount,
+                    'grand_total' => $order->grand_total,
+                    'placed_at' => $order->placed_at,
+                    'paid_at' => $order->paid_at,
+                    'items' => $items,
+                    'has_unreviewed_items' => $hasUnreviewedItems,
+                ];
+            });
 
         // Load recent wallet transactions
         $walletTransactions = $customer->walletTransactions()

@@ -5,7 +5,7 @@ import { useFormatter } from '@/composables/useFormatter';
 import type { Order } from '@/types/profile';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { CheckCircle, Package, PackageCheck, RefreshCw } from 'lucide-vue-next';
+import { CheckCircle, Package, PackageCheck, RefreshCw, Star } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 import OrderDetailSheet from './OrderDetailSheet.vue';
@@ -106,6 +106,19 @@ const handleReviewSubmitted = () => {
     // Reload orders after reviews are submitted
     router.reload({ only: ['orders'] });
 };
+
+const openReviewDialog = () => {
+    // Filter items that haven't been reviewed
+    const unreviewedItems = (props.order.items || []).filter(item => !item.has_review);
+
+    if (unreviewedItems.length > 0) {
+        // Update order items to only unreviewed items
+        (props.order as any).items = unreviewedItems;
+        reviewDialogOpen.value = true;
+    } else {
+        toast.info('Semua produk sudah direview');
+    }
+};
 </script>
 
 <template>
@@ -184,6 +197,15 @@ const handleReviewSubmitted = () => {
                     >
                         <PackageCheck class="mr-1 h-3 w-3" />
                         Pesanan Diterima
+                    </Button>
+                    <Button
+                        v-if="localStatus.toUpperCase() === 'COMPLETED' && order.has_unreviewed_items"
+                        variant="outline"
+                        size="sm"
+                        @click="openReviewDialog"
+                    >
+                        <Star class="mr-1 h-3 w-3" />
+                        Tambah Review
                     </Button>
                     <Button
                         variant="outline"

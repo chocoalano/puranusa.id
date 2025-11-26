@@ -462,21 +462,28 @@ class OrderController extends Controller
             'status' => 'COMPLETED',
         ]);
 
+        if (auth('client')->user()->status === 1) {
+            auth('client')->user()->update(['status' => 2]);
+        }
+
         // Load items for review
-        $order->load('items.product');
+        $order->load('items.product.media');
 
         return response()->json([
             'success' => true,
             'message' => 'Pesanan berhasil ditandai sebagai diterima',
             'data' => $order,
             'items' => $order->items->map(function ($item) {
+                $imageUrl = null;
+                if ($item->product && $item->product->primaryImage) {
+                    $imageUrl = '/storage/'.$item->product->primaryImage->url;
+                }
+
                 return [
                     'id' => $item->id,
                     'product_id' => $item->product_id,
                     'product_name' => $item->name,
-                    'product_image' => $item->product && $item->product->primaryMedia
-                        ? $item->product->primaryMedia->url
-                        : null,
+                    'product_image' => $imageUrl,
                 ];
             }),
         ]);

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -34,17 +35,42 @@ class LogRegController extends Controller
             'password' => ['required'],
         ]);
 
+        // Check if user exists and is active
+        $customer = Customer::where('email', $credentials['email'])->first();
+
+        if (! $customer) {
+            throw ValidationException::withMessages([
+                'email' => 'Email tidak terdaftar.',
+            ]);
+        }
+
         // Attempt to authenticate
         if (Auth::guard('client')->attempt($credentials, $request->boolean('remember'))) {
+            // Regenerate session to prevent session fixation
             $request->session()->regenerate();
+
+            // Log successful login
+            \Log::info('Customer logged in', [
+                'customer_id' => $customer->id,
+                'email' => $customer->email,
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
 
             // Get the intended URL or default to beranda
             $intendedUrl = redirect()->intended(route('ecommerce.beranda'))->getTargetUrl();
 
-            return redirect($intendedUrl);
+            return redirect($intendedUrl)
+                ->with('success', 'Selamat datang kembali, '.$customer->name.'!');
         }
 
-        // Authentication failed
+        // Authentication failed - log the attempt
+        \Log::warning('Failed login attempt', [
+            'email' => $credentials['email'],
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         throw ValidationException::withMessages([
             'email' => 'Email atau password salah.',
         ]);
@@ -63,7 +89,7 @@ class LogRegController extends Controller
     /**
      * Handle register request
      */
-    public function register(Request $request)
+    public function register(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -77,12 +103,19 @@ class LogRegController extends Controller
 
         try {
             // Find sponsor if ref_code provided
+            $sponsor = null;
             $sponsorId = null;
+
             if (! empty($validated['ref_code'])) {
                 $sponsor = Customer::where('ref_code', $validated['ref_code'])->first();
-                if ($sponsor) {
-                    $sponsorId = $sponsor->id;
+
+                if (! $sponsor) {
+                    throw ValidationException::withMessages([
+                        'ref_code' => 'Kode referral tidak valid.',
+                    ]);
                 }
+
+                $sponsorId = $sponsor->id;
             }
 
             // Create customer with sponsor_id and status = 1 (prospek)
@@ -96,25 +129,54 @@ class LogRegController extends Controller
                 'status' => 1, // 1 = prospek, 2 = pasif, 3 = aktif
             ]);
 
+            // Log successful registration
+            \Log::info('New customer registered', [
+                'customer_id' => $customer->id,
+                'email' => $customer->email,
+                'has_sponsor' => $sponsorId !== null,
+                'sponsor_id' => $sponsorId,
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
             DB::commit();
 
+            // Login the customer
             Auth::guard('client')->login($customer);
 
-            return redirect()->intended(route('ecommerce.beranda'));
+            // Regenerate session
+            $request->session()->regenerate();
+
+            return redirect()->intended(route('ecommerce.beranda'))
+                ->with('success', 'Selamat datang, '.$customer->name.'! Akun Anda berhasil dibuat.');
+
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->withErrors([
-                'error' => 'Terjadi kesalahan saat membuat akun: '.$e->getMessage(),
-            ])->withInput();
+            // Log the error
+            \Log::error('Registration failed', [
+                'email' => $validated['email'] ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'email' => 'Terjadi kesalahan saat membuat akun. Silakan coba lagi.',
+            ]);
         }
     }
 
     /**
      * Handle logout request
      */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
+        // Get the authenticated customer before logging out
+        $customer = Auth::guard('client')->user();
+
         // Logout from client guard
         Auth::guard('client')->logout();
 
@@ -127,8 +189,11 @@ class LogRegController extends Controller
 
         // Clear any cached authentication data
         $request->session()->forget('auth');
+        $request->session()->flush();
 
-        return redirect()->route('client.login');
+        // Redirect to login with success message
+        return redirect()->route('client.login')
+            ->with('status', 'Anda telah berhasil logout.');
     }
 
     /**

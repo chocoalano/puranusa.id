@@ -51,6 +51,17 @@ const showPasswordConfirmation = ref(false);
 
 const submit = () => {
     form.post('/client/register', {
+        onSuccess: () => {
+            toast.success('Pendaftaran berhasil! Selamat datang!');
+        },
+        onError: (errors) => {
+            // Show error toast with first error message
+            const firstError = Object.values(errors)[0];
+            const errorMessage = typeof firstError === 'string'
+                ? firstError
+                : 'Pendaftaran gagal. Silakan periksa form Anda.';
+            toast.error(errorMessage);
+        },
         onFinish: () => {
             form.reset('password', 'password_confirmation');
         },

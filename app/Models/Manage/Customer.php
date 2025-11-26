@@ -14,17 +14,36 @@ use Illuminate\Support\Str;
 
 /**
  * @property int $id
+ * @property int|null $sponsor_id
+ * @property int|null $upline_id
+ * @property string|null $position
  * @property string $ref_code
  * @property string $name
  * @property string $email
  * @property string|null $phone
  * @property string $password
+ * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string|null $ewallet_id
  * @property float $ewallet_saldo
  * @property string|null $description
+ * @property int|null $package_id
+ * @property int $foot_left
+ * @property int $foot_right
+ * @property int $total_left
+ * @property int $total_right
+ * @property int $sponsor_left
+ * @property int $sponsor_right
+ * @property int $pv_left
+ * @property int $pv_right
+ * @property float $omzet
+ * @property float $omzet_group_left
+ * @property float $omzet_group_right
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read Customer|null $sponsor
+ * @property-read Customer|null $upline
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Customer> $recruits
  * @property-read CustomerNetwork|null $networkPosition
  * @property-read CustomerNetwork|null $leftDownline
  * @property-read CustomerNetwork|null $rightDownline
@@ -48,6 +67,9 @@ class Customer extends Authenticatable
     protected $table = 'customers';
 
     protected $fillable = [
+        'sponsor_id',
+        'upline_id',
+        'position',
         'ref_code',
         'name',
         'email',
@@ -57,10 +79,6 @@ class Customer extends Authenticatable
         'ewallet_id',
         'ewallet_saldo',
         'description',
-        'sponsor_id',
-        'upline_id',
-        'position',
-        'status',
         'package_id',
         'foot_left',
         'foot_right',
@@ -100,8 +118,22 @@ class Customer extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'ewallet_saldo' => 'float',
+            'ewallet_saldo' => 'decimal:2',
             'password' => 'hashed',
+            'sponsor_id' => 'integer',
+            'upline_id' => 'integer',
+            'package_id' => 'integer',
+            'foot_left' => 'integer',
+            'foot_right' => 'integer',
+            'total_left' => 'integer',
+            'total_right' => 'integer',
+            'sponsor_left' => 'integer',
+            'sponsor_right' => 'integer',
+            'pv_left' => 'integer',
+            'pv_right' => 'integer',
+            'omzet' => 'decimal:2',
+            'omzet_group_left' => 'decimal:2',
+            'omzet_group_right' => 'decimal:2',
         ];
     }
 
@@ -193,9 +225,17 @@ class Customer extends Authenticatable
     /**
      * Relasi ke sponsor (yang merekrut member ini)
      */
-    public function sponsor(): HasOne
+    public function sponsor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->hasOne(Customer::class, 'id', 'sponsor_id');
+        return $this->belongsTo(Customer::class, 'sponsor_id');
+    }
+
+    /**
+     * Relasi ke upline (parent di binary tree)
+     */
+    public function upline(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'upline_id');
     }
 
     /**

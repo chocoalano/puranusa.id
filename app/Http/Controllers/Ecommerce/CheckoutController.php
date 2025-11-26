@@ -1026,13 +1026,11 @@ class CheckoutController extends Controller
         }
 
         // Check if customer has any completed orders
-        $hasCompletedOrder = Order::where('customer_id', $customerId)
-            ->where('status', 'COMPLETED')
-            ->exists();
+        $cek_status = Customer::find($customerId);
 
         // If customer has completed order and status is still 1 (Prospek), update to 2 (Pasif)
-        if ($hasCompletedOrder) {
-            $customer = Customer::find($customerId);
+        if ($cek_status && $cek_status->status === 1) {
+            $customer = $cek_status;
             if ($customer && $customer->status === 1) {
                 $customer->update(['status' => 2]);
 

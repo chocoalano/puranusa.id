@@ -21,7 +21,9 @@ export interface Order {
         product_id: number;
         product_name: string;
         product_image?: string;
+        has_review?: boolean;
     }>;
+    has_unreviewed_items?: boolean;
 }
 
 export interface Customer {

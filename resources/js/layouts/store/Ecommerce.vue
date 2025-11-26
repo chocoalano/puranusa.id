@@ -212,6 +212,20 @@ const toggleTheme = () => {
     updateAppearance(newTheme);
 };
 
+const handleLogout = () => {
+    router.post('/client/logout', {}, {
+        onStart: () => {
+            router.flushAll();
+        },
+        onSuccess: () => {
+            toast.success('Berhasil logout');
+        },
+        onError: () => {
+            toast.error('Gagal logout, silakan coba lagi');
+        },
+    });
+};
+
 const subscribeNewsletter = async () => {
     if (!newsletterEmail.value || newsletterSubmitting.value) return;
 
@@ -1120,16 +1134,16 @@ const searchSuggestions = computed(() => {
                                         </DropdownMenuItem>
                                     </Link>
                                     <DropdownMenuSeparator />
-                                    <Link
-                                        href="/client/logout"
-                                        method="post"
-                                        as="button"
+                                    <button
+                                        type="button"
+                                        class="w-full"
+                                        @click="handleLogout"
                                     >
                                         <DropdownMenuItem>
                                             <LogOut class="mr-2 h-4 w-4" />
                                             <span>Keluar</span>
                                         </DropdownMenuItem>
-                                    </Link>
+                                    </button>
                                 </template>
                                 <template v-else>
                                     <Link href="/client/login">
