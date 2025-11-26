@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Ecommerce;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CustomerAddress;
+use App\Models\Manage\Customer;
 use App\Models\Manage\CustomerBonusSponsor;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -1014,13 +1015,34 @@ class CheckoutController extends Controller
             return redirect()->route('ecommerce.beranda')->with('error', 'Order tidak ditemukan');
         }
 
+        $customerId = Auth::guard('client')->id();
         $order = Order::with(['items.product', 'shippingAddress'])
             ->where('order_no', $orderNo)
-            ->where('customer_id', Auth::guard('client')->id())
+            ->where('customer_id', $customerId)
             ->first();
 
         if (! $order) {
             return redirect()->route('ecommerce.beranda')->with('error', 'Order tidak ditemukan');
+        }
+
+        // Check if customer has any completed orders
+        $hasCompletedOrder = Order::where('customer_id', $customerId)
+            ->where('status', 'COMPLETED')
+            ->exists();
+
+        // If customer has completed order and status is still 1 (Prospek), update to 2 (Pasif)
+        if ($hasCompletedOrder) {
+            $customer = Customer::find($customerId);
+            if ($customer && $customer->status === 1) {
+                $customer->update(['status' => 2]);
+
+                Log::info('Customer status updated to Pasif after completed order', [
+                    'customer_id' => $customerId,
+                    'old_status' => 1,
+                    'new_status' => 2,
+                    'trigger_order' => $orderNo,
+                ]);
+            }
         }
 
         return redirect()->route('ecommerce.beranda')->with('success', 'Terima kasih! Pesanan Anda telah diterima. Nomor order: '.$orderNo);

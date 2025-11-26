@@ -19,9 +19,17 @@ const showPassword = ref(false);
 
 const submit = () => {
     form.post('/client/login', {
-        onFinish: () => {
+        onSuccess: () => {
+            toast.success('Login berhasil! Mengalihkan...');
+        },
+        onError: (errors) => {
+            // Show error toast
+            const errorMessage = errors.email || errors.password || 'Login gagal. Silakan coba lagi.';
+            toast.error(errorMessage);
             form.reset('password');
-            toast.success('Berhasil masuk.');
+        },
+        onFinish: () => {
+            // This runs after success or error
         },
     });
 };

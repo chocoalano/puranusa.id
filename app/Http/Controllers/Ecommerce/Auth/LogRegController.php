@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Ecommerce\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Manage\Customer;
-use App\Models\Manage\CustomerNetworkMatrix;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -27,19 +27,24 @@ class LogRegController extends Controller
     /**
      * Handle login request
      */
-    public function login(Request $request)
+    public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
+        // Attempt to authenticate
         if (Auth::guard('client')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/beranda');
+            // Get the intended URL or default to beranda
+            $intendedUrl = redirect()->intended(route('ecommerce.beranda'))->getTargetUrl();
+
+            return redirect($intendedUrl);
         }
 
+        // Authentication failed
         throw ValidationException::withMessages([
             'email' => 'Email atau password salah.',
         ]);
@@ -71,49 +76,31 @@ class LogRegController extends Controller
         DB::beginTransaction();
 
         try {
-            // Create customer
+            // Find sponsor if ref_code provided
+            $sponsorId = null;
+            if (! empty($validated['ref_code'])) {
+                $sponsor = Customer::where('ref_code', $validated['ref_code'])->first();
+                if ($sponsor) {
+                    $sponsorId = $sponsor->id;
+                }
+            }
+
+            // Create customer with sponsor_id and status = 1 (prospek)
             $customer = Customer::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'password' => Hash::make($validated['password']),
                 'email_verified_at' => now(),
+                'sponsor_id' => $sponsorId,
+                'status' => 1, // 1 = prospek, 2 = pasif, 3 = aktif
             ]);
-
-            // Handle sponsor relationship (matrix)
-            $sponsorId = null;
-
-            if (! empty($validated['ref_code'])) {
-                $sponsor = Customer::where('ref_code', $validated['ref_code'])->first();
-
-                if ($sponsor) {
-                    $sponsorId = $sponsor->id;
-                    CustomerNetworkMatrix::addToMatrix($customer->id, $sponsorId);
-                }
-            } else {
-                CustomerNetworkMatrix::addToMatrix($customer->id, null);
-            }
-
-            // Handle MLM network placement (binary tree)
-            // if ($sponsorId) {
-            //     CustomerNetwork::placeNewMember($customer->id, $sponsorId);
-            // } else {
-            //     $hasRootMember = CustomerNetwork::whereNull('upline_id')->exists();
-            //     if (! $hasRootMember) {
-            //         CustomerNetwork::placeNewMember($customer->id, null);
-            //     } else {
-            //         $rootMember = CustomerNetwork::whereNull('upline_id')->first();
-            //         if ($rootMember) {
-            //             CustomerNetwork::placeNewMember($customer->id, $rootMember->member_id);
-            //         }
-            //     }
-            // }
 
             DB::commit();
 
             Auth::guard('client')->login($customer);
 
-            return redirect('/beranda')->with('success', 'Akun berhasil dibuat!');
+            return redirect()->intended(route('ecommerce.beranda'));
         } catch (\Exception $e) {
             DB::rollBack();
 

@@ -8,6 +8,7 @@ use App\Http\Requests\Ecommerce\UpdateProfileRequest;
 use App\Models\Manage\Customer;
 use App\Models\Manage\CustomerNetwork;
 use App\Models\Manage\CustomerNetworkMatrix;
+use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -68,15 +69,14 @@ class ProfileController extends Controller
                 'created_at' => $transaction->created_at,
             ]);
 
-        // Get all downlines from matrix (sponsored members)
-        $allDownlines = $customer->matrixDownlines()
-            ->with(['member.orders', 'member.networkPosition'])
-            ->get()
-            ->pluck('member')
-            ->filter(); // Remove null values
+        // Get all members where current customer is the sponsor (based on sponsor_id)
+        // Status: 1 = Prospek, 2 = Pasif, 3 = Aktif
 
-        // Active Members: sudah ditempatkan di binary tree
-        $activeMembers = $allDownlines->filter(fn ($member) => $member->networkPosition !== null)
+        // Active Members: status = 3 (aktif)
+        $activeMembers = Customer::where('sponsor_id', $customer->id)
+            ->where('status', 3)
+            ->with(['orders', 'networkPosition'])
+            ->get()
             ->map(fn ($member) => [
                 'id' => $member->id,
                 'name' => $member->name,
@@ -84,45 +84,50 @@ class ProfileController extends Controller
                 'phone' => $member->phone,
                 'position' => $member->networkPosition?->position,
                 'level' => $member->networkPosition?->level,
-                'has_placement' => true,
+                'has_placement' => $member->networkPosition !== null,
                 'has_purchase' => $member->orders->isNotEmpty(),
+                'status' => 3,
+                'status_label' => 'Aktif',
                 'joined_at' => $member->created_at,
             ])
             ->values();
 
-        // Passive Members: sudah register dengan ref_code tapi belum masuk binary tree
-        // Ini adalah member yang sponsor-nya adalah customer ini
-        $passiveMembers = $allDownlines->filter(function ($member) {
-            return $member->networkPosition === null;
-        })
+        // Passive Members: status = 2 (pasif)
+        $passiveMembers = Customer::where('sponsor_id', $customer->id)
+            ->where('status', 2)
+            ->with(['orders', 'networkPosition'])
+            ->get()
             ->map(fn ($member) => [
                 'id' => $member->id,
                 'name' => $member->name,
                 'email' => $member->email,
                 'phone' => $member->phone,
-                'position' => null,
-                'level' => null,
-                'has_placement' => false,
+                'position' => $member->networkPosition?->position,
+                'level' => $member->networkPosition?->level,
+                'has_placement' => $member->networkPosition !== null,
                 'has_purchase' => $member->orders->isNotEmpty(),
+                'status' => 2,
+                'status_label' => 'Pasif',
                 'joined_at' => $member->created_at,
             ])
             ->values();
 
-        // Prospect Members: baru mendaftar dalam 30 hari dan belum masuk binary tree
-        $prospectMembers = $allDownlines->filter(function ($member) {
-            $isNewMember = $member->created_at->diffInDays(now()) <= 30;
-
-            return $isNewMember && $member->networkPosition === null;
-        })
+        // Prospect Members: status = 1 (prospek)
+        $prospectMembers = Customer::where('sponsor_id', $customer->id)
+            ->where('status', 1)
+            ->with(['orders', 'networkPosition'])
+            ->get()
             ->map(fn ($member) => [
                 'id' => $member->id,
                 'name' => $member->name,
                 'email' => $member->email,
                 'phone' => $member->phone,
-                'position' => null,
-                'level' => null,
-                'has_placement' => false,
+                'position' => $member->networkPosition?->position,
+                'level' => $member->networkPosition?->level,
+                'has_placement' => $member->networkPosition !== null,
                 'has_purchase' => $member->orders->isNotEmpty(),
+                'status' => 1,
+                'status_label' => 'Prospek',
                 'joined_at' => $member->created_at,
             ])
             ->values();
@@ -164,9 +169,9 @@ class ProfileController extends Controller
             ],
             'orders' => $orders,
             'walletTransactions' => $walletTransactions,
-            'activeMembers' => $activeMembers,
-            'passiveMembers' => $passiveMembers,
-            'prospectMembers' => $prospectMembers,
+            'activeMembers' => $activeMembers, // Status 3: Member aktif yang sudah ditempatkan
+            'passiveMembers' => $passiveMembers, // Status 2: Member pasif
+            'prospectMembers' => $prospectMembers, // Status 1: Member prospek - siap untuk placement
             'binaryTree' => $binaryTree['tree'],
             'totalDownlines' => $binaryTree['totalDownlines'],
             'totalLeft' => $binaryTree['totalLeft'],
@@ -289,46 +294,64 @@ class ProfileController extends Controller
             'position' => ['required', 'string', 'in:left,right'],
         ]);
 
-        $sponsor = Auth::guard('client')->user();
+        $currentCustomer = Auth::guard('client')->user();
         $memberId = $validated['member_id'];
         $position = $validated['position'];
 
         DB::beginTransaction();
 
         try {
-            // Verify member is in sponsor's downline
+            // Get member to be placed
             $member = Customer::find($memberId);
             if (! $member) {
                 throw new \Exception('Member tidak ditemukan.');
             }
 
-            // Check if member already placed
-            if ($member->networkPosition !== null) {
+            // Check if member already has placement
+            if ($member->upline_id !== null) {
                 throw new \Exception('Member sudah ditempatkan di binary tree.');
             }
 
-            // Verify member is in sponsor's matrix downlines
-            $isInMatrix = CustomerNetworkMatrix::where('member_id', $memberId)
-                ->where('sponsor_id', $sponsor->id)
+            // Verify member is sponsored by current customer (sponsor_id = current customer's id)
+            // and has status = 1 (prospek) - ready to be placed
+            if ($member->sponsor_id !== $currentCustomer->id) {
+                throw new \Exception('Member bukan bagian dari jaringan sponsor Anda.');
+            }
+
+            if ($member->status !== 1) {
+                throw new \Exception('Hanya member dengan status Prospek (belum ditempatkan) yang dapat diposisikan.');
+            }
+
+            // Check if member has purchase/order (passive member requirement)
+            // Status 'paid' or 'completed' indicates successful purchase
+            $hasPurchase = Order::where('customer_id', $memberId)
+                ->whereIn('status', ['paid', 'completed'])
                 ->exists();
 
-            if (! $isInMatrix) {
-                throw new \Exception('Member bukan bagian dari jaringan Anda.');
+            if (! $hasPurchase) {
+                throw new \Exception('Member harus melakukan pembelian terlebih dahulu sebelum ditempatkan.');
             }
 
-            // Validate position availability
-            if (! CustomerNetwork::validatePlacement($sponsor->id, $position)) {
-                throw new \Exception("Posisi {$position} sudah terisi. Silakan pilih posisi lain.");
+            // Validate position availability at current customer's position
+            $positionField = $position === 'left' ? 'foot_left' : 'foot_right';
+            if ($currentCustomer->$positionField !== null) {
+                throw new \Exception("Posisi {$position} Anda sudah terisi. Silakan pilih posisi lain.");
             }
 
-            // Place member to binary tree
-            CustomerNetwork::create([
-                'member_id' => $memberId,
-                'upline_id' => $sponsor->id,
+            // Step 1: Update member's upline_id and position
+            $member->update([
+                'upline_id' => $currentCustomer->id,
                 'position' => $position,
-                'level' => ($sponsor->networkPosition?->level ?? 0) + 1,
-                'status' => true,
+                'status' => 3,
             ]);
+
+            // Step 2: Update current customer's foot_left or foot_right
+            $currentCustomer->update([
+                $positionField => $memberId,
+            ]);
+
+            // Step 3: Call stored procedure to update networks and matrix
+            DB::statement('CALL sp_register(?)', [$memberId]);
 
             DB::commit();
 

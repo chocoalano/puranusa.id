@@ -53,7 +53,6 @@ const submit = () => {
     form.post('/client/register', {
         onFinish: () => {
             form.reset('password', 'password_confirmation');
-            toast.success('Berhasil mendaftar. Silakan cek email Anda untuk verifikasi.');
         },
     });
 };

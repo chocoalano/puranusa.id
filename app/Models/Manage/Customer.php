@@ -57,6 +57,22 @@ class Customer extends Authenticatable
         'ewallet_id',
         'ewallet_saldo',
         'description',
+        'sponsor_id',
+        'upline_id',
+        'position',
+        'status',
+        'package_id',
+        'foot_left',
+        'foot_right',
+        'total_left',
+        'total_right',
+        'sponsor_left',
+        'sponsor_right',
+        'pv_left',
+        'pv_right',
+        'omzet',
+        'omzet_group_left',
+        'omzet_group_right',
     ];
 
     /**
@@ -172,6 +188,22 @@ class Customer extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(\App\Models\Order::class, 'customer_id');
+    }
+
+    /**
+     * Relasi ke sponsor (yang merekrut member ini)
+     */
+    public function sponsor(): HasOne
+    {
+        return $this->hasOne(Customer::class, 'id', 'sponsor_id');
+    }
+
+    /**
+     * Relasi ke semua member yang direkrut (downline sponsor)
+     */
+    public function recruits(): HasMany
+    {
+        return $this->hasMany(Customer::class, 'sponsor_id');
     }
 
     /**
