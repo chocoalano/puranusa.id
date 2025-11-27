@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Ecommerce\UpdatePasswordRequest;
 use App\Http\Requests\Ecommerce\UpdateProfileRequest;
 use App\Models\Manage\Customer;
-use App\Models\Manage\CustomerNetwork;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,52 +37,60 @@ class ProfileController extends Controller
             'bonusRewards' => fn ($q) => $q->latest()->limit(50),
         ]);
 
-        // Load recent orders
-        $orders = $customer->orders()
-            ->with(['items.product.media'])
-            ->latest('placed_at')
-            ->limit(10)
-            ->get()
-            ->map(function ($order) use ($customer) {
-                // Check if order is completed and has items that haven't been reviewed
-                $hasUnreviewedItems = false;
-                $items = [];
+        // Load recent orders with error handling
+        try {
+            $orders = $customer->orders()
+                ->with(['items.product.media'])
+                ->latest('placed_at')
+                ->limit(10)
+                ->get()
+                ->map(function ($order) use ($customer) {
+                    // Check if order is completed and has items that haven't been reviewed
+                    $hasUnreviewedItems = false;
+                    $items = [];
 
-                if (strtoupper($order->status) === 'COMPLETED') {
-                    $items = $order->items->map(function ($item) use ($customer) {
-                        $hasReview = \App\Models\ProductReview::where('order_item_id', $item->id)
-                            ->where('customer_id', $customer->id)
-                            ->exists();
+                    if (strtoupper($order->status) === 'COMPLETED') {
+                        $items = $order->items->map(function ($item) use ($customer) {
+                            $hasReview = \App\Models\ProductReview::where('order_item_id', $item->id)
+                                ->where('customer_id', $customer->id)
+                                ->exists();
 
-                        $imageUrl = null;
-                        if ($item->product && $item->product->primaryImage) {
-                            $imageUrl = '/storage/'.$item->product->primaryImage->url;
-                        }
+                            $imageUrl = null;
+                            if ($item->product && $item->product->primaryImage) {
+                                $imageUrl = '/storage/'.$item->product->primaryImage->url;
+                            }
 
-                        return [
-                            'id' => $item->id,
-                            'product_id' => $item->product_id,
-                            'product_name' => $item->name,
-                            'product_image' => $imageUrl,
-                            'has_review' => $hasReview,
-                        ];
-                    })->toArray();
+                            return [
+                                'id' => $item->id,
+                                'product_id' => $item->product_id,
+                                'product_name' => $item->name,
+                                'product_image' => $imageUrl,
+                                'has_review' => $hasReview,
+                            ];
+                        })->toArray();
 
-                    $hasUnreviewedItems = collect($items)->contains('has_review', false);
-                }
+                        $hasUnreviewedItems = collect($items)->contains('has_review', false);
+                    }
 
-                return [
-                    'id' => $order->id,
-                    'order_no' => $order->order_no,
-                    'status' => $order->status,
-                    'subtotal_amount' => $order->subtotal_amount,
-                    'grand_total' => $order->grand_total,
-                    'placed_at' => $order->placed_at,
-                    'paid_at' => $order->paid_at,
-                    'items' => $items,
-                    'has_unreviewed_items' => $hasUnreviewedItems,
-                ];
-            });
+                    return [
+                        'id' => $order->id,
+                        'order_no' => $order->order_no,
+                        'status' => $order->status,
+                        'subtotal_amount' => $order->subtotal_amount,
+                        'grand_total' => $order->grand_total,
+                        'placed_at' => $order->placed_at,
+                        'paid_at' => $order->paid_at,
+                        'items' => $items,
+                        'has_unreviewed_items' => $hasUnreviewedItems,
+                    ];
+                });
+        } catch (\Exception $e) {
+            \Log::error('Failed to load orders in profile', [
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage(),
+            ]);
+            $orders = collect();
+        }
 
         // Load recent wallet transactions
         $walletTransactions = $customer->walletTransactions()
@@ -101,70 +108,141 @@ class ProfileController extends Controller
             ]);
 
         // Get all members where current customer is the sponsor (based on sponsor_id)
-        // Status: 1 = Prospek, 2 = Pasif, 3 = Aktif
+        // Logic based on upline_id and omzet:
+        // - Aktif: sponsor_id = [current] AND upline_id IS NOT NULL AND omzet > 0
+        // - Pasif: sponsor_id = [current] AND upline_id IS NULL AND omzet > 0
+        // - Prospek: sponsor_id = [current] AND upline_id IS NULL AND omzet = 0
 
-        // Active Members: status = 3 (aktif)
-        $activeMembers = Customer::where('sponsor_id', $customer->id)
-            ->where('status', 3)
-            ->with(['orders', 'networkPosition'])
-            ->get()
-            ->map(fn ($member) => [
-                'id' => $member->id,
-                'name' => $member->name,
-                'email' => $member->email,
-                'phone' => $member->phone,
-                'position' => $member->networkPosition?->position,
-                'level' => $member->networkPosition?->level,
-                'has_placement' => $member->networkPosition !== null,
-                'has_purchase' => $member->orders->isNotEmpty(),
-                'status' => 3,
-                'status_label' => 'Aktif',
-                'joined_at' => $member->created_at,
-            ])
-            ->values();
+        try {
+            // Active Members: sudah ditempatkan (upline_id not null) dan sudah ada omzet
+            $activeMembers = Customer::where('sponsor_id', $customer->id)
+                ->whereNotNull('upline_id')
+                ->where('omzet', '>', 0)
+                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition'])
+                ->limit(50)
+                ->get()
+                ->map(fn ($member) => [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'email' => $member->email,
+                    'phone' => $member->phone,
+                    'position' => $member->networkPosition?->position,
+                    'level' => $member->networkPosition?->level,
+                    'has_placement' => $member->networkPosition !== null,
+                    'has_purchase' => $member->orders->isNotEmpty(),
+                    'omzet' => $member->omzet,
+                    'status' => 3,
+                    'status_label' => 'Aktif',
+                    'joined_at' => $member->created_at,
+                ])
+                ->values();
 
-        // Passive Members: status = 2 (pasif)
-        $passiveMembers = Customer::where('sponsor_id', $customer->id)
-            ->where('status', 2)
-            ->with(['orders', 'networkPosition'])
-            ->get()
-            ->map(fn ($member) => [
-                'id' => $member->id,
-                'name' => $member->name,
-                'email' => $member->email,
-                'phone' => $member->phone,
-                'position' => $member->networkPosition?->position,
-                'level' => $member->networkPosition?->level,
-                'has_placement' => $member->networkPosition !== null,
-                'has_purchase' => $member->orders->isNotEmpty(),
-                'status' => 2,
-                'status_label' => 'Pasif',
-                'joined_at' => $member->created_at,
-            ])
-            ->values();
+            // Passive Members: belum ditempatkan (upline_id null) tapi sudah ada omzet
+            $passiveMembers = Customer::where('sponsor_id', $customer->id)
+                ->whereNull('upline_id')
+                ->where('omzet', '>', 0)
+                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition'])
+                ->limit(50)
+                ->get()
+                ->map(fn ($member) => [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'email' => $member->email,
+                    'phone' => $member->phone,
+                    'position' => $member->networkPosition?->position,
+                    'level' => $member->networkPosition?->level,
+                    'has_placement' => $member->networkPosition !== null,
+                    'has_purchase' => $member->orders->isNotEmpty(),
+                    'omzet' => $member->omzet,
+                    'status' => 2,
+                    'status_label' => 'Pasif',
+                    'joined_at' => $member->created_at,
+                ])
+                ->values();
 
-        // Prospect Members: status = 1 (prospek)
-        $prospectMembers = Customer::where('sponsor_id', $customer->id)
-            ->where('status', 1)
-            ->with(['orders', 'networkPosition'])
-            ->get()
-            ->map(fn ($member) => [
-                'id' => $member->id,
-                'name' => $member->name,
-                'email' => $member->email,
-                'phone' => $member->phone,
-                'position' => $member->networkPosition?->position,
-                'level' => $member->networkPosition?->level,
-                'has_placement' => $member->networkPosition !== null,
-                'has_purchase' => $member->orders->isNotEmpty(),
-                'status' => 1,
-                'status_label' => 'Prospek',
-                'joined_at' => $member->created_at,
-            ])
-            ->values();
+            // Prospect Members: belum ditempatkan (upline_id null) dan belum ada omzet
+            $prospectMembers = Customer::where('sponsor_id', $customer->id)
+                ->whereNull('upline_id')
+                ->where('omzet', '=', 0)
+                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition'])
+                ->limit(50)
+                ->get()
+                ->map(fn ($member) => [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'email' => $member->email,
+                    'phone' => $member->phone,
+                    'position' => $member->networkPosition?->position,
+                    'level' => $member->networkPosition?->level,
+                    'has_placement' => $member->networkPosition !== null,
+                    'has_purchase' => $member->orders->isNotEmpty(),
+                    'omzet' => $member->omzet,
+                    'status' => 1,
+                    'status_label' => 'Prospek',
+                    'joined_at' => $member->created_at,
+                ])
+                ->values();
+        } catch (\Exception $e) {
+            \Log::error('Failed to load network members in profile', [
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage(),
+            ]);
+            $activeMembers = collect();
+            $passiveMembers = collect();
+            $prospectMembers = collect();
+        }
 
-        // Build binary tree structure
-        $binaryTree = $this->buildBinaryTree($customer);
+        // Build binary tree structure with error handling
+        try {
+            $binaryTree = $this->buildBinaryTree($customer);
+        } catch (\Exception $e) {
+            \Log::error('Failed to build binary tree in profile', [
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage(),
+            ]);
+            $binaryTree = [
+                'tree' => null,
+                'totalDownlines' => 0,
+                'totalLeft' => 0,
+                'totalRight' => 0,
+            ];
+        }
+
+        // Calculate network stats with error handling
+        try {
+            $networkStats = [
+                'left_count' => $customer->countLeftNetwork(),
+                'right_count' => $customer->countRightNetwork(),
+                'total_downlines' => count($customer->getAllDownlines()),
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Failed to calculate network stats in profile', [
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage(),
+            ]);
+            $networkStats = [
+                'left_count' => 0,
+                'right_count' => 0,
+                'total_downlines' => 0,
+            ];
+        }
+
+        // Calculate bonus stats with error handling
+        try {
+            $bonusStats = [
+                'total_released' => $customer->getTotalReleasedBonus(),
+                'total_pending' => $customer->getTotalPendingBonus(),
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Failed to calculate bonus stats in profile', [
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage(),
+            ]);
+            $bonusStats = [
+                'total_released' => 0,
+                'total_pending' => 0,
+            ];
+        }
 
         return Inertia::render('ecommerce/profile/Index', [
             'customer' => [
@@ -188,15 +266,8 @@ class ProfileController extends Controller
                     'name' => $customer->matrixPosition->sponsor->name,
                     'email' => $customer->matrixPosition->sponsor->email,
                 ] : null,
-                'network_stats' => [
-                    'left_count' => $customer->countLeftNetwork(),
-                    'right_count' => $customer->countRightNetwork(),
-                    'total_downlines' => count($customer->getAllDownlines()),
-                ],
-                'bonus_stats' => [
-                    'total_released' => $customer->getTotalReleasedBonus(),
-                    'total_pending' => $customer->getTotalPendingBonus(),
-                ],
+                'network_stats' => $networkStats,
+                'bonus_stats' => $bonusStats,
             ],
             'orders' => $orders,
             'walletTransactions' => $walletTransactions,
@@ -401,12 +472,8 @@ class ProfileController extends Controller
      */
     private function buildBinaryTree($customer, int $maxDepth = 15): array
     {
-        // Get customer's network position
-        $networkPosition = CustomerNetwork::where('member_id', $customer->id)
-            ->with('member')
-            ->first();
-
-        if (! $networkPosition) {
+        // Check if customer has foot_left or foot_right
+        if (! $customer->foot_left && ! $customer->foot_right) {
             return [
                 'tree' => null,
                 'totalDownlines' => 0,
@@ -415,9 +482,9 @@ class ProfileController extends Controller
             ];
         }
 
-        // Calculate totals
-        $totalLeft = $customer->countLeftNetwork();
-        $totalRight = $customer->countRightNetwork();
+        // Calculate totals by traversing the tree
+        $totalLeft = $this->countTreeNodes($customer->foot_left, $maxDepth);
+        $totalRight = $this->countTreeNodes($customer->foot_right, $maxDepth);
         $totalDownlines = $totalLeft + $totalRight;
 
         // Build tree structure recursively
@@ -432,7 +499,28 @@ class ProfileController extends Controller
     }
 
     /**
-     * Recursively build tree node.
+     * Count total nodes in a subtree.
+     */
+    private function countTreeNodes(?int $customerId, int $maxDepth, int $currentLevel = 1): int
+    {
+        if (! $customerId || $currentLevel > $maxDepth) {
+            return 0;
+        }
+
+        $customer = Customer::find($customerId);
+        if (! $customer) {
+            return 0;
+        }
+
+        $count = 1; // Count current node
+        $count += $this->countTreeNodes($customer->foot_left, $maxDepth, $currentLevel + 1);
+        $count += $this->countTreeNodes($customer->foot_right, $maxDepth, $currentLevel + 1);
+
+        return $count;
+    }
+
+    /**
+     * Recursively build tree node using foot_left and foot_right.
      */
     private function buildTreeNode($customer, int $currentLevel, int $maxDepth): ?array
     {
@@ -440,45 +528,49 @@ class ProfileController extends Controller
             return null;
         }
 
-        // Get network position info
-        $networkPosition = CustomerNetwork::where('member_id', $customer->id)->first();
-
-        if (! $networkPosition) {
-            return null;
-        }
-
-        // Get left and right downlines
-        $leftNetwork = CustomerNetwork::where('upline_id', $customer->id)
-            ->where('position', 'left')
-            ->with('member')
-            ->first();
-
-        $rightNetwork = CustomerNetwork::where('upline_id', $customer->id)
-            ->where('position', 'right')
-            ->with('member')
-            ->first();
-
         $leftChild = null;
         $rightChild = null;
 
-        // Build left child
-        if ($leftNetwork && $leftNetwork->member) {
-            $leftChild = $this->buildTreeNode($leftNetwork->member, $currentLevel + 1, $maxDepth);
+        // Build left child (foot_left)
+        if ($customer->foot_left) {
+            $leftCustomer = Customer::find($customer->foot_left);
+            if ($leftCustomer) {
+                $leftChild = $this->buildTreeNode($leftCustomer, $currentLevel + 1, $maxDepth);
+            }
         }
 
-        // Build right child
-        if ($rightNetwork && $rightNetwork->member) {
-            $rightChild = $this->buildTreeNode($rightNetwork->member, $currentLevel + 1, $maxDepth);
+        // Build right child (foot_right)
+        if ($customer->foot_right) {
+            $rightCustomer = Customer::find($customer->foot_right);
+            if ($rightCustomer) {
+                $rightChild = $this->buildTreeNode($rightCustomer, $currentLevel + 1, $maxDepth);
+            }
+        }
+
+        // Determine position based on relationship with parent
+        $position = null;
+        if ($currentLevel > 1) {
+            // Try to determine position by checking upline
+            if ($customer->upline_id) {
+                $upline = Customer::find($customer->upline_id);
+                if ($upline) {
+                    if ($upline->foot_left == $customer->id) {
+                        $position = 'left';
+                    } elseif ($upline->foot_right == $customer->id) {
+                        $position = 'right';
+                    }
+                }
+            }
         }
 
         return [
-            'id' => $networkPosition->id,
+            'id' => $customer->id,
             'member_id' => $customer->id,
             'name' => $customer->name,
             'email' => $customer->email,
-            'position' => $networkPosition->position,
-            'level' => $networkPosition->level,
-            'status' => $networkPosition->status,
+            'position' => $position,
+            'level' => $currentLevel,
+            'status' => $customer->upline_id !== null, // true if placed in tree
             'left' => $leftChild,
             'right' => $rightChild,
         ];

@@ -28,6 +28,7 @@ interface NetworkMember {
     level: number | null;
     has_placement: boolean;
     has_purchase: boolean;
+    omzet: number;
     status: number;
     status_label: string;
     joined_at: string;

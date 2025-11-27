@@ -468,18 +468,9 @@ const handleCheckout = () => {
         return;
     }
 
-    // For single item checkout, use the existing CheckoutSheet
-    // For multiple items, we'll need to handle differently
-    if (selectedItems.length === 1) {
-        checkoutItems.value = selectedItems;
-        checkoutSheetOpen.value = true;
-    } else {
-        // For multiple items, redirect to checkout page
-        if (typeof window !== 'undefined') {
-            const itemIds = selectedCartItems.value.join(',');
-            window.location.href = `/checkout?items=${itemIds}`;
-        }
-    }
+    // Open CheckoutSheet for both single and multiple items
+    checkoutItems.value = selectedItems;
+    checkoutSheetOpen.value = true;
 };
 
 // Footer data from shared props
@@ -1728,7 +1719,8 @@ const searchSuggestions = computed(() => {
         <CheckoutSheet
             v-if="checkoutItems.length > 0"
             v-model:open="checkoutSheetOpen"
-            :item="checkoutItems[0]"
+            :item="checkoutItems.length === 1 ? checkoutItems[0] : undefined"
+            :items="checkoutItems.length > 1 ? checkoutItems : undefined"
         />
     </div>
 </template>

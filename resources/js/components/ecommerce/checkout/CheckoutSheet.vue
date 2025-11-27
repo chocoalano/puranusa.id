@@ -75,13 +75,38 @@ interface CheckoutItem {
 
 interface Props {
     open: boolean;
-    item: CheckoutItem;
+    item?: CheckoutItem;
+    items?: CheckoutItem[];
 }
 
 const props = defineProps<Props>();
 const emit = defineEmits<{
     'update:open': [value: boolean];
 }>();
+
+// Get all items (for checkout)
+const allItems = computed(() => {
+    if (props.items && props.items.length > 0) {
+        return props.items;
+    }
+    return props.item ? [props.item] : [];
+});
+
+const isMultipleItems = computed(() => allItems.value.length > 1);
+
+// Calculate total weight for shipping calculation
+const totalWeight = computed(() => {
+    return allItems.value.reduce((sum, item) => {
+        return sum + (item.weight * item.quantity);
+    }, 0);
+});
+
+// Calculate subtotal of all items
+const subtotal = computed(() => {
+    return allItems.value.reduce((sum, item) => {
+        return sum + (item.price * item.quantity);
+    }, 0);
+});
 
 const page = usePage();
 const userWalletBalance = computed(() => {
@@ -129,10 +154,6 @@ const selectedProvince = computed(() => {
 
 const selectedCity = computed(() => {
     return cities.value.find((c) => String(c.id) === form.value.city_id);
-});
-
-const subtotal = computed(() => {
-    return props.item.price * props.item.quantity;
 });
 
 const total = computed(() => {
@@ -258,7 +279,7 @@ watch(
             // Get CSRF token from cookie for axios
             const response = await axios.post('/api/shipping/calculate', {
                 destination_city_id: parseInt(newCityId),
-                weight: props.item.weight * props.item.quantity,
+                weight: totalWeight.value,
             });
 
             const data = response.data;
@@ -321,13 +342,18 @@ const handleCheckout = async () => {
     alertMessage.value = null;
 
     try {
+        // Prepare items data
+        const items = allItems.value.map(item => ({
+            product_id: item.product_id,
+            product_name: item.name,
+            product_price: item.price,
+            quantity: item.quantity,
+            weight: item.weight,
+            product_image: item.image,
+        }));
+
         const response = await axios.post('/checkout/process', {
-            product_id: props.item.product_id,
-            product_name: props.item.name,
-            product_price: props.item.price,
-            quantity: props.item.quantity,
-            weight: props.item.weight,
-            product_image: props.item.image,
+            items: items, // Send all items as array
             shipping: {
                 recipient_name: form.value.recipient_name,
                 recipient_phone: form.value.recipient_phone,
@@ -527,27 +553,50 @@ watch(
                     <div class="flex items-center gap-2 text-sm font-medium">
                         <Package class="h-4 w-4" />
                         <span>Ringkasan Produk</span>
+                        <span v-if="isMultipleItems" class="ml-auto text-xs text-muted-foreground">
+                            {{ allItems.length }} Produk
+                        </span>
                     </div>
-                    <div class="flex gap-4 rounded-lg bg-muted p-4">
-                        <img
-                            :src="item.image"
-                            :alt="item.name"
-                            class="h-20 w-20 rounded-md object-cover"
-                        />
-                        <div class="flex-1">
-                            <h4 class="font-medium">{{ item.name }}</h4>
-                            <p class="text-sm text-muted-foreground">
-                                {{ item.quantity }}x
-                                {{ formatCurrency(item.price) }}
-                            </p>
-                            <p class="text-sm text-muted-foreground">
-                                Berat: {{ item.weight * item.quantity }}g
-                            </p>
+
+                    <!-- Show all items in preview -->
+                    <div class="space-y-3">
+                        <div
+                            v-for="item in allItems"
+                            :key="item.id"
+                            class="flex gap-4 rounded-lg bg-muted p-4"
+                        >
+                            <img
+                                :src="item.image"
+                                :alt="item.name"
+                                class="h-20 w-20 rounded-md object-cover"
+                            />
+                            <div class="flex-1">
+                                <h4 class="font-medium">{{ item.name }}</h4>
+                                <p class="text-sm text-muted-foreground">
+                                    {{ item.quantity }}x
+                                    {{ formatCurrency(item.price) }}
+                                </p>
+                                <p class="text-sm text-muted-foreground">
+                                    Berat: {{ item.weight * item.quantity }}g
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">
+                                    {{ formatCurrency(item.price * item.quantity) }}
+                                </p>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <p class="font-semibold">
-                                {{ formatCurrency(subtotal) }}
-                            </p>
+
+                        <!-- Total Summary -->
+                        <div class="space-y-2 rounded-lg bg-muted/50 p-3 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-muted-foreground">Subtotal Produk:</span>
+                                <span class="font-semibold">{{ formatCurrency(subtotal) }}</span>
+                            </div>
+                            <div v-if="isMultipleItems" class="flex items-center justify-between text-xs text-muted-foreground">
+                                <span>Total Berat:</span>
+                                <span>{{ totalWeight }}g</span>
+                            </div>
                         </div>
                     </div>
                 </div>

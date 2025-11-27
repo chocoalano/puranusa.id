@@ -264,6 +264,20 @@ class CheckoutController extends Controller
             $item->product->decrement('stock', $item->qty);
         }
 
+        // Update customer omzet
+        $customerRecord = Customer::find($customer->id);
+        if ($customerRecord) {
+            $newOmzet = $customerRecord->omzet + $validated['total'];
+            $customerRecord->update(['omzet' => $newOmzet]);
+
+            Log::info('Customer omzet updated after wallet payment', [
+                'customer_id' => $customer->id,
+                'order_no' => $orderNo,
+                'order_amount' => $validated['total'],
+                'new_omzet' => $newOmzet,
+            ]);
+        }
+
         $this->processMlmBonuses($order);
         $this->clearCustomerCart($customer->id);
 
@@ -389,12 +403,13 @@ class CheckoutController extends Controller
     public function process(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
-            'product_name' => 'required|string',
-            'product_price' => 'required|numeric|min:0',
-            'quantity' => 'required|integer|min:1',
-            'weight' => 'required|integer|min:1',
-            'product_image' => 'required|string',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|integer|exists:products,id',
+            'items.*.product_name' => 'required|string',
+            'items.*.product_price' => 'required|numeric|min:0',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.weight' => 'required|integer|min:1',
+            'items.*.product_image' => 'required|string',
             'shipping' => 'required|array',
             'shipping.recipient_name' => 'required|string|max:255',
             'shipping.recipient_phone' => 'required|string|max:20',
@@ -423,14 +438,16 @@ class CheckoutController extends Controller
         }
 
         $customer = Auth::guard('client')->user();
-        $product = Product::findOrFail($validated['product_id']);
 
-        // Verify product availability
-        if ($product->stock < $validated['quantity']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Stok produk tidak mencukupi',
-            ], 400);
+        // Verify all products availability
+        foreach ($validated['items'] as $item) {
+            $product = Product::findOrFail($item['product_id']);
+            if ($product->stock < $item['quantity']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Stok produk {$product->name} tidak mencukupi",
+                ], 400);
+            }
         }
 
         // Check wallet balance if payment method is wallet
@@ -448,17 +465,17 @@ class CheckoutController extends Controller
             DB::beginTransaction();
 
             $shippingAddress = $this->createOrUpdateShippingAddress($customer->id, $validated['shipping']);
-            $order = $this->createDirectOrder($customer->id, $orderNo, $product, $validated, $shippingAddress->id);
-            $this->createDirectOrderItem($order->id, $product, $validated);
+            $order = $this->createMultiItemOrder($customer->id, $orderNo, $validated, $shippingAddress->id);
+            $this->createMultiOrderItems($order->id, $validated['items']);
 
             if ($validated['payment_method'] === 'wallet') {
-                $result = $this->processWalletPayment($customer, $order, $product, $validated, $orderNo);
+                $result = $this->processMultiItemWalletPayment($customer, $order, $validated, $orderNo);
                 DB::commit();
 
                 return response()->json($result);
             }
 
-            $snapToken = $this->createMidtransPayment($customer, $order, $product, $validated, $orderNo, $transactionId);
+            $snapToken = $this->createMultiItemMidtransPayment($customer, $order, $validated, $orderNo, $transactionId);
             DB::commit();
 
             Log::info('Order created successfully', [
@@ -613,6 +630,21 @@ class CheckoutController extends Controller
         ]);
 
         $product->decrement('stock', $validated['quantity']);
+
+        // Update customer omzet
+        $customerRecord = Customer::find($customer->id);
+        if ($customerRecord) {
+            $newOmzet = $customerRecord->omzet + $validated['total'];
+            $customerRecord->update(['omzet' => $newOmzet]);
+
+            Log::info('Customer omzet updated after wallet payment', [
+                'customer_id' => $customer->id,
+                'order_no' => $orderNo,
+                'order_amount' => $validated['total'],
+                'new_omzet' => $newOmzet,
+            ]);
+        }
+
         $this->processMlmBonuses($order);
         $this->clearCustomerCart($customer->id);
 
@@ -802,6 +834,20 @@ class CheckoutController extends Controller
                         }
                     }
 
+                    // Update customer omzet
+                    $customer = Customer::find($order->customer_id);
+                    if ($customer) {
+                        $newOmzet = $customer->omzet + $order->grand_total;
+                        $customer->update(['omzet' => $newOmzet]);
+
+                        Log::info('Customer omzet updated via Midtrans callback', [
+                            'customer_id' => $customer->id,
+                            'order_no' => $orderNo,
+                            'order_amount' => $order->grand_total,
+                            'new_omzet' => $newOmzet,
+                        ]);
+                    }
+
                     // Process MLM bonuses
                     $this->processMlmBonuses($order);
 
@@ -820,6 +866,20 @@ class CheckoutController extends Controller
                     if ($product) {
                         $product->decrement('stock', $item->qty);
                     }
+                }
+
+                // Update customer omzet
+                $customer = Customer::find($order->customer_id);
+                if ($customer) {
+                    $newOmzet = $customer->omzet + $order->grand_total;
+                    $customer->update(['omzet' => $newOmzet]);
+
+                    Log::info('Customer omzet updated via Midtrans callback', [
+                        'customer_id' => $customer->id,
+                        'order_no' => $orderNo,
+                        'order_amount' => $order->grand_total,
+                        'new_omzet' => $newOmzet,
+                    ]);
                 }
 
                 // Process MLM bonuses
@@ -1025,20 +1085,21 @@ class CheckoutController extends Controller
             return redirect()->route('ecommerce.beranda')->with('error', 'Order tidak ditemukan');
         }
 
-        // Check if customer has any completed orders
-        $cek_status = Customer::find($customerId);
+        // Update customer omzet and status if order is paid
+        if ($order->status === 'PAID') {
+            $customer = Customer::find($customerId);
 
-        // If customer has completed order and status is still 1 (Prospek), update to 2 (Pasif)
-        if ($cek_status && $cek_status->status === 1) {
-            $customer = $cek_status;
-            if ($customer && $customer->status === 1) {
-                $customer->update(['status' => 2]);
+            if ($customer) {
+                // Update omzet (tambahkan grand_total order ke omzet customer)
+                $newOmzet = $customer->omzet + $order->grand_total;
+                $customer->update(['omzet' => $newOmzet]);
 
-                Log::info('Customer status updated to Pasif after completed order', [
+                Log::info('Customer omzet updated after paid order', [
                     'customer_id' => $customerId,
-                    'old_status' => 1,
-                    'new_status' => 2,
-                    'trigger_order' => $orderNo,
+                    'order_no' => $orderNo,
+                    'order_amount' => $order->grand_total,
+                    'old_omzet' => $customer->omzet,
+                    'new_omzet' => $newOmzet,
                 ]);
             }
         }
@@ -1064,5 +1125,207 @@ class CheckoutController extends Controller
             'grand_total' => 0,
             'applied_promos' => [],
         ]);
+    }
+
+    /**
+     * Create order for multi-item checkout.
+     */
+    protected function createMultiItemOrder(int $customerId, string $orderNo, array $validated, int $shippingAddressId): Order
+    {
+        // Calculate total bonus amounts from all items
+        $totalBonuses = [
+            'bv' => 0,
+            'sponsor' => 0,
+            'match' => 0,
+            'pairing' => 0,
+            'cashback' => 0,
+        ];
+
+        foreach ($validated['items'] as $item) {
+            $product = Product::find($item['product_id']);
+            if ($product) {
+                $bonusAmounts = $this->calculateBonusAmounts($product, $item['quantity']);
+                foreach ($bonusAmounts as $key => $value) {
+                    $totalBonuses[$key] += $value;
+                }
+            }
+        }
+
+        return Order::create([
+            'order_no' => $orderNo,
+            'customer_id' => $customerId,
+            'currency' => 'IDR',
+            'status' => 'PENDING',
+            'subtotal_amount' => $validated['subtotal'],
+            'discount_amount' => 0,
+            'shipping_amount' => $validated['shipping_cost'],
+            'tax_amount' => 0,
+            'grand_total' => $validated['total'],
+            'bv_amount' => $totalBonuses['bv'],
+            'sponsor_amount' => $totalBonuses['sponsor'],
+            'match_amount' => $totalBonuses['match'],
+            'pairing_amount' => $totalBonuses['pairing'],
+            'cashback_amount' => $totalBonuses['cashback'],
+            'shipping_address_id' => $shippingAddressId,
+            'billing_address_id' => $shippingAddressId,
+            'notes' => $validated['notes'] ?? null,
+            'applied_promos' => [
+                'shipping' => [
+                    'courier' => strtoupper($validated['shipping']['courier']),
+                    'service' => $validated['shipping']['service'],
+                    'etd' => $validated['shipping']['etd'],
+                    'cost' => $validated['shipping_cost'],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Create order items for multi-item checkout.
+     */
+    protected function createMultiOrderItems(int $orderId, array $items): void
+    {
+        foreach ($items as $item) {
+            $product = Product::find($item['product_id']);
+
+            OrderItem::create([
+                'order_id' => $orderId,
+                'product_id' => $item['product_id'],
+                'name' => $item['product_name'],
+                'sku' => $product->sku ?? 'N/A',
+                'qty' => $item['quantity'],
+                'unit_price' => $item['product_price'],
+                'discount_amount' => 0,
+                'row_total' => $item['product_price'] * $item['quantity'],
+                'weight_gram' => $item['weight'],
+                'meta_json' => json_encode([
+                    'image' => $item['product_image'],
+                ]),
+            ]);
+
+            // Reduce stock
+            if ($product) {
+                $product->decrement('stock', $item['quantity']);
+            }
+        }
+    }
+
+    /**
+     * Process wallet payment for multi-item checkout.
+     *
+     * @return array<string, mixed>
+     */
+    protected function processMultiItemWalletPayment($customer, Order $order, array $validated, string $orderNo): array
+    {
+        $customer->deductBalance($validated['total'], 'Pembayaran order '.$orderNo);
+
+        $appliedPromos = $order->applied_promos ?? [];
+        $appliedPromos['payment'] = [
+            'gateway' => 'wallet',
+            'paid_at' => now()->toIso8601String(),
+        ];
+
+        $order->update([
+            'status' => 'PAID',
+            'applied_promos' => $appliedPromos,
+        ]);
+
+        // Update customer omzet
+        $customerRecord = Customer::find($customer->id);
+        if ($customerRecord) {
+            $newOmzet = $customerRecord->omzet + $validated['total'];
+            $customerRecord->update(['omzet' => $newOmzet]);
+
+            Log::info('Customer omzet updated after multi-item wallet payment', [
+                'customer_id' => $customer->id,
+                'order_no' => $orderNo,
+                'order_amount' => $validated['total'],
+                'new_omzet' => $newOmzet,
+            ]);
+        }
+
+        $this->processMlmBonuses($order);
+
+        return [
+            'success' => true,
+            'message' => 'Pembayaran berhasil menggunakan e-wallet',
+            'order_no' => $orderNo,
+        ];
+    }
+
+    /**
+     * Create Midtrans payment for multi-item checkout.
+     */
+    protected function createMultiItemMidtransPayment($customer, Order $order, array $validated, string $orderNo, string $transactionId): string
+    {
+        Config::$serverKey = config('services.midtrans.server_key');
+        Config::$isProduction = (bool) config('services.midtrans.is_production');
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        // Build item details for all products
+        $itemDetails = [];
+        foreach ($validated['items'] as $item) {
+            $product = Product::find($item['product_id']);
+            $itemDetails[] = [
+                'id' => $item['product_id'],
+                'price' => (int) $item['product_price'],
+                'quantity' => $item['quantity'],
+                'name' => Str::limit($item['product_name'], 50),
+                'brand' => $product->brand ?? 'Puranusa',
+                'category' => $product->categories->first()->name ?? 'Product',
+            ];
+        }
+
+        // Add shipping cost
+        $itemDetails[] = [
+            'id' => 'SHIPPING',
+            'price' => (int) $validated['shipping_cost'],
+            'quantity' => 1,
+            'name' => 'Ongkos Kirim ('.strtoupper($validated['shipping']['courier']).' - '.$validated['shipping']['service'].')',
+        ];
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $transactionId,
+                'gross_amount' => (int) $validated['total'],
+            ],
+            'item_details' => $itemDetails,
+            'customer_details' => [
+                'first_name' => $customer->name,
+                'email' => $customer->email,
+                'phone' => $customer->phone,
+                'billing_address' => $this->formatMidtransAddress($validated['shipping']),
+                'shipping_address' => $this->formatMidtransAddress($validated['shipping']),
+            ],
+        ];
+
+        Log::info('Creating Midtrans Snap token for multi-item order', [
+            'order_no' => $orderNo,
+            'transaction_id' => $transactionId,
+            'total' => $validated['total'],
+            'items_count' => count($validated['items']),
+            'customer_id' => $customer->id,
+        ]);
+
+        $snapToken = Snap::getSnapToken($params);
+
+        $order->refresh();
+        $appliedPromos = $order->applied_promos ?? [];
+
+        if (! is_array($appliedPromos)) {
+            $appliedPromos = [];
+        }
+
+        $appliedPromos['payment'] = [
+            'gateway' => 'midtrans',
+            'snap_token' => $snapToken,
+            'transaction_id' => $transactionId,
+            'created_at' => now()->toIso8601String(),
+        ];
+
+        $order->update(['applied_promos' => $appliedPromos]);
+
+        return $snapToken;
     }
 }

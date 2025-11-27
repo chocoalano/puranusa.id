@@ -25,6 +25,7 @@ interface NetworkMember {
     level: number | null;
     has_placement: boolean;
     has_purchase: boolean;
+    omzet: number;
     joined_at: string;
 }
 
@@ -87,6 +88,15 @@ const formatDate = (dateString: string) => {
         month: 'short',
         year: 'numeric',
     });
+};
+
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(amount);
 };
 
 const getPositionBadge = (position: string | null): {
@@ -155,6 +165,9 @@ const getPositionBadge = (position: string | null): {
                                         <p>{{ member.email }}</p>
                                         <p v-if="member.phone">{{ member.phone }}</p>
                                         <p class="text-xs">Bergabung: {{ formatDate(member.joined_at) }}</p>
+                                        <p class="text-xs font-medium text-green-600 dark:text-green-400">
+                                            Omzet: {{ formatCurrency(member.omzet) }}
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="flex flex-col items-end gap-2">
@@ -194,6 +207,9 @@ const getPositionBadge = (position: string | null): {
                                         <p>{{ member.email }}</p>
                                         <p v-if="member.phone">{{ member.phone }}</p>
                                         <p class="text-xs">Bergabung: {{ formatDate(member.joined_at) }}</p>
+                                        <p class="text-xs font-medium text-orange-600 dark:text-orange-400">
+                                            Omzet: {{ formatCurrency(member.omzet) }}
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="flex flex-col items-end gap-2">
@@ -245,6 +261,9 @@ const getPositionBadge = (position: string | null): {
                                         <p>{{ member.email }}</p>
                                         <p v-if="member.phone">{{ member.phone }}</p>
                                         <p class="text-xs">Bergabung: {{ formatDate(member.joined_at) }}</p>
+                                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                            Omzet: {{ formatCurrency(member.omzet) }}
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="flex flex-col items-end gap-2">
