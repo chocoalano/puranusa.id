@@ -686,7 +686,6 @@ const searchSuggestions = computed(() => {
                         >
                             <Search class="h-5 w-5" />
                         </Button>
-
                         <!-- Theme Toggle -->
                         <Button
                             variant="ghost"
@@ -717,13 +716,9 @@ const searchSuggestions = computed(() => {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" class="w-150">
-                                <DropdownMenuLabel
-                                    class="flex items-center justify-between"
-                                >
+                                <DropdownMenuLabel class="flex items-center justify-between">
                                     <span>Wishlist Saya</span>
-                                    <Badge variant="secondary"
-                                        >{{ wishlistItemCount }} item</Badge
-                                    >
+                                    <Badge variant="secondary">{{ wishlistItemCount }} item</Badge>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <div class="max-h-96 overflow-y-auto">
