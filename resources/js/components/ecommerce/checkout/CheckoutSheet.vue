@@ -317,6 +317,16 @@ const handleCheckout = async () => {
         return;
     }
 
+    // Check if we have items to checkout
+    if (allItems.value.length === 0) {
+        alertMessage.value = {
+            type: 'error',
+            message: 'Tidak ada produk untuk di-checkout',
+        };
+        toast.error('Tidak ada produk untuk di-checkout');
+        return;
+    }
+
     // Check if Midtrans Snap is loaded for midtrans payment
     if (form.value.payment_method === 'midtrans') {
         const snapInstance = (window as any).snap;
@@ -352,7 +362,12 @@ const handleCheckout = async () => {
             product_image: item.image,
         }));
 
-        const response = await axios.post('/checkout/process', {
+        console.log('Sending checkout data:', {
+            items,
+            allItems: allItems.value,
+        });
+
+        const payload = {
             items: items, // Send all items as array
             shipping: {
                 recipient_name: form.value.recipient_name,
@@ -373,7 +388,11 @@ const handleCheckout = async () => {
             shipping_cost: form.value.shipping_cost,
             total: total.value,
             payment_method: form.value.payment_method,
-        });
+        };
+
+        console.log('Full payload:', JSON.stringify(payload, null, 2));
+
+        const response = await axios.post('/checkout/process', payload);
 
         const data = response.data;
 
@@ -383,9 +402,6 @@ const handleCheckout = async () => {
                 message: data.message || 'Pesanan berhasil dibuat!',
             };
             toast.success(data.message || 'Pesanan berhasil dibuat!');
-
-            // Close the checkout sheet
-            emit('update:open', false);
 
             // Handle based on payment method
             if (form.value.payment_method === 'wallet') {

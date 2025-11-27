@@ -402,6 +402,13 @@ class CheckoutController extends Controller
      */
     public function process(Request $request): JsonResponse
     {
+        // Debug: Log incoming request data
+        Log::info('Checkout process - incoming request', [
+            'all_data' => $request->all(),
+            'items' => $request->input('items'),
+            'items_count' => is_array($request->input('items')) ? count($request->input('items')) : 'not_array',
+        ]);
+
         $validated = $request->validate([
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|integer|exists:products,id',
