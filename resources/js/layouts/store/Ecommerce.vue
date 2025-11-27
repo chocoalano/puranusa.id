@@ -1034,15 +1034,6 @@ const searchSuggestions = computed(() => {
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-2 gap-2">
-                                        <Link href="/cart">
-                                            <Button
-                                                class="w-full"
-                                                variant="outline"
-                                                size="sm"
-                                            >
-                                                Lihat Keranjang
-                                            </Button>
-                                        </Link>
                                         <Button
                                             class="w-full"
                                             size="sm"
