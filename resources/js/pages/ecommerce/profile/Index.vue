@@ -82,6 +82,31 @@ interface BonusPairing {
     created_at: string;
 }
 
+interface BonusRetail {
+    id: number;
+    from_member_id: number;
+    amount: number;
+    index_value: number;
+    status: number;
+    description: string | null;
+    created_at: string;
+    from_member?: {
+        name: string;
+        email: string;
+    };
+}
+
+interface BonusLifetimeCashReward {
+    id: number;
+    reward_name: string;
+    reward: number;
+    amount: number;
+    bv: number;
+    status: number;
+    description: string | null;
+    created_at: string;
+}
+
 interface Address {
     id: number;
     customer_id: number;
@@ -102,7 +127,7 @@ interface Address {
     updated_at: string;
 }
 
-defineProps<{
+const props = defineProps<{
     customer: Customer;
     orders: Order[];
     walletTransactions: WalletTransaction[];
@@ -118,10 +143,17 @@ defineProps<{
     bonusPairings: BonusPairing[];
     bonusCashbacks: any[];
     bonusRewards: any[];
+    bonusRetails: BonusRetail[];
+    bonusLifetimeCashRewards: BonusLifetimeCashReward[];
     addresses: Address[];
 }>();
 
 const page = usePage();
+
+// Check if member is active in MLM network (has upline placement)
+const isActiveMember = computed(() => {
+    return props.customer.upline !== null;
+});
 
 // Get active tab from URL query parameter (SSR-safe)
 const activeTab = computed(() => {
@@ -167,9 +199,9 @@ const activeTab = computed(() => {
                 <!-- Left Sidebar - Profile Summary -->
                 <div class="lg:col-span-1 space-y-4 sm:space-y-6">
                     <ProfileCard :customer="customer" />
-                    <NetworkStatsCard v-if="binaryTree" :customer="customer" />
+                    <NetworkStatsCard v-if="isActiveMember" :customer="customer" />
                     <AddressManagement :addresses="addresses" />
-                    <BonusStatsCard v-if="binaryTree" :customer="customer" />
+                    <BonusStatsCard v-if="isActiveMember" :customer="customer" />
                     <MemberSinceCard :created-at="customer.created_at" />
                 </div>
 
@@ -195,20 +227,23 @@ const activeTab = computed(() => {
                                             <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Order</span>
                                         </TabsTrigger>
                                         <TabsTrigger
+                                            v-if="isActiveMember"
                                             value="network"
                                             class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                                         >
                                             <Network class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
-                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Net</span>
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Mitra</span>
                                         </TabsTrigger>
                                         <TabsTrigger
+                                            v-if="isActiveMember"
                                             value="binary"
                                             class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                                         >
                                             <GitBranch class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
-                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Tree</span>
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Network</span>
                                         </TabsTrigger>
                                         <TabsTrigger
+                                            v-if="isActiveMember"
                                             value="bonus"
                                             class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                                         >
@@ -248,7 +283,7 @@ const activeTab = computed(() => {
                                     <OrdersTab :orders="orders" />
                                 </TabsContent>
 
-                                <TabsContent value="network" class="mt-0">
+                                <TabsContent v-if="isActiveMember" value="network" class="mt-0">
                                     <NetworkMembersTab
                                         :active-members="activeMembers"
                                         :passive-members="passiveMembers"
@@ -256,7 +291,7 @@ const activeTab = computed(() => {
                                     />
                                 </TabsContent>
 
-                                <TabsContent value="binary" class="mt-0">
+                                <TabsContent v-if="isActiveMember" value="binary" class="mt-0">
                                     <BinaryTreeTab
                                         v-if="binaryTree"
                                         :binary-tree="binaryTree"
@@ -274,13 +309,15 @@ const activeTab = computed(() => {
                                     </div>
                                 </TabsContent>
 
-                                <TabsContent value="bonus" class="mt-0">
+                                <TabsContent v-if="isActiveMember" value="bonus" class="mt-0">
                                     <BonusTab
                                         :bonus-sponsors="bonusSponsors"
                                         :bonus-matchings="bonusMatchings"
                                         :bonus-pairings="bonusPairings"
                                         :bonus-cashbacks="bonusCashbacks"
                                         :bonus-rewards="bonusRewards"
+                                        :bonus-retails="bonusRetails"
+                                        :bonus-lifetime-cash-rewards="bonusLifetimeCashRewards"
                                     />
                                 </TabsContent>
 

@@ -222,4 +222,17 @@
             max-width: 1536px;
         }
     }
+
+    /* Midtrans Snap popup overlay fix */
+    body.midtrans-popup-active [data-radix-dialog-overlay],
+    body.midtrans-popup-active [data-state="open"][role="dialog"] ~ div {
+        pointer-events: none !important;
+    }
+
+    body.midtrans-popup-active .snap-midtrans,
+    body.midtrans-popup-active #snap-midtrans,
+    body.midtrans-popup-active iframe[src*="midtrans"] {
+        pointer-events: auto !important;
+        z-index: 99999 !important;
+    }
 }

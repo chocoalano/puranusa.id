@@ -1033,7 +1033,7 @@ const searchSuggestions = computed(() => {
                                             }}</span>
                                         </div>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-2">
+                                    <div>
                                         <Button
                                             class="w-full"
                                             size="sm"

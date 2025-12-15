@@ -4,25 +4,25 @@ use App\Models\Manage\Customer;
 use App\Models\Manage\CustomerNetworkMatrix;
 use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Testing\WithoutMiddleware;
 
-uses(RefreshDatabase::class);
+uses(RefreshDatabase::class, WithoutMiddleware::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Create sponsor
     $this->sponsor = Customer::factory()->create([
         'ref_code' => 'SPONSOR01',
         'upline_id' => null,
         'position' => null,
-        'foot_left' => null,
-        'foot_right' => null,
     ]);
 
     // Create passive member (member with purchase)
     $this->passiveMember = Customer::factory()->create([
         'ref_code' => 'PASSIVE01',
+        'sponsor_id' => $this->sponsor->id,
         'upline_id' => null,
         'position' => null,
+        'status' => 1, // Prospek
     ]);
 
     // Create order for passive member
@@ -41,8 +41,10 @@ beforeEach(function () {
     // Create prospect member (member without purchase)
     $this->prospectMember = Customer::factory()->create([
         'ref_code' => 'PROSPECT01',
+        'sponsor_id' => $this->sponsor->id,
         'upline_id' => null,
         'position' => null,
+        'status' => 1, // Prospek
     ]);
 
     // Add prospect member to sponsor's matrix
@@ -51,11 +53,6 @@ beforeEach(function () {
         'sponsor_id' => $this->sponsor->id,
         'level' => 1,
     ]);
-
-    // Mock stored procedure
-    DB::shouldReceive('statement')
-        ->with('CALL sp_register(?)', [$this->passiveMember->id])
-        ->andReturn(true);
 });
 
 test('sponsor can place passive member to left position', function () {
@@ -78,10 +75,6 @@ test('sponsor can place passive member to left position', function () {
 });
 
 test('sponsor can place passive member to right position', function () {
-    DB::shouldReceive('statement')
-        ->with('CALL sp_register(?)', [$this->passiveMember->id])
-        ->andReturn(true);
-
     $this->actingAs($this->sponsor, 'client')
         ->post(route('client.profile.place-member'), [
             'member_id' => $this->passiveMember->id,
@@ -131,7 +124,7 @@ test('cannot place member to already filled position', function () {
 test('cannot place already placed member', function () {
     // Already placed member
     $this->passiveMember->update([
-        'upline_id' => 1,
+        'upline_id' => $this->sponsor->id,
         'position' => 'left',
     ]);
 

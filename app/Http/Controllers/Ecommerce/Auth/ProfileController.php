@@ -35,6 +35,8 @@ class ProfileController extends Controller
             'bonusSponsors' => fn ($q) => $q->with('fromMember:id,name,email')->latest()->limit(50),
             'bonusCashbacks' => fn ($q) => $q->latest()->limit(50),
             'bonusRewards' => fn ($q) => $q->latest()->limit(50),
+            'bonusRetails' => fn ($q) => $q->with('fromMember:id,name,email')->latest()->limit(50),
+            'bonusLifetimeCashRewards' => fn ($q) => $q->latest()->limit(50),
         ]);
 
         // Load recent orders with error handling
@@ -323,6 +325,29 @@ class ProfileController extends Controller
                 'id' => $bonus->id,
                 'reward_type' => $bonus->reward_type,
                 'amount' => $bonus->amount,
+                'status' => $bonus->status,
+                'description' => $bonus->description,
+                'created_at' => $bonus->created_at,
+            ]),
+            'bonusRetails' => $customer->bonusRetails->map(fn ($bonus) => [
+                'id' => $bonus->id,
+                'from_member_id' => $bonus->from_member_id,
+                'amount' => $bonus->amount,
+                'index_value' => $bonus->index_value,
+                'status' => $bonus->status,
+                'description' => $bonus->description,
+                'created_at' => $bonus->created_at,
+                'from_member' => $bonus->fromMember ? [
+                    'name' => $bonus->fromMember->name,
+                    'email' => $bonus->fromMember->email,
+                ] : null,
+            ]),
+            'bonusLifetimeCashRewards' => $customer->bonusLifetimeCashRewards->map(fn ($bonus) => [
+                'id' => $bonus->id,
+                'reward_name' => $bonus->reward_name,
+                'reward' => $bonus->reward,
+                'amount' => $bonus->amount,
+                'bv' => $bonus->bv,
                 'status' => $bonus->status,
                 'description' => $bonus->description,
                 'created_at' => $bonus->created_at,

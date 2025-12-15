@@ -32,7 +32,7 @@ import {
     Truck,
     Wallet,
 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, watchEffect, onUnmounted } from 'vue';
 import { toast } from 'vue-sonner';
 
 interface Province {
@@ -126,6 +126,49 @@ const loadingProvinces = ref(false);
 const loadingCities = ref(false);
 const loadingShipping = ref(false);
 const processingOrder = ref(false);
+const midtransPopupOpen = ref(false);
+
+// Handler functions for Sheet interactions
+const handleSheetOpenChange = (val: boolean) => {
+    // Don't close sheet if Midtrans popup is open or order is processing
+    if (!val && (midtransPopupOpen.value || processingOrder.value)) {
+        return;
+    }
+    emit('update:open', val);
+};
+
+const handleOutsideInteraction = (e: Event) => {
+    // Prevent closing when Midtrans popup is open or processing
+    if (midtransPopupOpen.value || processingOrder.value) {
+        e.preventDefault();
+    }
+};
+
+const handleEscapeKey = (e: Event) => {
+    // Prevent closing with escape when Midtrans popup is open or processing
+    if (midtransPopupOpen.value || processingOrder.value) {
+        e.preventDefault();
+    }
+};
+
+// Watch for Midtrans popup state and manage overlay pointer-events
+watchEffect(() => {
+    if (typeof document !== 'undefined') {
+        // When Midtrans popup is open, add class to allow interactions with Midtrans iframe
+        if (midtransPopupOpen.value) {
+            document.body.classList.add('midtrans-popup-active');
+        } else {
+            document.body.classList.remove('midtrans-popup-active');
+        }
+    }
+});
+
+// Cleanup on unmount
+onUnmounted(() => {
+    if (typeof document !== 'undefined') {
+        document.body.classList.remove('midtrans-popup-active');
+    }
+});
 
 // Form data
 const form = ref({
@@ -415,30 +458,43 @@ const handleCheckout = async () => {
             // Midtrans payment - open Snap modal
             if (typeof window !== 'undefined' && data.snap_token) {
                 const snapInstance = (window as any).snap;
+                midtransPopupOpen.value = true;
                 snapInstance.pay(data.snap_token, {
                     onSuccess: function (result: any) {
+                        midtransPopupOpen.value = false;
                         toast.success('Pembayaran berhasil '+result.order_id);
                         if (typeof window !== 'undefined') {
                             window.location.href = `/checkout/finish?order_no=${data.order_no}`;
                         }
                     },
                     onPending: function (result: any) {
+                        midtransPopupOpen.value = false;
                         toast.info('Pembayaran tertunda '+result.order_id);
                         if (typeof window !== 'undefined') {
                             window.location.href = `/checkout/finish?order_no=${data.order_no}`;
                         }
                     },
                     onError: function (result: any) {
+                        midtransPopupOpen.value = false;
+                        processingOrder.value = false;
                         toast.error('Pembayaran gagal. Silakan coba lagi. '+result.order_id);
                         alertMessage.value = {
                             type: 'error',
                             message: 'Pembayaran gagal. Silakan coba lagi.',
                         };
-                        processingOrder.value = false;
+                        // Allow sheet to be closed after Midtrans popup is closed
+                        setTimeout(() => {
+                            document.body.classList.remove('midtrans-popup-active');
+                        }, 100);
                     },
                     onClose: function () {
-                        toast.info('Pembayaran dibatalkan.');
+                        midtransPopupOpen.value = false;
                         processingOrder.value = false;
+                        toast.info('Pembayaran dibatalkan.');
+                        // Allow sheet to be closed after Midtrans popup is closed
+                        setTimeout(() => {
+                            document.body.classList.remove('midtrans-popup-active');
+                        }, 100);
                     },
                 });
 
@@ -526,11 +582,14 @@ watch(
 </script>
 
 <template>
-    <Sheet :open="open" @update:open="(val) => emit('update:open', val)">
+    <Sheet :open="open" @update:open="handleSheetOpenChange">
         <SheetContent
             side="right"
             class="w-full overflow-y-auto sm:max-w-2xl"
             :trap-focus="false"
+            @pointer-down-outside="handleOutsideInteraction"
+            @interact-outside="handleOutsideInteraction"
+            @escape-key-down="handleEscapeKey"
         >
             <SheetHeader>
                 <SheetTitle>Checkout</SheetTitle>
@@ -1009,7 +1068,7 @@ watch(
             <SheetFooter>
                 <Button
                     @click="handleCheckout"
-                    :disabled="!isFormValid || processingOrder"
+                    :disabled="!isFormValid || processingOrder || midtransPopupOpen"
                     class="w-full"
                     size="lg"
                 >

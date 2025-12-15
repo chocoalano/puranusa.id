@@ -351,6 +351,22 @@ class Customer extends Authenticatable
     }
 
     /**
+     * Relasi ke bonus retail
+     */
+    public function bonusRetails(): HasMany
+    {
+        return $this->hasMany(CustomerBonusRetail::class, 'member_id');
+    }
+
+    /**
+     * Relasi ke bonus lifetime cash rewards
+     */
+    public function bonusLifetimeCashRewards(): HasMany
+    {
+        return $this->hasMany(CustomerBonusLifetimeCashReward::class, 'member_id');
+    }
+
+    /**
      * Dapatkan upline dari member ini
      */
     public function getUpline(): ?self

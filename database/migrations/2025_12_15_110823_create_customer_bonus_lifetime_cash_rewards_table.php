@@ -11,19 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customer_bonus_matchings', function (Blueprint $table) {
+        Schema::create('customer_bonus_lifetime_cash_rewards', function (Blueprint $table) {
             $table->integer('id')->primary()->autoIncrement();
-            $table->integer('member_id')->index();
-            $table->integer('from_member_id')->index();
-            $table->tinyInteger('level')->default(1);
+            $table->unsignedInteger('member_id')->index();
+            $table->string('reward_name', 255);
+            $table->string('reward', 255);
             $table->decimal('amount', 15, 2)->default(0);
-            $table->decimal('index_value', 15, 2)->default(0);
-            $table->tinyInteger('status')->default(0);
+            $table->decimal('bv', 15, 2)->default(0);
+            $table->tinyInteger('status')->default(0)->comment('0=Pending, 1=Claimed, 2=Expired');
             $table->text('description')->nullable();
             $table->timestamps();
 
             $table->foreign('member_id')->references('id')->on('customers')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreign('from_member_id')->references('id')->on('customers')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('customer_bonus_matchings');
+        Schema::dropIfExists('customer_bonus_lifetime_cash_rewards');
     }
 };
