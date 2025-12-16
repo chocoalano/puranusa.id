@@ -1,0 +1,1136 @@
+import { defineComponent, computed, ref, unref, withCtx, createVNode, createTextVNode, toDisplayString, createBlock, openBlock, withModifiers, createCommentVNode, useSSRContext } from "vue";
+import { ssrRenderComponent, ssrInterpolate } from "vue/server-renderer";
+import { _ as _sfc_main$6, a as _sfc_main$7, b as _sfc_main$8 } from "./index-D3PKcwoM.js";
+import { _ as _sfc_main$b } from "./index-SN_CnQ_F.js";
+import { _ as _sfc_main$1, a as _sfc_main$2, b as _sfc_main$3, d as _sfc_main$4, c as _sfc_main$5 } from "./CardTitle-sqUG0LTw.js";
+import { _ as _sfc_main$a } from "./Input-BGi8wCMh.js";
+import { _ as _sfc_main$9 } from "./Label-16aMY2sx.js";
+import { usePage, useForm, Head, Link } from "@inertiajs/vue3";
+import { ShoppingBag, CheckCircle2, AlertCircle, User, Mail, Phone, Users, Lock, Eye, EyeOff } from "lucide-vue-next";
+import { toast } from "vue-sonner";
+import "class-variance-authority";
+import "reka-ui";
+import "clsx";
+import "tailwind-merge";
+import "@vueuse/core";
+const _sfc_main = /* @__PURE__ */ defineComponent({
+  __name: "Register",
+  __ssrInlineRender: true,
+  props: {
+    ref_code: { default: "" }
+  },
+  setup(__props) {
+    const props = __props;
+    const page = usePage();
+    const flashSuccess = computed(() => page.props.flash?.success);
+    const form = useForm({
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      password_confirmation: "",
+      ref_code: props.ref_code
+    });
+    const showPassword = ref(false);
+    const showPasswordConfirmation = ref(false);
+    const submit = () => {
+      form.post("/client/register", {
+        onSuccess: () => {
+          toast.success("Pendaftaran berhasil! Selamat datang!");
+        },
+        onError: (errors) => {
+          const firstError = Object.values(errors)[0];
+          const errorMessage = typeof firstError === "string" ? firstError : "Pendaftaran gagal. Silakan periksa form Anda.";
+          toast.error(errorMessage);
+        },
+        onFinish: () => {
+          form.reset("password", "password_confirmation");
+        }
+      });
+    };
+    return (_ctx, _push, _parent, _attrs) => {
+      _push(`<!--[-->`);
+      _push(ssrRenderComponent(unref(Head), { title: "Daftar - Puranusa" }, null, _parent));
+      _push(`<div class="grid min-h-screen lg:grid-cols-2"><div class="relative hidden bg-muted lg:block"><div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5"></div><div class="relative flex h-full flex-col items-center justify-center p-12 text-center"><div class="max-w-md space-y-6"><h1 class="text-4xl font-bold tracking-tight"> Bergabunglah dengan Kami! </h1><p class="text-lg text-muted-foreground"> Daftar sekarang dan nikmati pengalaman belanja yang luar biasa dengan berbagai keuntungan. </p><div class="grid grid-cols-2 gap-4 pt-8"><div class="space-y-2 rounded-lg bg-background/50 p-4"><div class="text-2xl">🎁</div><p class="text-sm font-medium">Bonus Member</p></div><div class="space-y-2 rounded-lg bg-background/50 p-4"><div class="text-2xl">🚚</div><p class="text-sm font-medium">Gratis Ongkir</p></div><div class="space-y-2 rounded-lg bg-background/50 p-4"><div class="text-2xl">💳</div><p class="text-sm font-medium">E-Wallet</p></div><div class="space-y-2 rounded-lg bg-background/50 p-4"><div class="text-2xl">⭐</div><p class="text-sm font-medium">Reward Points</p></div></div></div></div><div class="bg-grid-white/10 absolute inset-0 bg-[size:20px_20px]"></div></div><div class="flex items-center justify-center bg-background p-8"><div class="w-full max-w-md space-y-8"><div class="flex justify-center">`);
+      _push(ssrRenderComponent(unref(Link), { href: "/" }, {
+        default: withCtx((_, _push2, _parent2, _scopeId) => {
+          if (_push2) {
+            _push2(`<div class="flex items-center gap-2"${_scopeId}>`);
+            _push2(ssrRenderComponent(unref(ShoppingBag), { class: "h-8 w-8 text-primary" }, null, _parent2, _scopeId));
+            _push2(`<span class="text-2xl font-bold"${_scopeId}>Puranusa</span></div>`);
+          } else {
+            return [
+              createVNode("div", { class: "flex items-center gap-2" }, [
+                createVNode(unref(ShoppingBag), { class: "h-8 w-8 text-primary" }),
+                createVNode("span", { class: "text-2xl font-bold" }, "Puranusa")
+              ])
+            ];
+          }
+        }),
+        _: 1
+      }, _parent));
+      _push(`</div>`);
+      _push(ssrRenderComponent(unref(_sfc_main$1), null, {
+        default: withCtx((_, _push2, _parent2, _scopeId) => {
+          if (_push2) {
+            _push2(ssrRenderComponent(unref(_sfc_main$2), { class: "space-y-1" }, {
+              default: withCtx((_2, _push3, _parent3, _scopeId2) => {
+                if (_push3) {
+                  _push3(ssrRenderComponent(unref(_sfc_main$3), { class: "text-2xl font-bold" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(`Buat Akun Baru`);
+                      } else {
+                        return [
+                          createTextVNode("Buat Akun Baru")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$4), null, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(` Isi formulir di bawah untuk mendaftar `);
+                      } else {
+                        return [
+                          createTextVNode(" Isi formulir di bawah untuk mendaftar ")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                } else {
+                  return [
+                    createVNode(unref(_sfc_main$3), { class: "text-2xl font-bold" }, {
+                      default: withCtx(() => [
+                        createTextVNode("Buat Akun Baru")
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(unref(_sfc_main$4), null, {
+                      default: withCtx(() => [
+                        createTextVNode(" Isi formulir di bawah untuk mendaftar ")
+                      ]),
+                      _: 1
+                    })
+                  ];
+                }
+              }),
+              _: 1
+            }, _parent2, _scopeId));
+            _push2(ssrRenderComponent(unref(_sfc_main$5), null, {
+              default: withCtx((_2, _push3, _parent3, _scopeId2) => {
+                if (_push3) {
+                  _push3(`<form class="space-y-4"${_scopeId2}>`);
+                  if (flashSuccess.value) {
+                    _push3(ssrRenderComponent(unref(_sfc_main$6), { variant: "default" }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(ssrRenderComponent(unref(CheckCircle2), { class: "h-4 w-4" }, null, _parent4, _scopeId3));
+                          _push4(ssrRenderComponent(unref(_sfc_main$7), null, {
+                            default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                              if (_push5) {
+                                _push5(`Berhasil!`);
+                              } else {
+                                return [
+                                  createTextVNode("Berhasil!")
+                                ];
+                              }
+                            }),
+                            _: 1
+                          }, _parent4, _scopeId3));
+                          _push4(ssrRenderComponent(unref(_sfc_main$8), null, {
+                            default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                              if (_push5) {
+                                _push5(`${ssrInterpolate(flashSuccess.value)}`);
+                              } else {
+                                return [
+                                  createTextVNode(toDisplayString(flashSuccess.value), 1)
+                                ];
+                              }
+                            }),
+                            _: 1
+                          }, _parent4, _scopeId3));
+                        } else {
+                          return [
+                            createVNode(unref(CheckCircle2), { class: "h-4 w-4" }),
+                            createVNode(unref(_sfc_main$7), null, {
+                              default: withCtx(() => [
+                                createTextVNode("Berhasil!")
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(_sfc_main$8), null, {
+                              default: withCtx(() => [
+                                createTextVNode(toDisplayString(flashSuccess.value), 1)
+                              ]),
+                              _: 1
+                            })
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  if (unref(form).errors.error) {
+                    _push3(ssrRenderComponent(unref(_sfc_main$6), { variant: "destructive" }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(ssrRenderComponent(unref(AlertCircle), { class: "h-4 w-4" }, null, _parent4, _scopeId3));
+                          _push4(ssrRenderComponent(unref(_sfc_main$7), null, {
+                            default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                              if (_push5) {
+                                _push5(`Terjadi Kesalahan`);
+                              } else {
+                                return [
+                                  createTextVNode("Terjadi Kesalahan")
+                                ];
+                              }
+                            }),
+                            _: 1
+                          }, _parent4, _scopeId3));
+                          _push4(ssrRenderComponent(unref(_sfc_main$8), null, {
+                            default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                              if (_push5) {
+                                _push5(`${ssrInterpolate(unref(form).errors.error)}`);
+                              } else {
+                                return [
+                                  createTextVNode(toDisplayString(unref(form).errors.error), 1)
+                                ];
+                              }
+                            }),
+                            _: 1
+                          }, _parent4, _scopeId3));
+                        } else {
+                          return [
+                            createVNode(unref(AlertCircle), { class: "h-4 w-4" }),
+                            createVNode(unref(_sfc_main$7), null, {
+                              default: withCtx(() => [
+                                createTextVNode("Terjadi Kesalahan")
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(_sfc_main$8), null, {
+                              default: withCtx(() => [
+                                createTextVNode(toDisplayString(unref(form).errors.error), 1)
+                              ]),
+                              _: 1
+                            })
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`<div class="space-y-2"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$9), { for: "name" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(`Nama Lengkap`);
+                      } else {
+                        return [
+                          createTextVNode("Nama Lengkap")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="relative"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(User), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }, null, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$a), {
+                    id: "name",
+                    modelValue: unref(form).name,
+                    "onUpdate:modelValue": ($event) => unref(form).name = $event,
+                    type: "text",
+                    placeholder: "Masukkan nama lengkap",
+                    class: ["pl-10", {
+                      "border-destructive": unref(form).errors.name
+                    }],
+                    required: "",
+                    autofocus: "",
+                    autocomplete: "name"
+                  }, null, _parent3, _scopeId2));
+                  _push3(`</div>`);
+                  if (unref(form).errors.name) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(unref(form).errors.name)}</p>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`</div><div class="space-y-2"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$9), { for: "email" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(`Email`);
+                      } else {
+                        return [
+                          createTextVNode("Email")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="relative"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Mail), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }, null, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$a), {
+                    id: "email",
+                    modelValue: unref(form).email,
+                    "onUpdate:modelValue": ($event) => unref(form).email = $event,
+                    type: "email",
+                    placeholder: "nama@email.com",
+                    class: ["pl-10", {
+                      "border-destructive": unref(form).errors.email
+                    }],
+                    required: "",
+                    autocomplete: "email"
+                  }, null, _parent3, _scopeId2));
+                  _push3(`</div>`);
+                  if (unref(form).errors.email) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(unref(form).errors.email)}</p>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`</div><div class="space-y-2"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$9), { for: "phone" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(`Nomor Telepon`);
+                      } else {
+                        return [
+                          createTextVNode("Nomor Telepon")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="relative"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Phone), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }, null, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$a), {
+                    id: "phone",
+                    modelValue: unref(form).phone,
+                    "onUpdate:modelValue": ($event) => unref(form).phone = $event,
+                    type: "tel",
+                    placeholder: "08xxxxxxxxxx",
+                    class: ["pl-10", {
+                      "border-destructive": unref(form).errors.phone
+                    }],
+                    required: "",
+                    autocomplete: "tel"
+                  }, null, _parent3, _scopeId2));
+                  _push3(`</div>`);
+                  if (unref(form).errors.phone) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(unref(form).errors.phone)}</p>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`</div><div class="space-y-2"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$9), { for: "ref_code" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(`Kode Referral (Opsional)`);
+                      } else {
+                        return [
+                          createTextVNode("Kode Referral (Opsional)")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="relative"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Users), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }, null, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$a), {
+                    id: "ref_code",
+                    modelValue: unref(form).ref_code,
+                    "onUpdate:modelValue": ($event) => unref(form).ref_code = $event,
+                    type: "text",
+                    placeholder: "REF-XXXXXXXX",
+                    class: ["pl-10", {
+                      "border-destructive": unref(form).errors.ref_code
+                    }],
+                    autocomplete: "off"
+                  }, null, _parent3, _scopeId2));
+                  _push3(`</div>`);
+                  if (unref(form).errors.ref_code) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(unref(form).errors.ref_code)}</p>`);
+                  } else {
+                    _push3(`<p class="text-xs text-muted-foreground"${_scopeId2}> Masukkan kode referral dari sponsor Anda untuk bergabung ke jaringan MLM </p>`);
+                  }
+                  _push3(`</div><div class="space-y-2"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$9), { for: "password" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(`Password`);
+                      } else {
+                        return [
+                          createTextVNode("Password")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="relative"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Lock), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }, null, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$a), {
+                    id: "password",
+                    modelValue: unref(form).password,
+                    "onUpdate:modelValue": ($event) => unref(form).password = $event,
+                    type: showPassword.value ? "text" : "password",
+                    placeholder: "Minimal 8 karakter",
+                    class: ["pr-10 pl-10", {
+                      "border-destructive": unref(form).errors.password
+                    }],
+                    required: "",
+                    autocomplete: "new-password"
+                  }, null, _parent3, _scopeId2));
+                  _push3(`<button type="button" class="absolute top-3 right-3 text-muted-foreground hover:text-foreground"${_scopeId2}>`);
+                  if (!showPassword.value) {
+                    _push3(ssrRenderComponent(unref(Eye), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
+                  } else {
+                    _push3(ssrRenderComponent(unref(EyeOff), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
+                  }
+                  _push3(`</button></div>`);
+                  if (unref(form).errors.password) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(unref(form).errors.password)}</p>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`</div><div class="space-y-2"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$9), { for: "password_confirmation" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(`Konfirmasi Password`);
+                      } else {
+                        return [
+                          createTextVNode("Konfirmasi Password")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="relative"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Lock), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }, null, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$a), {
+                    id: "password_confirmation",
+                    modelValue: unref(form).password_confirmation,
+                    "onUpdate:modelValue": ($event) => unref(form).password_confirmation = $event,
+                    type: showPasswordConfirmation.value ? "text" : "password",
+                    placeholder: "Ulangi password",
+                    class: "pr-10 pl-10",
+                    required: "",
+                    autocomplete: "new-password"
+                  }, null, _parent3, _scopeId2));
+                  _push3(`<button type="button" class="absolute top-3 right-3 text-muted-foreground hover:text-foreground"${_scopeId2}>`);
+                  if (!showPasswordConfirmation.value) {
+                    _push3(ssrRenderComponent(unref(Eye), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
+                  } else {
+                    _push3(ssrRenderComponent(unref(EyeOff), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
+                  }
+                  _push3(`</button></div></div><p class="text-xs text-muted-foreground"${_scopeId2}> Dengan mendaftar, Anda menyetujui `);
+                  _push3(ssrRenderComponent(unref(Link), {
+                    href: "/terms",
+                    class: "text-primary hover:underline"
+                  }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(` Syarat &amp; Ketentuan `);
+                      } else {
+                        return [
+                          createTextVNode(" Syarat & Ketentuan ")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(` dan `);
+                  _push3(ssrRenderComponent(unref(Link), {
+                    href: "/privacy",
+                    class: "text-primary hover:underline"
+                  }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(` Kebijakan Privasi `);
+                      } else {
+                        return [
+                          createTextVNode(" Kebijakan Privasi ")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(` kami. </p>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$b), {
+                    type: "submit",
+                    class: "w-full",
+                    disabled: unref(form).processing
+                  }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        if (unref(form).processing) {
+                          _push4(`<span${_scopeId3}>Memproses...</span>`);
+                        } else {
+                          _push4(`<span${_scopeId3}>Daftar Sekarang</span>`);
+                        }
+                      } else {
+                        return [
+                          unref(form).processing ? (openBlock(), createBlock("span", { key: 0 }, "Memproses...")) : (openBlock(), createBlock("span", { key: 1 }, "Daftar Sekarang"))
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`</form><div class="relative my-6"${_scopeId2}><div class="absolute inset-0 flex items-center"${_scopeId2}><span class="w-full border-t"${_scopeId2}></span></div><div class="relative flex justify-center text-xs uppercase"${_scopeId2}><span class="bg-background px-2 text-muted-foreground"${_scopeId2}> Atau </span></div></div><div class="text-center text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Sudah punya akun? </span>`);
+                  _push3(ssrRenderComponent(unref(Link), {
+                    href: "/client/login",
+                    class: "font-medium text-primary hover:underline"
+                  }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(` Masuk `);
+                      } else {
+                        return [
+                          createTextVNode(" Masuk ")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`</div>`);
+                } else {
+                  return [
+                    createVNode("form", {
+                      onSubmit: withModifiers(submit, ["prevent"]),
+                      class: "space-y-4"
+                    }, [
+                      flashSuccess.value ? (openBlock(), createBlock(unref(_sfc_main$6), {
+                        key: 0,
+                        variant: "default"
+                      }, {
+                        default: withCtx(() => [
+                          createVNode(unref(CheckCircle2), { class: "h-4 w-4" }),
+                          createVNode(unref(_sfc_main$7), null, {
+                            default: withCtx(() => [
+                              createTextVNode("Berhasil!")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(_sfc_main$8), null, {
+                            default: withCtx(() => [
+                              createTextVNode(toDisplayString(flashSuccess.value), 1)
+                            ]),
+                            _: 1
+                          })
+                        ]),
+                        _: 1
+                      })) : createCommentVNode("", true),
+                      unref(form).errors.error ? (openBlock(), createBlock(unref(_sfc_main$6), {
+                        key: 1,
+                        variant: "destructive"
+                      }, {
+                        default: withCtx(() => [
+                          createVNode(unref(AlertCircle), { class: "h-4 w-4" }),
+                          createVNode(unref(_sfc_main$7), null, {
+                            default: withCtx(() => [
+                              createTextVNode("Terjadi Kesalahan")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(_sfc_main$8), null, {
+                            default: withCtx(() => [
+                              createTextVNode(toDisplayString(unref(form).errors.error), 1)
+                            ]),
+                            _: 1
+                          })
+                        ]),
+                        _: 1
+                      })) : createCommentVNode("", true),
+                      createVNode("div", { class: "space-y-2" }, [
+                        createVNode(unref(_sfc_main$9), { for: "name" }, {
+                          default: withCtx(() => [
+                            createTextVNode("Nama Lengkap")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode("div", { class: "relative" }, [
+                          createVNode(unref(User), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                          createVNode(unref(_sfc_main$a), {
+                            id: "name",
+                            modelValue: unref(form).name,
+                            "onUpdate:modelValue": ($event) => unref(form).name = $event,
+                            type: "text",
+                            placeholder: "Masukkan nama lengkap",
+                            class: ["pl-10", {
+                              "border-destructive": unref(form).errors.name
+                            }],
+                            required: "",
+                            autofocus: "",
+                            autocomplete: "name"
+                          }, null, 8, ["modelValue", "onUpdate:modelValue", "class"])
+                        ]),
+                        unref(form).errors.name ? (openBlock(), createBlock("p", {
+                          key: 0,
+                          class: "text-sm text-destructive"
+                        }, toDisplayString(unref(form).errors.name), 1)) : createCommentVNode("", true)
+                      ]),
+                      createVNode("div", { class: "space-y-2" }, [
+                        createVNode(unref(_sfc_main$9), { for: "email" }, {
+                          default: withCtx(() => [
+                            createTextVNode("Email")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode("div", { class: "relative" }, [
+                          createVNode(unref(Mail), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                          createVNode(unref(_sfc_main$a), {
+                            id: "email",
+                            modelValue: unref(form).email,
+                            "onUpdate:modelValue": ($event) => unref(form).email = $event,
+                            type: "email",
+                            placeholder: "nama@email.com",
+                            class: ["pl-10", {
+                              "border-destructive": unref(form).errors.email
+                            }],
+                            required: "",
+                            autocomplete: "email"
+                          }, null, 8, ["modelValue", "onUpdate:modelValue", "class"])
+                        ]),
+                        unref(form).errors.email ? (openBlock(), createBlock("p", {
+                          key: 0,
+                          class: "text-sm text-destructive"
+                        }, toDisplayString(unref(form).errors.email), 1)) : createCommentVNode("", true)
+                      ]),
+                      createVNode("div", { class: "space-y-2" }, [
+                        createVNode(unref(_sfc_main$9), { for: "phone" }, {
+                          default: withCtx(() => [
+                            createTextVNode("Nomor Telepon")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode("div", { class: "relative" }, [
+                          createVNode(unref(Phone), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                          createVNode(unref(_sfc_main$a), {
+                            id: "phone",
+                            modelValue: unref(form).phone,
+                            "onUpdate:modelValue": ($event) => unref(form).phone = $event,
+                            type: "tel",
+                            placeholder: "08xxxxxxxxxx",
+                            class: ["pl-10", {
+                              "border-destructive": unref(form).errors.phone
+                            }],
+                            required: "",
+                            autocomplete: "tel"
+                          }, null, 8, ["modelValue", "onUpdate:modelValue", "class"])
+                        ]),
+                        unref(form).errors.phone ? (openBlock(), createBlock("p", {
+                          key: 0,
+                          class: "text-sm text-destructive"
+                        }, toDisplayString(unref(form).errors.phone), 1)) : createCommentVNode("", true)
+                      ]),
+                      createVNode("div", { class: "space-y-2" }, [
+                        createVNode(unref(_sfc_main$9), { for: "ref_code" }, {
+                          default: withCtx(() => [
+                            createTextVNode("Kode Referral (Opsional)")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode("div", { class: "relative" }, [
+                          createVNode(unref(Users), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                          createVNode(unref(_sfc_main$a), {
+                            id: "ref_code",
+                            modelValue: unref(form).ref_code,
+                            "onUpdate:modelValue": ($event) => unref(form).ref_code = $event,
+                            type: "text",
+                            placeholder: "REF-XXXXXXXX",
+                            class: ["pl-10", {
+                              "border-destructive": unref(form).errors.ref_code
+                            }],
+                            autocomplete: "off"
+                          }, null, 8, ["modelValue", "onUpdate:modelValue", "class"])
+                        ]),
+                        unref(form).errors.ref_code ? (openBlock(), createBlock("p", {
+                          key: 0,
+                          class: "text-sm text-destructive"
+                        }, toDisplayString(unref(form).errors.ref_code), 1)) : (openBlock(), createBlock("p", {
+                          key: 1,
+                          class: "text-xs text-muted-foreground"
+                        }, " Masukkan kode referral dari sponsor Anda untuk bergabung ke jaringan MLM "))
+                      ]),
+                      createVNode("div", { class: "space-y-2" }, [
+                        createVNode(unref(_sfc_main$9), { for: "password" }, {
+                          default: withCtx(() => [
+                            createTextVNode("Password")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode("div", { class: "relative" }, [
+                          createVNode(unref(Lock), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                          createVNode(unref(_sfc_main$a), {
+                            id: "password",
+                            modelValue: unref(form).password,
+                            "onUpdate:modelValue": ($event) => unref(form).password = $event,
+                            type: showPassword.value ? "text" : "password",
+                            placeholder: "Minimal 8 karakter",
+                            class: ["pr-10 pl-10", {
+                              "border-destructive": unref(form).errors.password
+                            }],
+                            required: "",
+                            autocomplete: "new-password"
+                          }, null, 8, ["modelValue", "onUpdate:modelValue", "type", "class"]),
+                          createVNode("button", {
+                            type: "button",
+                            onClick: ($event) => showPassword.value = !showPassword.value,
+                            class: "absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+                          }, [
+                            !showPassword.value ? (openBlock(), createBlock(unref(Eye), {
+                              key: 0,
+                              class: "h-4 w-4"
+                            })) : (openBlock(), createBlock(unref(EyeOff), {
+                              key: 1,
+                              class: "h-4 w-4"
+                            }))
+                          ], 8, ["onClick"])
+                        ]),
+                        unref(form).errors.password ? (openBlock(), createBlock("p", {
+                          key: 0,
+                          class: "text-sm text-destructive"
+                        }, toDisplayString(unref(form).errors.password), 1)) : createCommentVNode("", true)
+                      ]),
+                      createVNode("div", { class: "space-y-2" }, [
+                        createVNode(unref(_sfc_main$9), { for: "password_confirmation" }, {
+                          default: withCtx(() => [
+                            createTextVNode("Konfirmasi Password")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode("div", { class: "relative" }, [
+                          createVNode(unref(Lock), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                          createVNode(unref(_sfc_main$a), {
+                            id: "password_confirmation",
+                            modelValue: unref(form).password_confirmation,
+                            "onUpdate:modelValue": ($event) => unref(form).password_confirmation = $event,
+                            type: showPasswordConfirmation.value ? "text" : "password",
+                            placeholder: "Ulangi password",
+                            class: "pr-10 pl-10",
+                            required: "",
+                            autocomplete: "new-password"
+                          }, null, 8, ["modelValue", "onUpdate:modelValue", "type"]),
+                          createVNode("button", {
+                            type: "button",
+                            onClick: ($event) => showPasswordConfirmation.value = !showPasswordConfirmation.value,
+                            class: "absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+                          }, [
+                            !showPasswordConfirmation.value ? (openBlock(), createBlock(unref(Eye), {
+                              key: 0,
+                              class: "h-4 w-4"
+                            })) : (openBlock(), createBlock(unref(EyeOff), {
+                              key: 1,
+                              class: "h-4 w-4"
+                            }))
+                          ], 8, ["onClick"])
+                        ])
+                      ]),
+                      createVNode("p", { class: "text-xs text-muted-foreground" }, [
+                        createTextVNode(" Dengan mendaftar, Anda menyetujui "),
+                        createVNode(unref(Link), {
+                          href: "/terms",
+                          class: "text-primary hover:underline"
+                        }, {
+                          default: withCtx(() => [
+                            createTextVNode(" Syarat & Ketentuan ")
+                          ]),
+                          _: 1
+                        }),
+                        createTextVNode(" dan "),
+                        createVNode(unref(Link), {
+                          href: "/privacy",
+                          class: "text-primary hover:underline"
+                        }, {
+                          default: withCtx(() => [
+                            createTextVNode(" Kebijakan Privasi ")
+                          ]),
+                          _: 1
+                        }),
+                        createTextVNode(" kami. ")
+                      ]),
+                      createVNode(unref(_sfc_main$b), {
+                        type: "submit",
+                        class: "w-full",
+                        disabled: unref(form).processing
+                      }, {
+                        default: withCtx(() => [
+                          unref(form).processing ? (openBlock(), createBlock("span", { key: 0 }, "Memproses...")) : (openBlock(), createBlock("span", { key: 1 }, "Daftar Sekarang"))
+                        ]),
+                        _: 1
+                      }, 8, ["disabled"])
+                    ], 32),
+                    createVNode("div", { class: "relative my-6" }, [
+                      createVNode("div", { class: "absolute inset-0 flex items-center" }, [
+                        createVNode("span", { class: "w-full border-t" })
+                      ]),
+                      createVNode("div", { class: "relative flex justify-center text-xs uppercase" }, [
+                        createVNode("span", { class: "bg-background px-2 text-muted-foreground" }, " Atau ")
+                      ])
+                    ]),
+                    createVNode("div", { class: "text-center text-sm" }, [
+                      createVNode("span", { class: "text-muted-foreground" }, "Sudah punya akun? "),
+                      createVNode(unref(Link), {
+                        href: "/client/login",
+                        class: "font-medium text-primary hover:underline"
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode(" Masuk ")
+                        ]),
+                        _: 1
+                      })
+                    ])
+                  ];
+                }
+              }),
+              _: 1
+            }, _parent2, _scopeId));
+          } else {
+            return [
+              createVNode(unref(_sfc_main$2), { class: "space-y-1" }, {
+                default: withCtx(() => [
+                  createVNode(unref(_sfc_main$3), { class: "text-2xl font-bold" }, {
+                    default: withCtx(() => [
+                      createTextVNode("Buat Akun Baru")
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(unref(_sfc_main$4), null, {
+                    default: withCtx(() => [
+                      createTextVNode(" Isi formulir di bawah untuk mendaftar ")
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              }),
+              createVNode(unref(_sfc_main$5), null, {
+                default: withCtx(() => [
+                  createVNode("form", {
+                    onSubmit: withModifiers(submit, ["prevent"]),
+                    class: "space-y-4"
+                  }, [
+                    flashSuccess.value ? (openBlock(), createBlock(unref(_sfc_main$6), {
+                      key: 0,
+                      variant: "default"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(CheckCircle2), { class: "h-4 w-4" }),
+                        createVNode(unref(_sfc_main$7), null, {
+                          default: withCtx(() => [
+                            createTextVNode("Berhasil!")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode(unref(_sfc_main$8), null, {
+                          default: withCtx(() => [
+                            createTextVNode(toDisplayString(flashSuccess.value), 1)
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    })) : createCommentVNode("", true),
+                    unref(form).errors.error ? (openBlock(), createBlock(unref(_sfc_main$6), {
+                      key: 1,
+                      variant: "destructive"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(AlertCircle), { class: "h-4 w-4" }),
+                        createVNode(unref(_sfc_main$7), null, {
+                          default: withCtx(() => [
+                            createTextVNode("Terjadi Kesalahan")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode(unref(_sfc_main$8), null, {
+                          default: withCtx(() => [
+                            createTextVNode(toDisplayString(unref(form).errors.error), 1)
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    })) : createCommentVNode("", true),
+                    createVNode("div", { class: "space-y-2" }, [
+                      createVNode(unref(_sfc_main$9), { for: "name" }, {
+                        default: withCtx(() => [
+                          createTextVNode("Nama Lengkap")
+                        ]),
+                        _: 1
+                      }),
+                      createVNode("div", { class: "relative" }, [
+                        createVNode(unref(User), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                        createVNode(unref(_sfc_main$a), {
+                          id: "name",
+                          modelValue: unref(form).name,
+                          "onUpdate:modelValue": ($event) => unref(form).name = $event,
+                          type: "text",
+                          placeholder: "Masukkan nama lengkap",
+                          class: ["pl-10", {
+                            "border-destructive": unref(form).errors.name
+                          }],
+                          required: "",
+                          autofocus: "",
+                          autocomplete: "name"
+                        }, null, 8, ["modelValue", "onUpdate:modelValue", "class"])
+                      ]),
+                      unref(form).errors.name ? (openBlock(), createBlock("p", {
+                        key: 0,
+                        class: "text-sm text-destructive"
+                      }, toDisplayString(unref(form).errors.name), 1)) : createCommentVNode("", true)
+                    ]),
+                    createVNode("div", { class: "space-y-2" }, [
+                      createVNode(unref(_sfc_main$9), { for: "email" }, {
+                        default: withCtx(() => [
+                          createTextVNode("Email")
+                        ]),
+                        _: 1
+                      }),
+                      createVNode("div", { class: "relative" }, [
+                        createVNode(unref(Mail), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                        createVNode(unref(_sfc_main$a), {
+                          id: "email",
+                          modelValue: unref(form).email,
+                          "onUpdate:modelValue": ($event) => unref(form).email = $event,
+                          type: "email",
+                          placeholder: "nama@email.com",
+                          class: ["pl-10", {
+                            "border-destructive": unref(form).errors.email
+                          }],
+                          required: "",
+                          autocomplete: "email"
+                        }, null, 8, ["modelValue", "onUpdate:modelValue", "class"])
+                      ]),
+                      unref(form).errors.email ? (openBlock(), createBlock("p", {
+                        key: 0,
+                        class: "text-sm text-destructive"
+                      }, toDisplayString(unref(form).errors.email), 1)) : createCommentVNode("", true)
+                    ]),
+                    createVNode("div", { class: "space-y-2" }, [
+                      createVNode(unref(_sfc_main$9), { for: "phone" }, {
+                        default: withCtx(() => [
+                          createTextVNode("Nomor Telepon")
+                        ]),
+                        _: 1
+                      }),
+                      createVNode("div", { class: "relative" }, [
+                        createVNode(unref(Phone), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                        createVNode(unref(_sfc_main$a), {
+                          id: "phone",
+                          modelValue: unref(form).phone,
+                          "onUpdate:modelValue": ($event) => unref(form).phone = $event,
+                          type: "tel",
+                          placeholder: "08xxxxxxxxxx",
+                          class: ["pl-10", {
+                            "border-destructive": unref(form).errors.phone
+                          }],
+                          required: "",
+                          autocomplete: "tel"
+                        }, null, 8, ["modelValue", "onUpdate:modelValue", "class"])
+                      ]),
+                      unref(form).errors.phone ? (openBlock(), createBlock("p", {
+                        key: 0,
+                        class: "text-sm text-destructive"
+                      }, toDisplayString(unref(form).errors.phone), 1)) : createCommentVNode("", true)
+                    ]),
+                    createVNode("div", { class: "space-y-2" }, [
+                      createVNode(unref(_sfc_main$9), { for: "ref_code" }, {
+                        default: withCtx(() => [
+                          createTextVNode("Kode Referral (Opsional)")
+                        ]),
+                        _: 1
+                      }),
+                      createVNode("div", { class: "relative" }, [
+                        createVNode(unref(Users), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                        createVNode(unref(_sfc_main$a), {
+                          id: "ref_code",
+                          modelValue: unref(form).ref_code,
+                          "onUpdate:modelValue": ($event) => unref(form).ref_code = $event,
+                          type: "text",
+                          placeholder: "REF-XXXXXXXX",
+                          class: ["pl-10", {
+                            "border-destructive": unref(form).errors.ref_code
+                          }],
+                          autocomplete: "off"
+                        }, null, 8, ["modelValue", "onUpdate:modelValue", "class"])
+                      ]),
+                      unref(form).errors.ref_code ? (openBlock(), createBlock("p", {
+                        key: 0,
+                        class: "text-sm text-destructive"
+                      }, toDisplayString(unref(form).errors.ref_code), 1)) : (openBlock(), createBlock("p", {
+                        key: 1,
+                        class: "text-xs text-muted-foreground"
+                      }, " Masukkan kode referral dari sponsor Anda untuk bergabung ke jaringan MLM "))
+                    ]),
+                    createVNode("div", { class: "space-y-2" }, [
+                      createVNode(unref(_sfc_main$9), { for: "password" }, {
+                        default: withCtx(() => [
+                          createTextVNode("Password")
+                        ]),
+                        _: 1
+                      }),
+                      createVNode("div", { class: "relative" }, [
+                        createVNode(unref(Lock), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                        createVNode(unref(_sfc_main$a), {
+                          id: "password",
+                          modelValue: unref(form).password,
+                          "onUpdate:modelValue": ($event) => unref(form).password = $event,
+                          type: showPassword.value ? "text" : "password",
+                          placeholder: "Minimal 8 karakter",
+                          class: ["pr-10 pl-10", {
+                            "border-destructive": unref(form).errors.password
+                          }],
+                          required: "",
+                          autocomplete: "new-password"
+                        }, null, 8, ["modelValue", "onUpdate:modelValue", "type", "class"]),
+                        createVNode("button", {
+                          type: "button",
+                          onClick: ($event) => showPassword.value = !showPassword.value,
+                          class: "absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+                        }, [
+                          !showPassword.value ? (openBlock(), createBlock(unref(Eye), {
+                            key: 0,
+                            class: "h-4 w-4"
+                          })) : (openBlock(), createBlock(unref(EyeOff), {
+                            key: 1,
+                            class: "h-4 w-4"
+                          }))
+                        ], 8, ["onClick"])
+                      ]),
+                      unref(form).errors.password ? (openBlock(), createBlock("p", {
+                        key: 0,
+                        class: "text-sm text-destructive"
+                      }, toDisplayString(unref(form).errors.password), 1)) : createCommentVNode("", true)
+                    ]),
+                    createVNode("div", { class: "space-y-2" }, [
+                      createVNode(unref(_sfc_main$9), { for: "password_confirmation" }, {
+                        default: withCtx(() => [
+                          createTextVNode("Konfirmasi Password")
+                        ]),
+                        _: 1
+                      }),
+                      createVNode("div", { class: "relative" }, [
+                        createVNode(unref(Lock), { class: "absolute top-3 left-3 h-4 w-4 text-muted-foreground" }),
+                        createVNode(unref(_sfc_main$a), {
+                          id: "password_confirmation",
+                          modelValue: unref(form).password_confirmation,
+                          "onUpdate:modelValue": ($event) => unref(form).password_confirmation = $event,
+                          type: showPasswordConfirmation.value ? "text" : "password",
+                          placeholder: "Ulangi password",
+                          class: "pr-10 pl-10",
+                          required: "",
+                          autocomplete: "new-password"
+                        }, null, 8, ["modelValue", "onUpdate:modelValue", "type"]),
+                        createVNode("button", {
+                          type: "button",
+                          onClick: ($event) => showPasswordConfirmation.value = !showPasswordConfirmation.value,
+                          class: "absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+                        }, [
+                          !showPasswordConfirmation.value ? (openBlock(), createBlock(unref(Eye), {
+                            key: 0,
+                            class: "h-4 w-4"
+                          })) : (openBlock(), createBlock(unref(EyeOff), {
+                            key: 1,
+                            class: "h-4 w-4"
+                          }))
+                        ], 8, ["onClick"])
+                      ])
+                    ]),
+                    createVNode("p", { class: "text-xs text-muted-foreground" }, [
+                      createTextVNode(" Dengan mendaftar, Anda menyetujui "),
+                      createVNode(unref(Link), {
+                        href: "/terms",
+                        class: "text-primary hover:underline"
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode(" Syarat & Ketentuan ")
+                        ]),
+                        _: 1
+                      }),
+                      createTextVNode(" dan "),
+                      createVNode(unref(Link), {
+                        href: "/privacy",
+                        class: "text-primary hover:underline"
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode(" Kebijakan Privasi ")
+                        ]),
+                        _: 1
+                      }),
+                      createTextVNode(" kami. ")
+                    ]),
+                    createVNode(unref(_sfc_main$b), {
+                      type: "submit",
+                      class: "w-full",
+                      disabled: unref(form).processing
+                    }, {
+                      default: withCtx(() => [
+                        unref(form).processing ? (openBlock(), createBlock("span", { key: 0 }, "Memproses...")) : (openBlock(), createBlock("span", { key: 1 }, "Daftar Sekarang"))
+                      ]),
+                      _: 1
+                    }, 8, ["disabled"])
+                  ], 32),
+                  createVNode("div", { class: "relative my-6" }, [
+                    createVNode("div", { class: "absolute inset-0 flex items-center" }, [
+                      createVNode("span", { class: "w-full border-t" })
+                    ]),
+                    createVNode("div", { class: "relative flex justify-center text-xs uppercase" }, [
+                      createVNode("span", { class: "bg-background px-2 text-muted-foreground" }, " Atau ")
+                    ])
+                  ]),
+                  createVNode("div", { class: "text-center text-sm" }, [
+                    createVNode("span", { class: "text-muted-foreground" }, "Sudah punya akun? "),
+                    createVNode(unref(Link), {
+                      href: "/client/login",
+                      class: "font-medium text-primary hover:underline"
+                    }, {
+                      default: withCtx(() => [
+                        createTextVNode(" Masuk ")
+                      ]),
+                      _: 1
+                    })
+                  ])
+                ]),
+                _: 1
+              })
+            ];
+          }
+        }),
+        _: 1
+      }, _parent));
+      _push(`<div class="text-center">`);
+      _push(ssrRenderComponent(unref(Link), {
+        href: "/",
+        class: "text-sm text-muted-foreground hover:text-primary"
+      }, {
+        default: withCtx((_, _push2, _parent2, _scopeId) => {
+          if (_push2) {
+            _push2(` ← Kembali ke Beranda `);
+          } else {
+            return [
+              createTextVNode(" ← Kembali ke Beranda ")
+            ];
+          }
+        }),
+        _: 1
+      }, _parent));
+      _push(`</div></div></div></div><!--]-->`);
+    };
+  }
+});
+const _sfc_setup = _sfc_main.setup;
+_sfc_main.setup = (props, ctx) => {
+  const ssrContext = useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/ecommerce/auth/Register.vue");
+  return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
+};
+export {
+  _sfc_main as default
+};

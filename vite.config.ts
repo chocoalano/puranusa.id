@@ -29,6 +29,11 @@ export default defineConfig({
         exclude: ['monaco-editor'],
     },
 
+    ssr: {
+        // External these packages from SSR - they will be loaded client-side only
+        external: ['monaco-editor', 'monaco-editor-vue3'],
+    },
+
     build: {
         sourcemap: false,
         chunkSizeWarningLimit: 1500,
