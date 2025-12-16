@@ -1,9 +1,18 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, defineAsyncComponent } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import PageBuilder from '@/components/admin/PageBuilder.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Lazy load PageBuilder to avoid SSR issues with Monaco/Tiptap editors
+const PageBuilder = defineAsyncComponent({
+    loader: () => import('@/components/admin/PageBuilder.vue'),
+    loadingComponent: {
+        template: '<div class="space-y-4"><Skeleton class="h-12 w-full" /><Skeleton class="h-64 w-full" /><Skeleton class="h-12 w-full" /></div>',
+        components: { Skeleton },
+    },
+});
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
