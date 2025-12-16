@@ -23,7 +23,8 @@ class ProfileController extends Controller
      */
     public function index(): Response
     {
-        $customer = Auth::guard('client')->user();
+        // Fresh query from database to avoid stale/cached data
+        $customer = Customer::find(Auth::guard('client')->id());
 
         $customer->load([
             'networkPosition.upline',
@@ -252,6 +253,7 @@ class ProfileController extends Controller
                 'name' => $customer->name,
                 'email' => $customer->email,
                 'phone' => $customer->phone,
+                'status' => $customer->status, // Use status directly from database
                 'ref_code' => $customer->ref_code,
                 'ewallet_id' => $customer->ewallet_id,
                 'ewallet_saldo' => $customer->ewallet_saldo,
