@@ -15,7 +15,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-vue-next';
+import { MoreHorizontal, ImageIcon } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 
 interface Category {
@@ -26,6 +26,7 @@ interface Category {
     is_active: boolean;
     sort_order: number;
     products_count: number;
+    image: string | null;
     parent?: { name: string };
 }
 
@@ -38,6 +39,16 @@ defineProps<Props>();
 const emit = defineEmits<{
     delete: [id: number];
 }>();
+
+const getImageUrl = (image: string | null) => {
+    if (!image) return null;
+    // If it's already an absolute URL, return as-is
+    if (image.startsWith('http://') || image.startsWith('https://')) {
+        return image;
+    }
+    // Otherwise, prepend storage path
+    return `/storage/${image}`;
+};
 </script>
 
 <template>
@@ -45,6 +56,7 @@ const emit = defineEmits<{
         <Table>
             <TableHeader>
                 <TableRow>
+                    <TableHead class="w-[60px]">Gambar</TableHead>
                     <TableHead>Nama Kategori</TableHead>
                     <TableHead>Slug</TableHead>
                     <TableHead>Parent</TableHead>
@@ -56,11 +68,22 @@ const emit = defineEmits<{
             </TableHeader>
             <TableBody>
                 <TableRow v-if="categories.length === 0">
-                    <TableCell colspan="7" class="text-center text-muted-foreground">
+                    <TableCell colspan="8" class="text-center text-muted-foreground">
                         Tidak ada kategori ditemukan
                     </TableCell>
                 </TableRow>
                 <TableRow v-for="category in categories" :key="category.id">
+                    <TableCell>
+                        <div class="w-10 h-10 rounded-md border overflow-hidden bg-muted flex items-center justify-center">
+                            <img
+                                v-if="category.image"
+                                :src="getImageUrl(category.image)"
+                                :alt="category.name"
+                                class="w-full h-full object-cover"
+                            />
+                            <ImageIcon v-else class="w-5 h-5 text-muted-foreground" />
+                        </div>
+                    </TableCell>
                     <TableCell class="font-medium">{{ category.name }}</TableCell>
                     <TableCell class="text-muted-foreground">{{ category.slug }}</TableCell>
                     <TableCell>

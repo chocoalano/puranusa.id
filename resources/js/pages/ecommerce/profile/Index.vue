@@ -150,9 +150,9 @@ const props = defineProps<{
 
 const page = usePage();
 
-// Check if member is active in MLM network (has upline placement)
+// Check if member is active in MLM network (status 3 = active member)
 const isActiveMember = computed(() => {
-    return props.customer.upline !== null;
+    return Number(props.customer.status) === 3;
 });
 
 // Get active tab from URL query parameter (SSR-safe)

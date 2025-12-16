@@ -31,6 +31,7 @@ export interface Customer {
     name: string;
     email: string;
     phone: string;
+    status: number;
     ewallet_id: string;
     ewallet_saldo: number;
     description: string | null;

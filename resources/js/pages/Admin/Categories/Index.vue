@@ -15,6 +15,7 @@ interface Category {
     is_active: boolean;
     sort_order: number;
     products_count: number;
+    image: string | null;
     parent?: { name: string };
 }
 

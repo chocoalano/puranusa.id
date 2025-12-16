@@ -25,7 +25,7 @@ const form = ref({
     description: '',
     sort_order: 0,
     is_active: true,
-    image: '',
+    image: null as File | string | null,
 });
 
 const errors = ref<Record<string, string>>({});
@@ -33,8 +33,25 @@ const processing = ref(false);
 
 const submit = () => {
     processing.value = true;
-    router.post('/admin/categories', form.value, {
+
+    const formData = new FormData();
+    formData.append('name', form.value.name);
+    formData.append('slug', form.value.slug);
+    formData.append('description', form.value.description || '');
+    formData.append('sort_order', String(form.value.sort_order));
+    formData.append('is_active', form.value.is_active ? '1' : '0');
+
+    if (form.value.parent_id) {
+        formData.append('parent_id', String(form.value.parent_id));
+    }
+
+    if (form.value.image instanceof File) {
+        formData.append('image', form.value.image);
+    }
+
+    router.post('/admin/categories', formData, {
         preserveScroll: true,
+        forceFormData: true,
         onSuccess: () => {
             toast.success('Kategori berhasil ditambahkan');
         },

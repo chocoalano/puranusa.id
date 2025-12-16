@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class CategoryManagementController extends Controller
@@ -52,8 +53,13 @@ class CategoryManagementController extends Controller
             'description' => 'nullable',
             'sort_order' => 'integer|min:0',
             'is_active' => 'boolean',
-            'image' => 'nullable|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('categories', 'public');
+        }
 
         Category::create($validated);
 
@@ -84,8 +90,28 @@ class CategoryManagementController extends Controller
             'description' => 'nullable',
             'sort_order' => 'integer|min:0',
             'is_active' => 'boolean',
-            'image' => 'nullable|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'remove_image' => 'nullable|boolean',
         ]);
+
+        // Handle image removal
+        if ($request->boolean('remove_image') && $category->image) {
+            Storage::disk('public')->delete($category->image);
+            $validated['image'] = null;
+        }
+        // Handle new image upload
+        elseif ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+            $validated['image'] = $request->file('image')->store('categories', 'public');
+        } else {
+            // Keep existing image
+            unset($validated['image']);
+        }
+
+        unset($validated['remove_image']);
 
         $category->update($validated);
 

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import CategoryForm from '@/components/categories/CategoryForm.vue';
 import { ArrowLeft } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 interface ParentCategory {
     id: number;
@@ -37,16 +37,39 @@ const form = ref({
     description: props.category.description || '',
     sort_order: props.category.sort_order,
     is_active: props.category.is_active,
-    image: props.category.image || '',
+    image: null as File | string | null,
 });
+
+const existingImage = computed(() => props.category.image);
 
 const errors = ref<Record<string, string>>({});
 const processing = ref(false);
 
 const submit = () => {
     processing.value = true;
-    router.put(`/admin/categories/${props.category.id}`, form.value, {
+
+    const formData = new FormData();
+    formData.append('_method', 'PUT');
+    formData.append('name', form.value.name);
+    formData.append('slug', form.value.slug);
+    formData.append('description', form.value.description || '');
+    formData.append('sort_order', String(form.value.sort_order));
+    formData.append('is_active', form.value.is_active ? '1' : '0');
+
+    if (form.value.parent_id) {
+        formData.append('parent_id', String(form.value.parent_id));
+    }
+
+    if (form.value.image instanceof File) {
+        formData.append('image', form.value.image);
+    } else if (form.value.image === null && props.category.image) {
+        // Image was removed
+        formData.append('remove_image', '1');
+    }
+
+    router.post(`/admin/categories/${props.category.id}`, formData, {
         preserveScroll: true,
+        forceFormData: true,
         onSuccess: () => {
             toast.success('Kategori berhasil diperbarui');
         },
@@ -84,6 +107,7 @@ const submit = () => {
                     :parent-categories="parentCategories"
                     :errors="errors"
                     :processing="processing"
+                    :existing-image="existingImage"
                     @submit="submit"
                 >
                     <template #actions="{ processing }">

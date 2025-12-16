@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -16,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Upload, X, Image as ImageIcon } from 'lucide-vue-next';
 
 interface ParentCategory {
     id: number;
@@ -29,16 +32,17 @@ interface FormData {
     description: string;
     sort_order: number;
     is_active: boolean;
-    image: string;
+    image: File | string | null;
 }
 
 interface Props {
     parentCategories: ParentCategory[];
     errors?: Record<string, string>;
     processing?: boolean;
+    existingImage?: string | null;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
     submit: [];
@@ -46,11 +50,48 @@ const emit = defineEmits<{
 
 const formData = defineModel<FormData>('formData', { required: true });
 
+const imagePreview = ref<string | null>(props.existingImage || null);
+const fileInput = ref<HTMLInputElement | null>(null);
+
 const generateSlug = () => {
     formData.value.slug = formData.value.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
+};
+
+const handleImageSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+
+    if (file) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('File harus berupa gambar');
+            return;
+        }
+
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran file maksimal 2MB');
+            return;
+        }
+
+        formData.value.image = file;
+        imagePreview.value = URL.createObjectURL(file);
+    }
+};
+
+const removeImage = () => {
+    formData.value.image = null;
+    imagePreview.value = null;
+    if (fileInput.value) {
+        fileInput.value.value = '';
+    }
+};
+
+const triggerFileInput = () => {
+    fileInput.value?.click();
 };
 </script>
 
@@ -104,12 +145,65 @@ const generateSlug = () => {
                 </div>
 
                 <div class="space-y-2">
-                    <Label for="image">URL Gambar</Label>
-                    <Input
-                        id="image"
-                        v-model="formData.image"
-                        placeholder="https://example.com/image.jpg"
-                    />
+                    <Label>Gambar Kategori</Label>
+                    <div class="space-y-3">
+                        <!-- Image Preview -->
+                        <div v-if="imagePreview" class="relative inline-block">
+                            <img
+                                :src="imagePreview"
+                                alt="Preview"
+                                class="w-32 h-32 object-cover rounded-lg border"
+                            />
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                class="absolute -top-2 -right-2 h-6 w-6"
+                                @click="removeImage"
+                            >
+                                <X class="h-3 w-3" />
+                            </Button>
+                        </div>
+
+                        <!-- Upload Area -->
+                        <div
+                            v-if="!imagePreview"
+                            class="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center cursor-pointer hover:border-muted-foreground/50 transition-colors"
+                            @click="triggerFileInput"
+                        >
+                            <ImageIcon class="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+                            <p class="text-sm text-muted-foreground">
+                                Klik untuk upload gambar
+                            </p>
+                            <p class="text-xs text-muted-foreground mt-1">
+                                PNG, JPG, WEBP (max. 2MB)
+                            </p>
+                        </div>
+
+                        <!-- Hidden File Input -->
+                        <input
+                            ref="fileInput"
+                            type="file"
+                            accept="image/*"
+                            class="hidden"
+                            @change="handleImageSelect"
+                        />
+
+                        <!-- Change Button when image exists -->
+                        <Button
+                            v-if="imagePreview"
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            @click="triggerFileInput"
+                        >
+                            <Upload class="h-4 w-4 mr-2" />
+                            Ganti Gambar
+                        </Button>
+                    </div>
+                    <p v-if="errors?.image" class="text-sm text-destructive">
+                        {{ errors.image }}
+                    </p>
                 </div>
             </CardContent>
         </Card>
