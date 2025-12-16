@@ -1,4 +1,4 @@
-import { defineComponent, unref, withCtx, createVNode, createTextVNode, useSSRContext } from "vue";
+import { defineComponent, unref, withCtx, createTextVNode, useSSRContext } from "vue";
 import { ssrRenderComponent, ssrRenderStyle } from "vue/server-renderer";
 import { d as dashboard, b as login, r as register } from "./index-Jhngbhhu.js";
 import { Head, Link } from "@inertiajs/vue3";
@@ -11,25 +11,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   setup(__props) {
     return (_ctx, _push, _parent, _attrs) => {
       _push(`<!--[-->`);
-      _push(ssrRenderComponent(unref(Head), { title: "Welcome" }, {
-        default: withCtx((_, _push2, _parent2, _scopeId) => {
-          if (_push2) {
-            _push2(`<link rel="preconnect" href="https://rsms.me/"${_scopeId}><link rel="stylesheet" href="https://rsms.me/inter/inter.css"${_scopeId}>`);
-          } else {
-            return [
-              createVNode("link", {
-                rel: "preconnect",
-                href: "https://rsms.me/"
-              }),
-              createVNode("link", {
-                rel: "stylesheet",
-                href: "https://rsms.me/inter/inter.css"
-              })
-            ];
-          }
-        }),
-        _: 1
-      }, _parent));
+      _push(ssrRenderComponent(unref(Head), { title: "Welcome" }, null, _parent));
       _push(`<div class="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]"><header class="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl"><nav class="flex items-center justify-end gap-4">`);
       if (_ctx.$page.props.auth.user) {
         _push(ssrRenderComponent(unref(Link), {
