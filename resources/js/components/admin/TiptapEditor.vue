@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import { useEditor, EditorContent } from '@tiptap/vue-3';
-import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
-import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
-import { watch } from 'vue';
+import { watch, ref, onMounted, onBeforeUnmount } from 'vue';
 import { Button } from '@/components/ui/button';
 import {
     Bold,
@@ -37,27 +31,53 @@ const emit = defineEmits<{
     'update:modelValue': [value: string];
 }>();
 
-const editor = useEditor({
-    content: props.modelValue || '',
-    extensions: [
-        StarterKit,
-        Link.configure({
-            openOnClick: false,
-        }),
-        Image,
-        TextAlign.configure({
-            types: ['heading', 'paragraph'],
-        }),
-        Underline,
-    ],
-    onUpdate: ({ editor }) => {
-        emit('update:modelValue', editor.getHTML());
-    },
-    editorProps: {
-        attributes: {
-            class: 'prose prose-sm sm:prose lg:prose-lg dark:prose-invert focus:outline-none max-w-none p-4 min-h-[200px]',
+const isClient = ref(false);
+const editor = ref<any>(null);
+const EditorContentComponent = ref<any>(null);
+
+onMounted(async () => {
+    isClient.value = true;
+
+    // Dynamic import to avoid SSR issues
+    const [tiptapVue3, StarterKit, Link, Image, TextAlign, Underline] = await Promise.all([
+        import('@tiptap/vue-3'),
+        import('@tiptap/starter-kit'),
+        import('@tiptap/extension-link'),
+        import('@tiptap/extension-image'),
+        import('@tiptap/extension-text-align'),
+        import('@tiptap/extension-underline'),
+    ]);
+
+    EditorContentComponent.value = tiptapVue3.EditorContent;
+
+    editor.value = new tiptapVue3.Editor({
+        content: props.modelValue || '',
+        extensions: [
+            StarterKit.default,
+            Link.default.configure({
+                openOnClick: false,
+            }),
+            Image.default,
+            TextAlign.default.configure({
+                types: ['heading', 'paragraph'],
+            }),
+            Underline.default,
+        ],
+        onUpdate: ({ editor: e }) => {
+            emit('update:modelValue', e.getHTML());
         },
-    },
+        editorProps: {
+            attributes: {
+                class: 'prose prose-sm sm:prose lg:prose-lg dark:prose-invert focus:outline-none max-w-none p-4 min-h-[200px]',
+            },
+        },
+    });
+});
+
+onBeforeUnmount(() => {
+    if (editor.value) {
+        editor.value.destroy();
+    }
 });
 
 watch(() => props.modelValue, (value) => {
@@ -77,7 +97,17 @@ const setLink = () => {
 </script>
 
 <template>
-    <div v-if="editor" class="border rounded-lg overflow-hidden">
+    <!-- Loading state for SSR -->
+    <div v-if="!isClient || !editor" class="border rounded-lg overflow-hidden">
+        <div class="flex flex-wrap gap-1 p-2 bg-muted border-b">
+            <div class="h-8 w-8 bg-muted-foreground/20 rounded animate-pulse" v-for="i in 10" :key="i"></div>
+        </div>
+        <div class="p-4 min-h-[200px] flex items-center justify-center text-muted-foreground">
+            <div class="animate-pulse">Loading editor...</div>
+        </div>
+    </div>
+
+    <div v-else class="border rounded-lg overflow-hidden">
         <!-- Toolbar -->
         <div class="flex flex-wrap gap-1 p-2 bg-muted border-b">
             <!-- Text Formatting -->
@@ -284,7 +314,7 @@ const setLink = () => {
         </div>
 
         <!-- Editor Content -->
-        <EditorContent :editor="editor" />
+        <component :is="EditorContentComponent" :editor="editor" />
     </div>
 </template>
 
