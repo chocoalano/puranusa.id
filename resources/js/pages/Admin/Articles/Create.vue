@@ -35,18 +35,6 @@ const errors = ref<Record<string, string>>({});
 const processing = ref(false);
 const tagInput = ref('');
 
-// Auto-generate slug from title
-watch(() => form.value.title, (newTitle) => {
-    if (!form.value.slug || form.value.slug === slugify(form.value.title)) {
-        form.value.slug = slugify(newTitle);
-    }
-});
-
-// Watch blocks and convert to HTML/JSON for storage
-watch(() => form.value.blocks, (newBlocks) => {
-    form.value.content = JSON.stringify(newBlocks);
-}, { deep: true });
-
 const slugify = (text: string): string => {
     return text
         .toString()
@@ -56,6 +44,16 @@ const slugify = (text: string): string => {
         .replace(/[^\w\-]+/g, '')
         .replace(/\-\-+/g, '-');
 };
+
+// Generate slug from title on input
+const generateSlug = () => {
+    form.value.slug = slugify(form.value.title);
+};
+
+// Watch blocks and convert to HTML/JSON for storage
+watch(() => form.value.blocks, (newBlocks) => {
+    form.value.content = JSON.stringify(newBlocks);
+}, { deep: true });
 
 const addTag = () => {
     const tag = tagInput.value.trim();
@@ -154,6 +152,7 @@ const submitForm = (publish: boolean = false) => {
                                     v-model="form.title"
                                     placeholder="Masukkan judul artikel"
                                     :class="{ 'border-destructive': errors.title }"
+                                    @input="generateSlug"
                                 />
                                 <p v-if="errors.title" class="text-sm text-destructive">
                                     {{ errors.title }}

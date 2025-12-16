@@ -13,10 +13,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-vue-next';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ArrowLeft, CheckCircle2, XCircle, AlertCircle } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import ImageUploadZone from '@/components/admin/ImageUploadZone.vue';
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 interface ProductMedia {
     id: number;
@@ -66,6 +67,81 @@ interface Props {
 const props = defineProps<Props>();
 
 const errors = ref(props.errors || {});
+const alertMessage = ref<{ type: 'success' | 'error' | 'warning'; title: string; message: string } | null>(null);
+
+// Check if there are any validation errors
+const hasErrors = computed(() => Object.keys(errors.value).length > 0);
+
+// Format error messages for display
+const errorList = computed(() => {
+    return Object.entries(errors.value).map(([field, message]) => ({
+        field: formatFieldName(field),
+        message,
+    }));
+});
+
+// Format field name to human readable
+const formatFieldName = (field: string): string => {
+    const fieldNames: Record<string, string> = {
+        sku: 'SKU',
+        slug: 'Slug',
+        name: 'Nama Produk',
+        short_desc: 'Deskripsi Singkat',
+        long_desc: 'Deskripsi Lengkap',
+        brand: 'Brand',
+        warranty_months: 'Garansi',
+        base_price: 'Harga',
+        stock: 'Stok',
+        weight_gram: 'Berat',
+        length_mm: 'Panjang',
+        width_mm: 'Lebar',
+        height_mm: 'Tinggi',
+        bv: 'Business Value',
+        b_sponsor: 'Bonus Sponsor',
+        b_matching: 'Bonus Matching',
+        b_pairing: 'Bonus Pairing',
+        b_cashback: 'Bonus Cashback',
+        is_active: 'Status Aktif',
+        categories: 'Kategori',
+        images: 'Gambar Produk',
+    };
+    return fieldNames[field] || field;
+};
+
+// Auto dismiss alert after 8 seconds
+watch(alertMessage, (newVal) => {
+    if (newVal) {
+        setTimeout(() => {
+            alertMessage.value = null;
+        }, 8000);
+    }
+});
+
+const dismissAlert = () => {
+    alertMessage.value = null;
+};
+
+const generateSlug = () => {
+    if (!form.value.name.trim()) {
+        alertMessage.value = {
+            type: 'warning',
+            title: 'Nama Produk Kosong',
+            message: 'Silakan masukkan nama produk terlebih dahulu sebelum generate slug.',
+        };
+        return;
+    }
+
+    form.value.slug = form.value.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
+    alertMessage.value = {
+        type: 'success',
+        title: 'Slug Berhasil Dibuat',
+        message: `Slug "${form.value.slug}" telah dibuat dari nama produk.`,
+    };
+};
 
 const form = ref({
     sku: props.product.sku,
@@ -97,6 +173,7 @@ const loading = ref(false);
 const submit = () => {
     loading.value = true;
     errors.value = {};
+    alertMessage.value = null;
 
     // Create FormData for file upload
     const formData = new FormData();
@@ -108,6 +185,9 @@ const submit = () => {
             value.forEach((id) => formData.append('categories[]', id.toString()));
         } else if (key === 'images' && Array.isArray(value)) {
             (value as File[]).forEach((file) => formData.append('images[]', file));
+        } else if (key === 'is_active') {
+            // Convert boolean to "1" or "0" for Laravel validation
+            formData.append(key, value ? '1' : '0');
         } else if (value !== null && value !== undefined) {
             formData.append(key, value.toString());
         }
@@ -117,13 +197,40 @@ const submit = () => {
         preserveScroll: true,
         forceFormData: true,
         onSuccess: () => {
-            toast.success('Produk berhasil diperbarui')
+            toast.success('Produk berhasil diperbarui');
+            alertMessage.value = {
+                type: 'success',
+                title: 'Produk Berhasil Diperbarui',
+                message: 'Perubahan produk telah berhasil disimpan.',
+            };
             loading.value = false;
         },
         onError: (errorBag) => {
             errors.value = errorBag;
-            toast.error('Gagal memperbarui produk');
             loading.value = false;
+
+            // Count errors
+            const errorCount = Object.keys(errorBag).length;
+
+            // Create detailed error message
+            let errorDetails = '';
+            if (errorCount === 1) {
+                const [field, message] = Object.entries(errorBag)[0];
+                errorDetails = `${formatFieldName(field)}: ${message}`;
+            } else {
+                errorDetails = `Terdapat ${errorCount} kesalahan yang perlu diperbaiki. Silakan periksa field yang ditandai merah di bawah ini.`;
+            }
+
+            alertMessage.value = {
+                type: 'error',
+                title: 'Gagal Memperbarui Produk',
+                message: errorDetails,
+            };
+
+            toast.error('Gagal memperbarui produk');
+
+            // Scroll to top to show alert
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         },
     });
 };
@@ -147,6 +254,66 @@ const submit = () => {
                 </div>
             </div>
 
+            <!-- Alert Messages -->
+            <Transition
+                enter-active-class="transition ease-out duration-300"
+                enter-from-class="opacity-0 transform -translate-y-2"
+                enter-to-class="opacity-100 transform translate-y-0"
+                leave-active-class="transition ease-in duration-200"
+                leave-from-class="opacity-100 transform translate-y-0"
+                leave-to-class="opacity-0 transform -translate-y-2"
+            >
+                <Alert
+                    v-if="alertMessage"
+                    :variant="alertMessage.type === 'error' ? 'destructive' : 'default'"
+                    :class="{
+                        'border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200': alertMessage.type === 'success',
+                        'border-yellow-500 bg-yellow-50 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200': alertMessage.type === 'warning',
+                    }"
+                >
+                    <CheckCircle2 v-if="alertMessage.type === 'success'" class="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <XCircle v-else-if="alertMessage.type === 'error'" class="h-4 w-4" />
+                    <AlertCircle v-else class="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                    <AlertTitle class="flex items-center justify-between">
+                        {{ alertMessage.title }}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            class="h-6 w-6 p-0 hover:bg-transparent"
+                            @click="dismissAlert"
+                        >
+                            <span class="sr-only">Tutup</span>
+                            ×
+                        </Button>
+                    </AlertTitle>
+                    <AlertDescription>
+                        {{ alertMessage.message }}
+                    </AlertDescription>
+                </Alert>
+            </Transition>
+
+            <!-- Error Summary (when multiple errors) -->
+            <Transition
+                enter-active-class="transition ease-out duration-300"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition ease-in duration-200"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <Alert v-if="hasErrors && errorList.length > 1" variant="destructive" class="mb-4">
+                    <XCircle class="h-4 w-4" />
+                    <AlertTitle>Terdapat {{ errorList.length }} Kesalahan</AlertTitle>
+                    <AlertDescription>
+                        <ul class="mt-2 list-disc list-inside space-y-1">
+                            <li v-for="(error, index) in errorList" :key="index" class="text-sm">
+                                <strong>{{ error.field }}:</strong> {{ error.message }}
+                            </li>
+                        </ul>
+                    </AlertDescription>
+                </Alert>
+            </Transition>
+
             <form @submit.prevent="submit" class="space-y-6 w-full">
                 <div class="grid grid-cols-2 gap-4">
                     <!-- Basic Information -->
@@ -158,17 +325,46 @@ const submit = () => {
                         <CardContent class="space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-2">
-                                    <Label for="sku">SKU</Label>
-                                    <Input id="sku" v-model="form.sku" required />
+                                    <Label for="sku">SKU <span class="text-destructive">*</span></Label>
+                                    <Input
+                                        id="sku"
+                                        v-model="form.sku"
+                                        :class="{ 'border-destructive': errors.sku }"
+                                        required
+                                    />
+                                    <p v-if="errors.sku" class="text-sm text-destructive">{{ errors.sku }}</p>
                                 </div>
                                 <div class="space-y-2">
-                                    <Label for="slug">Slug</Label>
-                                    <Input id="slug" v-model="form.slug" required />
+                                    <Label for="slug">Slug <span class="text-destructive">*</span></Label>
+                                    <div class="flex gap-2">
+                                        <Input
+                                            id="slug"
+                                            v-model="form.slug"
+                                            :class="{ 'border-destructive': errors.slug }"
+                                            required
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            @click="generateSlug"
+                                            :disabled="!form.name.trim()"
+                                            :title="!form.name.trim() ? 'Masukkan nama produk terlebih dahulu' : 'Generate slug dari nama produk'"
+                                        >
+                                            Generate
+                                        </Button>
+                                    </div>
+                                    <p v-if="errors.slug" class="text-sm text-destructive">{{ errors.slug }}</p>
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <Label for="name">Nama Produk</Label>
-                                <Input id="name" v-model="form.name" required />
+                                <Label for="name">Nama Produk <span class="text-destructive">*</span></Label>
+                                <Input
+                                    id="name"
+                                    v-model="form.name"
+                                    :class="{ 'border-destructive': errors.name }"
+                                    required
+                                />
+                                <p v-if="errors.name" class="text-sm text-destructive">{{ errors.name }}</p>
                             </div>
                             <div class="space-y-2">
                                 <Label for="brand">Brand</Label>
@@ -195,13 +391,18 @@ const submit = () => {
                             <CardContent class="space-y-4">
                                 <div class="grid grid-cols-3 gap-4">
                                     <div class="space-y-2">
-                                        <Label for="base_price">Harga (IDR)</Label>
+                                        <Label for="base_price">Harga (IDR) <span class="text-destructive">*</span></Label>
                                         <Input id="base_price" v-model.number="form.base_price" type="number"
+                                            :class="{ 'border-destructive': errors.base_price }"
                                             required />
+                                        <p v-if="errors.base_price" class="text-sm text-destructive">{{ errors.base_price }}</p>
                                     </div>
                                     <div class="space-y-2">
-                                        <Label for="stock">Stok</Label>
-                                        <Input id="stock" v-model.number="form.stock" type="number" required />
+                                        <Label for="stock">Stok <span class="text-destructive">*</span></Label>
+                                        <Input id="stock" v-model.number="form.stock" type="number"
+                                            :class="{ 'border-destructive': errors.stock }"
+                                            required />
+                                        <p v-if="errors.stock" class="text-sm text-destructive">{{ errors.stock }}</p>
                                     </div>
                                     <div class="space-y-2">
                                         <Label for="warranty_months">Garansi (Bulan)</Label>
@@ -221,9 +422,11 @@ const submit = () => {
                             <CardContent class="space-y-4">
                                 <div class="grid grid-cols-4 gap-4">
                                     <div class="space-y-2">
-                                        <Label for="weight_gram">Berat (gram)</Label>
+                                        <Label for="weight_gram">Berat (gram) <span class="text-destructive">*</span></Label>
                                         <Input id="weight_gram" v-model.number="form.weight_gram" type="number"
+                                            :class="{ 'border-destructive': errors.weight_gram }"
                                             required />
+                                        <p v-if="errors.weight_gram" class="text-sm text-destructive">{{ errors.weight_gram }}</p>
                                     </div>
                                     <div class="space-y-2">
                                         <Label for="length_mm">Panjang (mm)</Label>
@@ -274,6 +477,8 @@ const submit = () => {
                                         @update:checked="(checked: boolean) => (form.is_active = checked)" />
                                     <Label for="is_active">Produk Aktif</Label>
                                 </div>
+                                <p v-if="errors.is_active" class="text-sm text-destructive">{{ errors.is_active }}</p>
+                                <p v-if="errors.categories" class="text-sm text-destructive">{{ errors.categories }}</p>
                             </CardContent>
                         </Card>
                     </div>

@@ -45,6 +45,13 @@ const emit = defineEmits<{
 }>();
 
 const formData = defineModel<FormData>('formData', { required: true });
+
+const generateSlug = () => {
+    formData.value.slug = formData.value.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+};
 </script>
 
 <template>
@@ -62,6 +69,7 @@ const formData = defineModel<FormData>('formData', { required: true });
                         id="name"
                         v-model="formData.name"
                         placeholder="Masukkan nama kategori"
+                        @input="generateSlug"
                         required
                     />
                     <p v-if="errors?.name" class="text-sm text-destructive">

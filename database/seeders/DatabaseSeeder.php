@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('Seeding users...');
-        $this->seedUsers();
+        $this->call(UserSeeder::class);
 
         $this->command->info('Seeding categories...');
         $this->seedCategories();
