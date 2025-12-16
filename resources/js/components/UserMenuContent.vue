@@ -18,7 +18,7 @@ interface Props {
 }
 
 const handleLogout = () => {
-    router.post('/logout', {}, {
+    router.post(logout.url(), {}, {
         onStart: () => {
             router.flushAll();
         },
