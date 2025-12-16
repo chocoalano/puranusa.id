@@ -3,7 +3,7 @@ import { ssrRenderComponent, ssrRenderStyle } from "vue/server-renderer";
 import { d as dashboard, b as login, r as register } from "./index-Jhngbhhu.js";
 import { Head, Link } from "@inertiajs/vue3";
 const _sfc_main = /* @__PURE__ */ defineComponent({
-  __name: "Welcome",
+  __name: "Welcome_old",
   __ssrInlineRender: true,
   props: {
     canRegister: { type: Boolean, default: true }
@@ -74,7 +74,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
 const _sfc_setup = _sfc_main.setup;
 _sfc_main.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
-  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/Welcome.vue");
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/Welcome_old.vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
 export {

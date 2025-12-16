@@ -12,6 +12,7 @@ import axios from "axios";
 import { toast } from "vue-sonner";
 import { _ as _sfc_main$g, b as _sfc_main$h } from "./AvatarImage-DWFQMckn.js";
 import { _ as _sfc_main$i } from "./CardCatalogProduct-Dx6KW7gl.js";
+import { _ as _export_sfc } from "./_plugin-vue_export-helper-1tPrXgE0.js";
 import { _ as _sfc_main$q, a as _sfc_main$r, b as _sfc_main$s, c as _sfc_main$t } from "./TabsTrigger-Bvg0QZyC.js";
 import { _ as _sfc_main$k, a as _sfc_main$l, b as _sfc_main$m, d as _sfc_main$n, e as _sfc_main$o, c as _sfc_main$p } from "./BreadcrumbSeparator-YMzfzP6z.js";
 import "./index-D3PKcwoM.js";
@@ -1004,13 +1005,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _export_sfc = (sfc, props) => {
-  const target = sfc.__vccOpts || sfc;
-  for (const [key, val] of props) {
-    target[key] = val;
-  }
-  return target;
-};
 const _sfc_setup$1 = _sfc_main$1.setup;
 _sfc_main$1.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
