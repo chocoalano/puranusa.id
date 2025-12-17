@@ -237,6 +237,7 @@ const getPositionBadge = (position: string | null): {
                                         Sudah Belanja
                                     </Badge>
                                     <Button
+                                        v-if="activeMembers.length < 2"
                                         size="sm"
                                         variant="default"
                                         class="mt-2"
