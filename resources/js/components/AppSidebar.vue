@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { index as bonusIndex } from '@/actions/App/Http/Controllers/BonusComission/BonusController';
+import { index as bonusSponsorIndex } from '@/actions/App/Http/Controllers/BonusComission/BonusSponsorController';
 import { index as bonusMatchingIndex } from '@/actions/App/Http/Controllers/BonusComission/BonusMatchingController';
 import { index as bonusPairingIndex } from '@/actions/App/Http/Controllers/BonusComission/BonusPairingController';
-import { index as bonusSponsorIndex } from '@/actions/App/Http/Controllers/BonusComission/BonusSponsorController';
+import { index as bonusCashbackIndex } from '@/actions/App/Http/Controllers/BonusComission/BonusCashbackController';
+import { index as bonusRewardIndex } from '@/actions/App/Http/Controllers/BonusComission/BonusRewardController';
+import { index as bonusRetailIndex } from '@/actions/App/Http/Controllers/BonusComission/BonusRetailController';
+import { index as bonusLifetimeCashRewardIndex } from '@/actions/App/Http/Controllers/BonusComission/BonusLifetimeCashRewardController';
 import { index as userIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import { index as customerIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
 
@@ -23,6 +26,7 @@ import { index as addressIndex } from '@/actions/App/Http/Controllers/Admin/Addr
 import { index as paymentMethodIndex } from '@/actions/App/Http/Controllers/Admin/PaymentMethodManagementController';
 import { index as courierIndex } from '@/actions/App/Http/Controllers/Admin/CourierManagementController';
 import { index as settingIndex } from '@/actions/App/Http/Controllers/Admin/SettingController';
+import { promotions as promotionsRewardIndex, lifetime as lifetimeRewardIndex } from '@/actions/App/Http/Controllers/Admin/RewardController';
 
 import { index as documentationIndex } from '@/actions/App/Http/Controllers/DocumentationController';
 
@@ -66,6 +70,8 @@ import {
     FileText,
     ArrowLeftRight,
     FileEdit,
+    Gift,
+    Infinity,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -182,8 +188,8 @@ const mainNavItems: NavItem[] = [
         icon: TrendingUp,
         items: [
             {
-                title: 'Bonus Umum',
-                href: bonusIndex(),
+                title: 'Bonus Sponsor',
+                href: bonusSponsorIndex(),
                 icon: Wallet,
             },
             {
@@ -197,9 +203,24 @@ const mainNavItems: NavItem[] = [
                 icon: Wallet2Icon,
             },
             {
-                title: 'Bonus Sponsor',
-                href: bonusSponsorIndex(),
+                title: 'Bonus Cashback',
+                href: bonusCashbackIndex(),
                 icon: WalletIcon,
+            },
+            {
+                title: 'Bonus Reward',
+                href: bonusRewardIndex(),
+                icon: Gift,
+            },
+            {
+                title: 'Bonus Retail',
+                href: bonusRetailIndex(),
+                icon: ShoppingCart,
+            },
+            {
+                title: 'Lifetime Cash Reward',
+                href: bonusLifetimeCashRewardIndex(),
+                icon: Infinity,
             },
         ],
     },
@@ -245,11 +266,6 @@ const mainNavItems: NavItem[] = [
                 href: networkMatrixIndex(),
                 icon: FolderTree,
             },
-            // {
-            //     title: 'Grafik Jaringan',
-            //     href: networkBinaryTree(),
-            //     icon: BarChart3,
-            // },
         ],
     },
     {
@@ -281,6 +297,16 @@ const mainNavItems: NavItem[] = [
                 title: 'Newsletter',
                 href: '/admin/settings/newsletters',
                 icon: FileText,
+            },
+            {
+                title: 'Promotions Rewards',
+                href: promotionsRewardIndex(),
+                icon: Gift,
+            },
+            {
+                title: 'Lifetime Cash Rewards',
+                href: lifetimeRewardIndex(),
+                icon: Infinity,
             },
         ],
     },

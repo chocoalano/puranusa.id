@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ProductManagementController;
 use App\Http\Controllers\Admin\PromotionManagementController;
 use App\Http\Controllers\Admin\ReturnRefundController;
 use App\Http\Controllers\Admin\ReviewManagementController;
+use App\Http\Controllers\Admin\RewardController;
 use App\Http\Controllers\Admin\ShipmentManagementController;
 use App\Http\Controllers\Admin\TopupManagementController;
 use App\Http\Controllers\Admin\WithdrawalManagementController;
@@ -118,5 +119,25 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         // Newsletter
         Route::get('newsletters', [NewsletterController::class, 'adminIndex'])->name('newsletters.index');
         Route::delete('newsletters/{subscriber}', [NewsletterController::class, 'adminDestroy'])->name('newsletters.destroy');
+
+        // Promotions Rewards (type = 0 - periode)
+        Route::prefix('promotions-rewards')->name('promotions-rewards.')->group(function () {
+            Route::get('/', [RewardController::class, 'promotions'])->name('index');
+            Route::get('/create', [RewardController::class, 'createPromotion'])->name('create');
+            Route::post('/', [RewardController::class, 'storePromotion'])->name('store');
+            Route::get('/{reward}/edit', [RewardController::class, 'editPromotion'])->name('edit');
+            Route::put('/{reward}', [RewardController::class, 'updatePromotion'])->name('update');
+            Route::delete('/{reward}', [RewardController::class, 'destroyPromotion'])->name('destroy');
+        });
+
+        // Lifetime Cash Rewards (type = 1 - permanen)
+        Route::prefix('lifetime-cash-rewards')->name('lifetime-cash-rewards.')->group(function () {
+            Route::get('/', [RewardController::class, 'lifetime'])->name('index');
+            Route::get('/create', [RewardController::class, 'createLifetime'])->name('create');
+            Route::post('/', [RewardController::class, 'storeLifetime'])->name('store');
+            Route::get('/{reward}/edit', [RewardController::class, 'editLifetime'])->name('edit');
+            Route::put('/{reward}', [RewardController::class, 'updateLifetime'])->name('update');
+            Route::delete('/{reward}', [RewardController::class, 'destroyLifetime'])->name('destroy');
+        });
     });
 });

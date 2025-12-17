@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Controllers\BonusComission\BonusCashbackController;
 use App\Http\Controllers\BonusComission\BonusController;
+use App\Http\Controllers\BonusComission\BonusLifetimeCashRewardController;
 use App\Http\Controllers\BonusComission\BonusMatchingController;
 use App\Http\Controllers\BonusComission\BonusPairingController;
+use App\Http\Controllers\BonusComission\BonusRetailController;
+use App\Http\Controllers\BonusComission\BonusRewardController;
 use App\Http\Controllers\BonusComission\BonusSponsorController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,4 +46,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('bonus.sponsor.release');
     Route::post('bonus/sponsor/mass-release', [BonusSponsorController::class, 'massRelease'])
         ->name('bonus.sponsor.massRelease');
+
+    // Bonus Cashback Routes
+    Route::resource('bonus/cashback', BonusCashbackController::class)
+        ->parameters(['cashback' => 'customerBonusCashback'])
+        ->names('bonus.cashback');
+    Route::post('bonus/cashback/{customerBonusCashback}/release', [BonusCashbackController::class, 'release'])
+        ->name('bonus.cashback.release');
+    Route::post('bonus/cashback/mass-release', [BonusCashbackController::class, 'massRelease'])
+        ->name('bonus.cashback.massRelease');
+
+    // Bonus Reward Routes
+    Route::resource('bonus/reward', BonusRewardController::class)
+        ->parameters(['reward' => 'customerBonusReward'])
+        ->names('bonus.reward');
+    Route::post('bonus/reward/{customerBonusReward}/release', [BonusRewardController::class, 'release'])
+        ->name('bonus.reward.release');
+    Route::post('bonus/reward/mass-release', [BonusRewardController::class, 'massRelease'])
+        ->name('bonus.reward.massRelease');
+
+    // Bonus Retail Routes
+    Route::resource('bonus/retail', BonusRetailController::class)
+        ->parameters(['retail' => 'customerBonusRetail'])
+        ->names('bonus.retail');
+    Route::post('bonus/retail/{customerBonusRetail}/release', [BonusRetailController::class, 'release'])
+        ->name('bonus.retail.release');
+    Route::post('bonus/retail/mass-release', [BonusRetailController::class, 'massRelease'])
+        ->name('bonus.retail.massRelease');
+
+    // Bonus Lifetime Cash Reward Routes
+    Route::resource('bonus/lifetime-cash-reward', BonusLifetimeCashRewardController::class)
+        ->parameters(['lifetime-cash-reward' => 'customerBonusLifetimeCashReward'])
+        ->names('bonus.lifetime-cash-reward');
+    Route::post('bonus/lifetime-cash-reward/{customerBonusLifetimeCashReward}/release', [BonusLifetimeCashRewardController::class, 'release'])
+        ->name('bonus.lifetime-cash-reward.release');
+    Route::post('bonus/lifetime-cash-reward/mass-release', [BonusLifetimeCashRewardController::class, 'massRelease'])
+        ->name('bonus.lifetime-cash-reward.massRelease');
 });
