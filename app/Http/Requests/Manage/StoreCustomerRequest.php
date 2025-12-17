@@ -11,8 +11,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * @property string $password
  * @property string $password_confirmation
  * @property int|null $sponsor_id
- * @property int|null $upline_id
- * @property string|null $preferred_position
+ * @property int $status
  * @property float|null $registration_amount
  * @property string|null $description
  */
@@ -39,8 +38,7 @@ class StoreCustomerRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'sponsor_id' => ['nullable', 'exists:customers,id'],
-            'upline_id' => ['nullable', 'exists:customers,id'],
-            'preferred_position' => ['nullable', 'in:left,right'],
+            'status' => ['required', 'integer', 'in:1,2,3'],
             'registration_amount' => ['nullable', 'numeric', 'min:0'],
             'description' => ['nullable', 'string'],
         ];
@@ -62,8 +60,8 @@ class StoreCustomerRequest extends FormRequest
             'password.min' => 'Password minimal 8 karakter',
             'password.confirmed' => 'Konfirmasi password tidak cocok',
             'sponsor_id.exists' => 'Sponsor tidak ditemukan',
-            'upline_id.exists' => 'Upline tidak ditemukan',
-            'preferred_position.in' => 'Posisi harus left atau right',
+            'status.required' => 'Status wajib dipilih',
+            'status.in' => 'Status tidak valid',
             'registration_amount.numeric' => 'Nominal registrasi harus berupa angka',
             'registration_amount.min' => 'Nominal registrasi minimal 0',
         ];

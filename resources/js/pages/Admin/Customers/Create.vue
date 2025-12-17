@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -12,9 +12,16 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { ArrowLeft, Search } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import { index, store, findPosition } from '@/actions/App/Http/Controllers/Admin/CustomerController';
+import { index, store } from '@/actions/App/Http/Controllers/Admin/CustomerController';
 
 interface Customer {
     id: number;
@@ -24,11 +31,6 @@ interface Customer {
 
 interface Props {
     customers: Customer[];
-    suggestedPosition?: {
-        sponsor_id: number;
-        upline_id: number;
-        position: 'left' | 'right';
-    } | null;
 }
 
 const props = defineProps<Props>();
@@ -39,38 +41,22 @@ const form = useForm({
     phone: '',
     password: '',
     password_confirmation: '',
-    sponsor_id: props.suggestedPosition?.sponsor_id || null,
-    upline_id: props.suggestedPosition?.upline_id || null,
-    preferred_position: (props.suggestedPosition?.position || 'left') as 'left' | 'right',
+    sponsor_id: null as number | null,
+    status: 3 as number, // 1 = Aktif, 2 = Pasif, 3 = Prospek
     registration_amount: 100000,
     description: '',
 });
 
 const searchSponsor = ref('');
-const searchUpline = ref('');
 const showSponsorDropdown = ref(false);
-const showUplineDropdown = ref(false);
 
 const selectedSponsor = computed(() => {
     return props.customers.find((c) => c.id === form.sponsor_id);
 });
 
-const selectedUpline = computed(() => {
-    return props.customers.find((c) => c.id === form.upline_id);
-});
-
 const filteredSponsors = computed(() => {
     if (!searchSponsor.value) return props.customers;
     const query = searchSponsor.value.toLowerCase();
-    return props.customers.filter(
-        (c) =>
-            c.name.toLowerCase().includes(query) || c.ewallet_id.toLowerCase().includes(query)
-    );
-});
-
-const filteredUplines = computed(() => {
-    if (!searchUpline.value) return props.customers;
-    const query = searchUpline.value.toLowerCase();
     return props.customers.filter(
         (c) =>
             c.name.toLowerCase().includes(query) || c.ewallet_id.toLowerCase().includes(query)
@@ -83,52 +69,12 @@ const selectSponsor = (customer: Customer) => {
     searchSponsor.value = '';
 };
 
-const selectUpline = (customer: Customer) => {
-    form.upline_id = customer.id;
-    showUplineDropdown.value = false;
-    searchUpline.value = '';
-};
-
 const handleSponsorBlur = () => {
     if (typeof window !== 'undefined') {
         window.setTimeout(() => {
             showSponsorDropdown.value = false;
         }, 200);
     }
-};
-
-const handleUplineBlur = () => {
-    if (typeof window !== 'undefined') {
-        window.setTimeout(() => {
-            showUplineDropdown.value = false;
-        }, 200);
-    }
-};
-
-const suggestPosition = () => {
-    if (!form.sponsor_id) {
-        toast.error('Pilih sponsor terlebih dahulu');
-        return;
-    }
-
-    router.get(
-        findPosition.url(),
-        { sponsor_id: form.sponsor_id },
-        {
-            preserveState: true,
-            onSuccess: (page: any) => {
-                const suggested = page.props.suggestedPosition;
-                if (suggested) {
-                    form.upline_id = suggested.upline_id;
-                    form.preferred_position = suggested.position;
-                    toast.success('Posisi disarankan berhasil dimuat');
-                }
-            },
-            onError: () => {
-                toast.error('Gagal mendapatkan saran posisi');
-            },
-        }
-    );
 };
 
 const submit = () => {
@@ -271,33 +217,23 @@ const submit = () => {
                     <CardHeader>
                         <CardTitle>Struktur Jaringan MLM</CardTitle>
                         <CardDescription>
-                            Pilih sponsor dan posisi dalam binary tree
+                            Pilih sponsor dan status pelanggan
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div class="grid gap-4 md:grid-cols-2">
                             <!-- Sponsor Selection -->
                             <div class="space-y-2">
-                                <Label for="sponsor">Sponsor *</Label>
+                                <Label for="sponsor">Sponsor</Label>
                                 <div class="relative">
-                                    <div class="flex gap-2">
-                                        <div class="relative flex-1">
-                                            <Input
-                                                v-model="searchSponsor"
-                                                @focus="showSponsorDropdown = true"
-                                                @blur="handleSponsorBlur"
-                                                placeholder="Cari sponsor..."
-                                            />
-                                            <Search class="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        </div>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            @click="suggestPosition"
-                                            :disabled="!form.sponsor_id"
-                                        >
-                                            Sarankan Posisi
-                                        </Button>
+                                    <div class="relative">
+                                        <Input
+                                            v-model="searchSponsor"
+                                            @focus="showSponsorDropdown = true"
+                                            @blur="handleSponsorBlur"
+                                            placeholder="Cari sponsor..."
+                                        />
+                                        <Search class="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                                     </div>
 
                                     <div
@@ -334,99 +270,26 @@ const submit = () => {
                                 </p>
                             </div>
 
-                            <!-- Upline Selection -->
+                            <!-- Status Selection -->
                             <div class="space-y-2">
-                                <Label for="upline">Upline *</Label>
-                                <div class="relative">
-                                    <div class="relative">
-                                        <Input
-                                            v-model="searchUpline"
-                                            @focus="showUplineDropdown = true"
-                                            @blur="handleUplineBlur"
-                                            placeholder="Cari upline..."
-                                        />
-                                        <Search class="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
-                                    </div>
-
-                                    <div
-                                        v-if="showUplineDropdown && filteredUplines.length > 0"
-                                        class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md"
-                                    >
-                                        <button
-                                            v-for="customer in filteredUplines"
-                                            :key="customer.id"
-                                            type="button"
-                                            @click="selectUpline(customer)"
-                                            class="w-full rounded px-3 py-2 text-left text-sm hover:bg-accent"
-                                        >
-                                            <div class="font-medium">{{ customer.name }}</div>
-                                            <div class="text-xs text-muted-foreground">
-                                                {{ customer.ewallet_id }}
-                                            </div>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div
-                                    v-if="selectedUpline"
-                                    class="mt-2 rounded-md border bg-muted p-3"
-                                >
-                                    <p class="text-sm font-medium">{{ selectedUpline.name }}</p>
-                                    <p class="text-xs text-muted-foreground">
-                                        {{ selectedUpline.ewallet_id }}
-                                    </p>
-                                </div>
-
-                                <p v-if="form.errors.upline_id" class="text-sm text-destructive">
-                                    {{ form.errors.upline_id }}
+                                <Label for="status">Status *</Label>
+                                <Select v-model="form.status">
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem :value="3">Prospek</SelectItem>
+                                        <SelectItem :value="2">Pasif</SelectItem>
+                                        <SelectItem :value="1">Aktif</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p class="text-xs text-muted-foreground">
+                                    Prospek: belum terdaftar di jaringan, Pasif: terdaftar tapi belum aktif, Aktif: terdaftar dan aktif
+                                </p>
+                                <p v-if="form.errors.status" class="text-sm text-destructive">
+                                    {{ form.errors.status }}
                                 </p>
                             </div>
-                        </div>
-
-                        <!-- Position Selection -->
-                        <div class="space-y-2">
-                            <Label>Posisi Pilihan *</Label>
-                            <div class="flex gap-4">
-                                <div class="flex items-center space-x-2">
-                                    <input
-                                        type="radio"
-                                        value="left"
-                                        id="left"
-                                        v-model="form.preferred_position"
-                                        class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                                    />
-                                    <Label for="left" class="cursor-pointer font-normal">
-                                        Kiri
-                                    </Label>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <input
-                                        type="radio"
-                                        value="right"
-                                        id="right"
-                                        v-model="form.preferred_position"
-                                        class="h-4 w-4 border-gray-300 text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                                    />
-                                    <Label for="right" class="cursor-pointer font-normal">
-                                        Kanan
-                                    </Label>
-                                </div>
-                            </div>
-                            <p v-if="form.errors.preferred_position" class="text-sm text-destructive">
-                                {{ form.errors.preferred_position }}
-                            </p>
-                        </div>
-
-                        <div
-                            v-if="props.suggestedPosition"
-                            class="rounded-lg border-2 border-dashed border-primary/20 bg-primary/5 p-4"
-                        >
-                            <p class="text-sm font-medium text-primary">
-                                💡 Posisi yang disarankan telah dimuat
-                            </p>
-                            <p class="mt-1 text-xs text-muted-foreground">
-                                Upline dan posisi telah diatur sesuai ketersediaan dalam binary tree
-                            </p>
                         </div>
                     </CardContent>
                 </Card>

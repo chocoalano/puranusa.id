@@ -95,6 +95,7 @@ class Customer extends Authenticatable
         'omzet',
         'omzet_group_left',
         'omzet_group_right',
+        'status',
     ];
 
     /**
@@ -109,13 +110,13 @@ class Customer extends Authenticatable
     {
         if ($this->package_id === null) {
             return 'Tidak ada paket';
-        }elseif ($this->package_id == 1) {
+        } elseif ($this->package_id == 1) {
             return 'ZENNER Plus';
-        }elseif ($this->package_id == 2) {
+        } elseif ($this->package_id == 2) {
             return 'ZENNER Prime';
-        }elseif ($this->package_id == 3) {
+        } elseif ($this->package_id == 3) {
             return 'ZENNER Ultra';
-        }else{
+        } else {
             return 'Unknown Package';
         }
     }

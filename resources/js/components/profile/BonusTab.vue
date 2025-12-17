@@ -487,6 +487,9 @@ const grandTotal = computed(() =>
                                     <div class="text-xs sm:text-base md:text-lg font-bold text-green-600">
                                         {{ formatCurrency(bonus.amount) }}
                                     </div>
+                                    <div :class="['text-[8px] sm:text-xs', bonus.status === 1 ? 'text-green-600' : 'text-yellow-600']">
+                                        {{ bonus.status === 1 ? 'Processed' : 'Pending' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -530,6 +533,9 @@ const grandTotal = computed(() =>
                                     <div class="text-xs sm:text-base md:text-lg font-bold text-green-600">
                                         {{ formatCurrency(bonus.amount) }}
                                     </div>
+                                    <div :class="['text-[8px] sm:text-xs', bonus.status === 1 ? 'text-green-600' : 'text-yellow-600']">
+                                        {{ bonus.status === 1 ? 'Processed' : 'Pending' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -565,6 +571,9 @@ const grandTotal = computed(() =>
                                 <div class="text-left sm:text-right flex-shrink-0">
                                     <div class="text-base sm:text-lg font-bold text-green-600">
                                         {{ formatCurrency(bonus.amount) }}
+                                    </div>
+                                    <div :class="['text-[8px] sm:text-xs', bonus.status === 1 ? 'text-green-600' : 'text-yellow-600']">
+                                        {{ bonus.status === 1 ? 'Processed' : 'Pending' }}
                                     </div>
                                 </div>
                             </div>
@@ -604,6 +613,9 @@ const grandTotal = computed(() =>
                                     <div class="text-xs sm:text-base md:text-lg font-bold text-green-600">
                                         {{ formatCurrency(bonus.amount) }}
                                     </div>
+                                    <div :class="['text-[8px] sm:text-xs', bonus.status === 1 ? 'text-green-600' : 'text-yellow-600']">
+                                        {{ bonus.status === 1 ? 'Processed' : 'Pending' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -639,6 +651,9 @@ const grandTotal = computed(() =>
                                 <div class="text-left sm:text-right flex-shrink-0">
                                     <div class="text-xs sm:text-base md:text-lg font-bold text-green-600">
                                         {{ formatCurrency(bonus.amount) }}
+                                    </div>
+                                    <div :class="['text-[8px] sm:text-xs', bonus.status === 1 ? 'text-green-600' : 'text-yellow-600']">
+                                        {{ bonus.status === 1 ? 'Processed' : 'Pending' }}
                                     </div>
                                 </div>
                             </div>
@@ -683,6 +698,9 @@ const grandTotal = computed(() =>
                                     <div class="text-xs sm:text-base md:text-lg font-bold text-green-600">
                                         {{ formatCurrency(bonus.amount) }}
                                     </div>
+                                    <div :class="['text-[8px] sm:text-xs', bonus.status === 1 ? 'text-green-600' : 'text-yellow-600']">
+                                        {{ bonus.status === 1 ? 'Processed' : 'Pending' }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -723,6 +741,9 @@ const grandTotal = computed(() =>
                                 <div class="text-left sm:text-right flex-shrink-0">
                                     <div class="text-xs sm:text-base md:text-lg font-bold text-green-600">
                                         {{ formatCurrency(bonus.amount) }}
+                                    </div>
+                                    <div :class="['text-[8px] sm:text-xs', bonus.status === 1 ? 'text-green-600' : 'text-yellow-600']">
+                                        {{ bonus.status === 1 ? 'Processed' : 'Pending' }}
                                     </div>
                                 </div>
                             </div>

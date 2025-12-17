@@ -106,7 +106,6 @@ class CustomerController extends Controller
 
         return Inertia::render('Admin/Customers/Create', [
             'customers' => $customers,
-            'suggestedPosition' => null,
         ]);
     }
 
@@ -116,23 +115,25 @@ class CustomerController extends Controller
     public function store(StoreCustomerRequest $request)
     {
         try {
-            $result = $this->mlmService->completeRegistrationFlow(
-                customerData: [
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'phone' => $request->phone,
-                    'password' => $request->password,
-                    'description' => $request->description,
-                ],
-                sponsorId: $request->sponsor_id,
-                uplineId: $request->upline_id,
-                registrationAmount: $request->input('registration_amount', 0),
-                preferredPosition: $request->preferred_position
-            );
+            // Generate ewallet_id
+            $ewalletId = Customer::generateEwalletId();
+
+            // Create customer with status only (no binary tree placement)
+            $customer = Customer::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'password' => bcrypt($request->password),
+                'description' => $request->description,
+                'sponsor_id' => $request->sponsor_id,
+                'status' => $request->status,
+                'ewallet_id' => $ewalletId,
+                'ref_code' => strtoupper(substr(md5(uniqid()), 0, 8)),
+            ]);
 
             return redirect()
-                ->route('admin.customers.show', $result['customer'])
-                ->with('success', 'Customer berhasil ditambahkan dengan Ewallet ID: '.$result['customer']->ewallet_id);
+                ->route('admin.customers.show', $customer)
+                ->with('success', 'Customer berhasil ditambahkan dengan Ewallet ID: '.$customer->ewallet_id);
         } catch (\Exception $e) {
             return redirect()
                 ->back()
