@@ -261,6 +261,10 @@ class ProfileController extends Controller
             'customer' => [
                 'id' => $customer->id,
                 'name' => $customer->name,
+                'username' => $customer->username,
+                'nik' => $customer->nik,
+                'gender' => $customer->gender,
+                'alamat' => $customer->alamat,
                 'email' => $customer->email,
                 'phone' => $customer->phone,
                 'status' => $customer->status, // Use status directly from database

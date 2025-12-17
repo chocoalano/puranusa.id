@@ -9,8 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -93,78 +94,86 @@ class LogRegController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:customers'],
+
+            // username kolomnya varchar(100) + unique
+            'username' => ['required', 'string', 'max:100', 'alpha_dash:ascii', Rule::unique('customers', 'username')],
+
+            // email & phone TIDAK unique (sesuai perubahan kamu)
+            'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
+
+            // kolom baru (nullable di DB)
+            'nik' => ['nullable', 'string', 'max:32', 'regex:/^\d{8,32}$/'], // longgar tapi tetap angka
+            'gender' => ['nullable', Rule::in(['male', 'female', 'L', 'P'])],
+            'alamat' => ['nullable', 'string'],
+
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'ref_code' => ['nullable', 'string', 'exists:customers,ref_code'],
         ]);
 
-        DB::beginTransaction();
+        // Normalisasi sederhana
+        $validated['username'] = Str::lower(trim($validated['username']));
+        $validated['phone'] = trim($validated['phone']);
+        if (! empty($validated['nik'])) {
+            $validated['nik'] = preg_replace('/\D+/', '', $validated['nik']); // buang selain angka
+        }
 
         try {
-            // Find sponsor if ref_code provided
-            $sponsor = null;
-            $sponsorId = null;
+            $customer = DB::transaction(function () use ($validated) {
+                $sponsorId = null;
 
-            if (! empty($validated['ref_code'])) {
-                $sponsor = Customer::where('ref_code', $validated['ref_code'])->first();
-
-                if (! $sponsor) {
-                    throw ValidationException::withMessages([
-                        'ref_code' => 'Kode referral tidak valid.',
-                    ]);
+                if (! empty($validated['ref_code'])) {
+                    // Karena sudah divalidasi exists, ini harusnya ketemu
+                    $sponsorId = Customer::where('ref_code', $validated['ref_code'])->value('id');
                 }
 
-                $sponsorId = $sponsor->id;
-            }
+                return Customer::create([
+                    'name' => $validated['name'],
+                    'username' => $validated['username'],
 
-            // Create customer with sponsor_id and status = 1 (prospek)
-            $customer = Customer::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
-                'password' => Hash::make($validated['password']),
-                'email_verified_at' => now(),
-                'sponsor_id' => $sponsorId,
-                'status' => 1, // 1 = prospek, 2 = pasif, 3 = aktif
-            ]);
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'],
 
-            // Log successful registration
+                    'nik' => $validated['nik'] ?? null,
+                    'gender' => $validated['gender'] ?? null,
+                    'alamat' => $validated['alamat'] ?? null,
+
+                    'password' => Hash::make($validated['password']),
+
+                    // kalau kamu memang ingin auto-verified:
+                    'email_verified_at' => now(),
+
+                    'sponsor_id' => $sponsorId,
+                    'status' => 1, // 1=prospek
+                ]);
+            });
+
             \Log::info('New customer registered', [
                 'customer_id' => $customer->id,
+                'username' => $customer->username,
                 'email' => $customer->email,
-                'has_sponsor' => $sponsorId !== null,
-                'sponsor_id' => $sponsorId,
+                'has_sponsor' => ! empty($customer->sponsor_id),
+                'sponsor_id' => $customer->sponsor_id,
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
 
-            DB::commit();
-
-            // Login the customer
             Auth::guard('client')->login($customer);
-
-            // Regenerate session
             $request->session()->regenerate();
 
             return redirect()->intended(route('ecommerce.beranda'))
                 ->with('success', 'Selamat datang, '.$customer->name.'! Akun Anda berhasil dibuat.');
-
         } catch (ValidationException $e) {
-            DB::rollBack();
             throw $e;
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            // Log the error
+        } catch (\Throwable $e) {
             \Log::error('Registration failed', [
+                'username' => $validated['username'] ?? null,
                 'email' => $validated['email'] ?? null,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             throw ValidationException::withMessages([
-                'email' => 'Terjadi kesalahan saat membuat akun. Silakan coba lagi.',
+                'username' => 'Terjadi kesalahan saat membuat akun. Silakan coba lagi.',
             ]);
         }
     }

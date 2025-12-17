@@ -72,6 +72,10 @@ class Customer extends Authenticatable
         'position',
         'ref_code',
         'name',
+        'username',
+        'nik',
+        'gender',
+        'alamat',
         'email',
         'phone',
         'password',
@@ -91,11 +95,6 @@ class Customer extends Authenticatable
         'omzet',
         'omzet_group_left',
         'omzet_group_right',
-        'nik',
-        'gender',
-        'alamat',
-        'username',
-        'username',
     ];
 
     /**
@@ -154,6 +153,7 @@ class Customer extends Authenticatable
             'omzet' => 'decimal:2',
             'omzet_group_left' => 'decimal:2',
             'omzet_group_right' => 'decimal:2',
+            'gender' => 'string',
         ];
     }
 

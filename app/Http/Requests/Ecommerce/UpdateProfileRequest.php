@@ -25,8 +25,12 @@ class UpdateProfileRequest extends FormRequest
         $customer = auth('client')->user();
 
         return [
+            'username' => ['required', 'string', 'max:100', Rule::unique('customers')->ignore($customer->id)],
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('customers')->ignore($customer->id)],
+            'nik' => ['nullable', 'string', 'max:32'],
+            'gender' => ['nullable', 'string', 'in:male,female,L,P'],
+            'alamat' => ['nullable', 'string', 'max:1000'],
+            'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
             'description' => ['nullable', 'string', 'max:1000'],
         ];
@@ -40,11 +44,16 @@ class UpdateProfileRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'username.required' => 'Username wajib diisi.',
+            'username.max' => 'Username maksimal 100 karakter.',
+            'username.unique' => 'Username sudah digunakan oleh akun lain.',
             'name.required' => 'Nama wajib diisi.',
             'name.max' => 'Nama maksimal 255 karakter.',
+            'nik.max' => 'NIK maksimal 32 karakter.',
+            'gender.in' => 'Jenis kelamin tidak valid.',
+            'alamat.max' => 'Alamat maksimal 1000 karakter.',
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
-            'email.unique' => 'Email sudah digunakan oleh akun lain.',
             'phone.required' => 'Nomor telepon wajib diisi.',
             'phone.max' => 'Nomor telepon maksimal 20 karakter.',
             'description.max' => 'Deskripsi maksimal 1000 karakter.',

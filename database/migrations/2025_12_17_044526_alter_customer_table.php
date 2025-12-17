@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::table('customers', function (Blueprint $table) {
             // Tambah kolom baru
             $table->string('nik', 32)->nullable()->after('id');          // NIK biasanya 16, tapi dibuat agak longgar
-            $table->string('gender', 20)->nullable()->after('nik');      // bisa "male/female" atau "L/P", terserah sistem kamu
+            $table->enum('gender', ['male', 'female', 'L', 'P'])->nullable()->after('nik');      // bisa "male/female" atau "L/P", terserah sistem kamu
             $table->text('alamat')->nullable()->after('gender');
             $table->string('username', 100)->nullable()->unique()->after('name');
         });

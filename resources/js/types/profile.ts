@@ -29,6 +29,10 @@ export interface Order {
 export interface Customer {
     id: number;
     name: string;
+    username: string | null;
+    nik: string | null;
+    gender: 'male' | 'female' | 'L' | 'P' | null;
+    alamat: string | null;
     email: string;
     phone: string;
     status: number;
