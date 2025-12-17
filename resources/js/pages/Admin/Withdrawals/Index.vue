@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { approve, reject } from '@/actions/App/Http/Controllers/Admin/WithdrawalManagementController';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Pagination from '@/components/Pagination.vue';
@@ -145,9 +145,9 @@ const openApproveDialog = (withdrawal: Withdrawal) => {
 const handleApprove = () => {
     if (!approveDialog.value.withdrawal) return;
 
-    router.post(
+    const approveForm = useForm({});
+    approveForm.post(
         approve.url(approveDialog.value.withdrawal.id),
-        {},
         {
             preserveScroll: true,
             onSuccess: () => {
@@ -164,9 +164,9 @@ const openRejectDialog = (withdrawal: Withdrawal) => {
 const handleReject = () => {
     if (!rejectDialog.value.withdrawal) return;
 
-    router.post(
+    const rejectForm = useForm({});
+    rejectForm.post(
         reject.url(rejectDialog.value.withdrawal.id),
-        {},
         {
             preserveScroll: true,
             onSuccess: () => {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { router, useForm } from '@inertiajs/vue3'
 import { Upload, X, Star, Loader2, Image as ImageIcon } from 'lucide-vue-next'
 import { deleteImage as deleteImageRoute, setPrimaryImage as setPrimaryImageRoute } from '@/actions/App/Http/Controllers/Admin/ProductManagementController'
 
@@ -142,9 +142,9 @@ const setPrimaryImage = async (imageId: number) => {
   settingPrimary.value = true
 
   try {
-    await router.post(
+    const primaryForm = useForm({ media_id: imageId })
+    await primaryForm.post(
       setPrimaryImageRoute.url(props.productId),
-      { media_id: imageId },
       {
         preserveScroll: true,
         onFinish: () => {

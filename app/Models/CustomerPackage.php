@@ -24,7 +24,7 @@ class CustomerPackage extends Model
     /**
      * The table associated with the model.
      */
-    protected $table = 'customer_packages';
+    protected $table = 'customer_package';
 
     /**
      * Indicates if the model should be timestamped.

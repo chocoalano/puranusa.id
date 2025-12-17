@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import PageBuilder from '@/components/admin/PageBuilder.vue';
 import { ArrowLeft, Save } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 const form = ref({
     title: '',
@@ -29,8 +29,9 @@ const form = ref({
     order: 0,
 });
 
-const processing = ref(false);
-const errors = ref<Record<string, string>>({});
+const submitForm = useForm({});
+const processing = computed(() => submitForm.processing);
+const errors = computed(() => submitForm.errors);
 
 // Auto-generate slug from title
 watch(() => form.value.title, (newTitle) => {
@@ -42,25 +43,17 @@ watch(() => form.value.title, (newTitle) => {
     }
 });
 
-const submitForm = () => {
-    processing.value = true;
-    errors.value = {};
-
+const handleSubmit = () => {
     const data = {
         ...form.value,
         blocks: JSON.stringify(form.value.blocks),
     };
 
-    router.post('/admin/pages', data, {
-        preserveScroll: true,
-        onSuccess: () => {
-            processing.value = false;
-        },
-        onError: (err) => {
-            errors.value = err;
-            processing.value = false;
-        },
-    });
+    submitForm
+        .transform(() => data)
+        .post('/admin/pages', {
+            preserveScroll: true,
+        });
 };
 </script>
 
@@ -84,13 +77,13 @@ const submitForm = () => {
                         </p>
                     </div>
                 </div>
-                <Button @click="submitForm" :disabled="processing">
+                <Button @click="handleSubmit" :disabled="processing">
                     <Save class="h-4 w-4 mr-2" />
                     Simpan Halaman
                 </Button>
             </div>
 
-            <form @submit.prevent="submitForm" class="space-y-6">
+            <form @submit.prevent="handleSubmit" class="space-y-6">
                 <!-- Basic Information -->
                 <Card>
                     <CardHeader>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import PromotionForm from '@/components/promotions/PromotionForm.vue';
 import { ArrowLeft } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const form = ref({
     code: '',
@@ -25,24 +25,22 @@ const form = ref({
     page: '',
 });
 
-const errors = ref<Record<string, string>>({});
-const processing = ref(false);
+const submitForm = useForm({});
+const errors = computed(() => submitForm.errors);
+const processing = computed(() => submitForm.processing);
 
 const submit = () => {
-    processing.value = true;
-    router.post('/admin/promotions', form.value, {
-        preserveScroll: true,
-        onSuccess: () => {
-            toast.success('Promosi berhasil ditambahkan');
-        },
-        onError: (err) => {
-            errors.value = err;
-            toast.error('Gagal menambahkan promosi');
-        },
-        onFinish: () => {
-            processing.value = false;
-        },
-    });
+    submitForm
+        .transform(() => form.value)
+        .post('/admin/promotions', {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Promosi berhasil ditambahkan');
+            },
+            onError: () => {
+                toast.error('Gagal menambahkan promosi');
+            },
+        });
 };
 </script>
 

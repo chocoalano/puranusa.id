@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { debounce } from 'lodash-es';
 import {
@@ -37,7 +37,8 @@ import { toast } from 'vue-sonner';
 
 // Login as customer action
 const loginAsCustomer = (id: number, name: string) => {
-    router.post(`/manage/customers/${id}/login-as`, {}, {
+    const loginForm = useForm({});
+    loginForm.post(`/manage/customers/${id}/login-as`, {
         onSuccess: () => {
             toast.success(`Login sebagai ${name}`);
         },

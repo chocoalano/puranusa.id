@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, CheckCircle, Trash2, Wallet, XCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 
@@ -66,24 +66,22 @@ const formatDate = (date: string) => {
 };
 
 const handleDelete = () => {
-    router.delete(destroy.url(props.bonus.id), {
+    const deleteForm = useForm({});
+    deleteForm.delete(destroy.url(props.bonus.id), {
         onSuccess: () => {
-            router.visit(index.url());
+            window.location.href = index.url();
         },
     });
 };
 
 const handleRelease = () => {
-    router.post(
-        release.url(props.bonus.id),
-        {},
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                releaseDialog.value = false;
-            },
-        }
-    );
+    const releaseForm = useForm({});
+    releaseForm.post(release.url(props.bonus.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            releaseDialog.value = false;
+        },
+    });
 };
 </script>
 

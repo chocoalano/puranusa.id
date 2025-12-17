@@ -91,6 +91,11 @@ class Customer extends Authenticatable
         'omzet',
         'omzet_group_left',
         'omzet_group_right',
+        'nik',
+        'gender',
+        'alamat',
+        'username',
+        'username',
     ];
 
     /**
@@ -99,6 +104,21 @@ class Customer extends Authenticatable
     public function getEmailForPasswordReset(): string
     {
         return $this->email;
+    }
+
+    public function get_package_name(): string
+    {
+        if ($this->package_id === null) {
+            return 'Tidak ada paket';
+        }elseif ($this->package_id == 1) {
+            return 'ZENNER Plus';
+        }elseif ($this->package_id == 2) {
+            return 'ZENNER Prime';
+        }elseif ($this->package_id == 3) {
+            return 'ZENNER Ultra';
+        }else{
+            return 'Unknown Package';
+        }
     }
 
     /**
@@ -236,6 +256,14 @@ class Customer extends Authenticatable
     public function upline(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Customer::class, 'upline_id');
+    }
+
+    /**
+     * Relasi ke paket customer
+     */
+    public function package(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\CustomerPackage::class, 'package_id');
     }
 
     /**

@@ -8,101 +8,111 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import { Form, Head } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
+
+const form = useForm({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+});
+
+const submit = () => {
+    form.post(store.url(), {
+        onFinish: () => {
+            form.reset('password', 'password_confirmation');
+        },
+    });
+};
 </script>
 
 <template>
     <AuthBase
-        title="Create an account"
-        description="Enter your details below to create your account"
+        title="Buat akun baru"
+        description="Masukkan data Anda untuk membuat akun"
     >
-        <Head title="Register" />
+        <Head title="Daftar" />
 
-        <Form
-            v-bind="store.form()"
-            :reset-on-success="['password', 'password_confirmation']"
-            v-slot="{ errors, processing }"
-            class="flex flex-col gap-6"
-        >
+        <form @submit.prevent="submit" class="flex flex-col gap-6">
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="name">Name</Label>
+                    <Label for="name">Nama</Label>
                     <Input
                         id="name"
                         type="text"
+                        v-model="form.name"
                         required
                         autofocus
                         :tabindex="1"
                         autocomplete="name"
-                        name="name"
-                        placeholder="Full name"
+                        placeholder="Nama lengkap"
                     />
-                    <InputError :message="errors.name" />
+                    <InputError :message="form.errors.name" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email">Alamat Email</Label>
                     <Input
                         id="email"
                         type="email"
+                        v-model="form.email"
                         required
                         :tabindex="2"
                         autocomplete="email"
-                        name="email"
-                        placeholder="email@example.com"
+                        placeholder="email@contoh.com"
                     />
-                    <InputError :message="errors.email" />
+                    <InputError :message="form.errors.email" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">Password</Label>
+                    <Label for="password">Kata Sandi</Label>
                     <Input
                         id="password"
                         type="password"
+                        v-model="form.password"
                         required
                         :tabindex="3"
                         autocomplete="new-password"
-                        name="password"
-                        placeholder="Password"
+                        placeholder="Kata sandi"
                     />
-                    <InputError :message="errors.password" />
+                    <InputError :message="form.errors.password" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
+                    <Label for="password_confirmation">Konfirmasi Kata Sandi</Label>
                     <Input
                         id="password_confirmation"
                         type="password"
+                        v-model="form.password_confirmation"
                         required
                         :tabindex="4"
                         autocomplete="new-password"
-                        name="password_confirmation"
-                        placeholder="Confirm password"
+                        placeholder="Konfirmasi kata sandi"
                     />
-                    <InputError :message="errors.password_confirmation" />
+                    <InputError :message="form.errors.password_confirmation" />
                 </div>
 
                 <Button
                     type="submit"
                     class="mt-2 w-full"
                     tabindex="5"
-                    :disabled="processing"
+                    :disabled="form.processing"
                     data-test="register-user-button"
                 >
-                    <Spinner v-if="processing" />
-                    Create account
+                    <Spinner v-if="form.processing" />
+                    Buat Akun
                 </Button>
             </div>
 
             <div class="text-center text-sm text-muted-foreground">
-                Already have an account?
+                Sudah punya akun?
                 <TextLink
                     :href="login()"
                     class="underline underline-offset-4"
                     :tabindex="6"
-                    >Log in</TextLink
+                    >Masuk</TextLink
                 >
             </div>
-        </Form>
+        </form>
     </AuthBase>
 </template>

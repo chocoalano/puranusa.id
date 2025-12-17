@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { approve, reject } from '@/actions/App/Http/Controllers/Admin/TopupManagementController';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Pagination from '@/components/Pagination.vue';
@@ -136,9 +136,9 @@ const openApproveDialog = (topup: Topup) => {
 const handleApprove = () => {
     if (!approveDialog.value.topup) return;
 
-    router.post(
+    const approveForm = useForm({});
+    approveForm.post(
         approve.url(approveDialog.value.topup.id),
-        {},
         {
             preserveScroll: true,
             onSuccess: () => {
@@ -155,9 +155,9 @@ const openRejectDialog = (topup: Topup) => {
 const handleReject = () => {
     if (!rejectDialog.value.topup) return;
 
-    router.post(
+    const rejectForm = useForm({});
+    rejectForm.post(
         reject.url(rejectDialog.value.topup.id),
-        {},
         {
             preserveScroll: true,
             onSuccess: () => {

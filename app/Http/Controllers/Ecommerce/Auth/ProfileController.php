@@ -27,6 +27,7 @@ class ProfileController extends Controller
         $customer = Customer::find(Auth::guard('client')->id());
 
         $customer->load([
+            'package',
             'networkPosition.upline',
             'matrixPosition.sponsor',
             'addresses' => fn ($q) => $q->orderBy('is_default', 'desc')->orderBy('created_at', 'desc'),
@@ -121,7 +122,7 @@ class ProfileController extends Controller
             $activeMembers = Customer::where('sponsor_id', $customer->id)
                 ->whereNotNull('upline_id')
                 ->where('omzet', '>', 0)
-                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition'])
+                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition', 'package'])
                 ->limit(50)
                 ->get()
                 ->map(fn ($member) => [
@@ -129,6 +130,9 @@ class ProfileController extends Controller
                     'name' => $member->name,
                     'email' => $member->email,
                     'phone' => $member->phone,
+                    'package_name' => $member->package?->name ?? $member->get_package_name(),
+                    'total_left' => $member->total_left ?? 0,
+                    'total_right' => $member->total_right ?? 0,
                     'position' => $member->networkPosition?->position,
                     'level' => $member->networkPosition?->level,
                     'has_placement' => $member->networkPosition !== null,
@@ -144,7 +148,7 @@ class ProfileController extends Controller
             $passiveMembers = Customer::where('sponsor_id', $customer->id)
                 ->whereNull('upline_id')
                 ->where('omzet', '>', 0)
-                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition'])
+                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition', 'package'])
                 ->limit(50)
                 ->get()
                 ->map(fn ($member) => [
@@ -152,6 +156,9 @@ class ProfileController extends Controller
                     'name' => $member->name,
                     'email' => $member->email,
                     'phone' => $member->phone,
+                    'package_name' => $member->package?->name ?? $member->get_package_name(),
+                    'total_left' => $member->total_left ?? 0,
+                    'total_right' => $member->total_right ?? 0,
                     'position' => $member->networkPosition?->position,
                     'level' => $member->networkPosition?->level,
                     'has_placement' => $member->networkPosition !== null,
@@ -167,7 +174,7 @@ class ProfileController extends Controller
             $prospectMembers = Customer::where('sponsor_id', $customer->id)
                 ->whereNull('upline_id')
                 ->where('omzet', '=', 0)
-                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition'])
+                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition', 'package'])
                 ->limit(50)
                 ->get()
                 ->map(fn ($member) => [
@@ -175,6 +182,9 @@ class ProfileController extends Controller
                     'name' => $member->name,
                     'email' => $member->email,
                     'phone' => $member->phone,
+                    'package_name' => $member->package?->name ?? $member->get_package_name(),
+                    'total_left' => $member->total_left ?? 0,
+                    'total_right' => $member->total_right ?? 0,
                     'position' => $member->networkPosition?->position,
                     'level' => $member->networkPosition?->level,
                     'has_placement' => $member->networkPosition !== null,
@@ -442,23 +452,13 @@ class ProfileController extends Controller
             }
 
             // Verify member is sponsored by current customer (sponsor_id = current customer's id)
-            // and has status = 1 (prospek) - ready to be placed
+            // and has status = 2 (pasif) - ready to be placed
             if ($member->sponsor_id !== $currentCustomer->id) {
                 throw new \Exception('Member bukan bagian dari jaringan sponsor Anda.');
             }
 
-            if ($member->status !== 1) {
-                throw new \Exception('Hanya member dengan status Prospek (belum ditempatkan) yang dapat diposisikan.');
-            }
-
-            // Check if member has purchase/order (passive member requirement)
-            // Status 'paid' or 'completed' indicates successful purchase
-            $hasPurchase = Order::where('customer_id', $memberId)
-                ->whereIn('status', ['paid', 'completed'])
-                ->exists();
-
-            if (! $hasPurchase) {
-                throw new \Exception('Member harus melakukan pembelian terlebih dahulu sebelum ditempatkan.');
+            if ($member->status !== 2) {
+                throw new \Exception('Hanya member dengan status Pasif (sudah belanja tapi belum ditempatkan) yang dapat diposisikan.');
             }
 
             // Validate position availability at current customer's position
@@ -500,7 +500,7 @@ class ProfileController extends Controller
     private function buildBinaryTree($customer, int $maxDepth = 15): array
     {
         // Check if customer has foot_left or foot_right
-        if (! $customer->foot_left && ! $customer->foot_right) {
+        if (! $customer->foot_left || ! $customer->foot_right) {
             return [
                 'tree' => null,
                 'totalDownlines' => 0,
@@ -560,7 +560,7 @@ class ProfileController extends Controller
 
         // Build left child (foot_left)
         if ($customer->foot_left) {
-            $leftCustomer = Customer::find($customer->foot_left);
+            $leftCustomer = Customer::with('package')->find($customer->foot_left);
             if ($leftCustomer) {
                 $leftChild = $this->buildTreeNode($leftCustomer, $currentLevel + 1, $maxDepth);
             }
@@ -568,7 +568,7 @@ class ProfileController extends Controller
 
         // Build right child (foot_right)
         if ($customer->foot_right) {
-            $rightCustomer = Customer::find($customer->foot_right);
+            $rightCustomer = Customer::with('package')->find($customer->foot_right);
             if ($rightCustomer) {
                 $rightChild = $this->buildTreeNode($rightCustomer, $currentLevel + 1, $maxDepth);
             }
@@ -595,6 +595,9 @@ class ProfileController extends Controller
             'member_id' => $customer->id,
             'name' => $customer->name,
             'email' => $customer->email,
+            'package_name' => $customer->package?->name ?? $customer->get_package_name(),
+            'total_left' => $customer->total_left ?? 0,
+            'total_right' => $customer->total_right ?? 0,
             'position' => $position,
             'level' => $currentLevel,
             'status' => $customer->upline_id !== null, // true if placed in tree

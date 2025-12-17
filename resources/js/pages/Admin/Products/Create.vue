@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -167,43 +167,46 @@ const submit = () => {
         }
     });
 
-    router.post('/admin/products', formData, {
-        preserveScroll: true,
-        forceFormData: true,
-        onSuccess: () => {
-            loading.value = false;
-            alertMessage.value = {
-                type: 'success',
-                title: 'Produk Berhasil Ditambahkan',
-                message: 'Produk baru telah berhasil disimpan ke dalam katalog.',
-            };
-        },
-        onError: (err) => {
-            errors.value = err;
-            loading.value = false;
+    const submitFormHelper = useForm({});
+    submitFormHelper
+        .transform(() => formData)
+        .post('/admin/products', {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => {
+                loading.value = false;
+                alertMessage.value = {
+                    type: 'success',
+                    title: 'Produk Berhasil Ditambahkan',
+                    message: 'Produk baru telah berhasil disimpan ke dalam katalog.',
+                };
+            },
+            onError: (err) => {
+                errors.value = err;
+                loading.value = false;
 
-            // Count errors
-            const errorCount = Object.keys(err).length;
+                // Count errors
+                const errorCount = Object.keys(err).length;
 
-            // Create detailed error message
-            let errorDetails = '';
-            if (errorCount === 1) {
-                const [field, message] = Object.entries(err)[0];
-                errorDetails = `${formatFieldName(field)}: ${message}`;
-            } else {
-                errorDetails = `Terdapat ${errorCount} kesalahan yang perlu diperbaiki. Silakan periksa field yang ditandai merah di bawah ini.`;
-            }
+                // Create detailed error message
+                let errorDetails = '';
+                if (errorCount === 1) {
+                    const [field, message] = Object.entries(err)[0];
+                    errorDetails = `${formatFieldName(field)}: ${message}`;
+                } else {
+                    errorDetails = `Terdapat ${errorCount} kesalahan yang perlu diperbaiki. Silakan periksa field yang ditandai merah di bawah ini.`;
+                }
 
-            alertMessage.value = {
-                type: 'error',
-                title: 'Gagal Menyimpan Produk',
-                message: errorDetails,
-            };
+                alertMessage.value = {
+                    type: 'error',
+                    title: 'Gagal Menyimpan Produk',
+                    message: errorDetails,
+                };
 
-            // Scroll to top to show alert
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        },
-    });
+                // Scroll to top to show alert
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+        });
 };
 </script>
 

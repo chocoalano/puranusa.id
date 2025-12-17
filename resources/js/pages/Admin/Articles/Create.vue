@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch, defineAsyncComponent } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, watch, defineAsyncComponent, computed } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -40,8 +40,9 @@ const form = ref({
     published_at: '',
 });
 
-const errors = ref<Record<string, string>>({});
-const processing = ref(false);
+const submitFormHelper = useForm({});
+const errors = computed(() => submitFormHelper.errors);
+const processing = computed(() => submitFormHelper.processing);
 const tagInput = ref('');
 
 const slugify = (text: string): string => {
@@ -77,9 +78,6 @@ const removeTag = (index: number) => {
 };
 
 const submitForm = (publish: boolean = false) => {
-    processing.value = true;
-    errors.value = {};
-
     // Ensure content is up-to-date from blocks before submitting
     const contentToSave = JSON.stringify(form.value.blocks);
 
@@ -94,18 +92,16 @@ const submitForm = (publish: boolean = false) => {
         published_at: publish && !form.value.published_at ? new Date().toISOString() : form.value.published_at,
     };
 
-    router.post('/admin/articles', data, {
-        onSuccess: () => {
-            toast.success(publish ? 'Artikel berhasil diterbitkan' : 'Artikel berhasil disimpan sebagai draft');
-        },
-        onError: (err) => {
-            errors.value = err as Record<string, string>;
-            toast.error('Terjadi kesalahan, periksa form Anda');
-        },
-        onFinish: () => {
-            processing.value = false;
-        },
-    });
+    submitFormHelper
+        .transform(() => data)
+        .post('/admin/articles', {
+            onSuccess: () => {
+                toast.success(publish ? 'Artikel berhasil diterbitkan' : 'Artikel berhasil disimpan sebagai draft');
+            },
+            onError: () => {
+                toast.error('Terjadi kesalahan, periksa form Anda');
+            },
+        });
 };
 </script>
 

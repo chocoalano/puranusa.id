@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { valueUpdater } from '@/lib/utils';
 import {
     FlexRender,
@@ -154,9 +154,9 @@ const openApproveDialog = (returnItem: Return) => {
 const handleApprove = () => {
     if (!approveDialog.value.return) return;
 
-    router.post(
+    const approveForm = useForm({});
+    approveForm.post(
         approveReturn.url(approveDialog.value.return.id),
-        {},
         {
             preserveScroll: true,
             onSuccess: () => {
@@ -173,9 +173,9 @@ const openRejectDialog = (returnItem: Return) => {
 const handleReject = () => {
     if (!rejectDialog.value.return) return;
 
-    router.post(
+    const rejectForm = useForm({});
+    rejectForm.post(
         rejectReturn.url(rejectDialog.value.return.id),
-        {},
         {
             preserveScroll: true,
             onSuccess: () => {

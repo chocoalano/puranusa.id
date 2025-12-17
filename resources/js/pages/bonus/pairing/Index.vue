@@ -30,7 +30,7 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { valueUpdater } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import {
     FlexRender,
     getCoreRowModel,
@@ -191,17 +191,14 @@ const openReleaseDialog = (bonus: Bonus) => {
 const handleRelease = () => {
     if (!releaseDialog.value.bonus) return;
 
-    router.post(
-        release.url(releaseDialog.value.bonus.id),
-        {},
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                releaseDialog.value = { open: false, bonus: null };
-                rowSelection.value = {};
-            },
-        }
-    );
+    const releaseForm = useForm({});
+    releaseForm.post(release.url(releaseDialog.value.bonus.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            releaseDialog.value = { open: false, bonus: null };
+            rowSelection.value = {};
+        },
+    });
 };
 
 const openMassReleaseDialog = () => {
@@ -215,35 +212,29 @@ const handleMassRelease = () => {
     // Release selected bonuses sequentially
     let completed = 0;
     bonusIds.forEach((id) => {
-        router.post(
-            release.url(id),
-            {},
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    completed++;
-                    if (completed === bonusIds.length) {
-                        rowSelection.value = {};
-                        massReleaseDialog.value.open = false;
-                        router.reload({ only: ['bonuses', 'statistics'] });
-                    }
-                },
-            }
-        );
+        const releaseForm = useForm({});
+        releaseForm.post(release.url(id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                completed++;
+                if (completed === bonusIds.length) {
+                    rowSelection.value = {};
+                    massReleaseDialog.value.open = false;
+                    router.reload({ only: ['bonuses', 'statistics'] });
+                }
+            },
+        });
     });
 };
 
 const handleFlush = () => {
-    router.post(
-        flush.url(),
-        {},
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                flushDialog.value.open = false;
-            },
-        }
-    );
+    const flushForm = useForm({});
+    flushForm.post(flush.url(), {
+        preserveScroll: true,
+        onSuccess: () => {
+            flushDialog.value.open = false;
+        },
+    });
 };
 
 const columns: ColumnDef<Bonus>[] = [

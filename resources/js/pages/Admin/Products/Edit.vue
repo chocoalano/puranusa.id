@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -193,46 +193,49 @@ const submit = () => {
         }
     });
 
-    router.post(`/admin/products/${props.product.id}`, formData, {
-        preserveScroll: true,
-        forceFormData: true,
-        onSuccess: () => {
-            toast.success('Produk berhasil diperbarui');
-            alertMessage.value = {
-                type: 'success',
-                title: 'Produk Berhasil Diperbarui',
-                message: 'Perubahan produk telah berhasil disimpan.',
-            };
-            loading.value = false;
-        },
-        onError: (errorBag) => {
-            errors.value = errorBag;
-            loading.value = false;
+    const submitFormHelper = useForm({});
+    submitFormHelper
+        .transform(() => formData)
+        .post(`/admin/products/${props.product.id}`, {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => {
+                toast.success('Produk berhasil diperbarui');
+                alertMessage.value = {
+                    type: 'success',
+                    title: 'Produk Berhasil Diperbarui',
+                    message: 'Perubahan produk telah berhasil disimpan.',
+                };
+                loading.value = false;
+            },
+            onError: (errorBag) => {
+                errors.value = errorBag;
+                loading.value = false;
 
-            // Count errors
-            const errorCount = Object.keys(errorBag).length;
+                // Count errors
+                const errorCount = Object.keys(errorBag).length;
 
-            // Create detailed error message
-            let errorDetails = '';
-            if (errorCount === 1) {
-                const [field, message] = Object.entries(errorBag)[0];
-                errorDetails = `${formatFieldName(field)}: ${message}`;
-            } else {
-                errorDetails = `Terdapat ${errorCount} kesalahan yang perlu diperbaiki. Silakan periksa field yang ditandai merah di bawah ini.`;
-            }
+                // Create detailed error message
+                let errorDetails = '';
+                if (errorCount === 1) {
+                    const [field, message] = Object.entries(errorBag)[0];
+                    errorDetails = `${formatFieldName(field)}: ${message}`;
+                } else {
+                    errorDetails = `Terdapat ${errorCount} kesalahan yang perlu diperbaiki. Silakan periksa field yang ditandai merah di bawah ini.`;
+                }
 
-            alertMessage.value = {
-                type: 'error',
-                title: 'Gagal Memperbarui Produk',
-                message: errorDetails,
-            };
+                alertMessage.value = {
+                    type: 'error',
+                    title: 'Gagal Memperbarui Produk',
+                    message: errorDetails,
+                };
 
-            toast.error('Gagal memperbarui produk');
+                toast.error('Gagal memperbarui produk');
 
-            // Scroll to top to show alert
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        },
-    });
+                // Scroll to top to show alert
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            },
+        });
 };
 </script>
 

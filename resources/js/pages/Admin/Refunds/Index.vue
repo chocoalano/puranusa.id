@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { valueUpdater } from '@/lib/utils';
 import {
     FlexRender,
@@ -154,9 +154,9 @@ const openProcessDialog = (refund: Refund) => {
 const handleProcess = () => {
     if (!processDialog.value.refund) return;
 
-    router.post(
+    const processForm = useForm({});
+    processForm.post(
         processRefund.url(processDialog.value.refund.id),
-        {},
         {
             preserveScroll: true,
             onSuccess: () => {

@@ -18,7 +18,7 @@ const walletView = ref<string>('wallet');
 <template>
     <div class="space-y-6">
         <WalletBalance
-            :balance="customer.ewallet_saldo"
+            :balance="Number(customer.ewallet_saldo) || 0"
             @topup="walletView = 'wallet-topup'"
             @withdrawal="walletView = 'wallet-withdrawal'"
         />
@@ -35,7 +35,7 @@ const walletView = ref<string>('wallet');
 
         <WalletWithdrawalForm
             v-if="walletView === 'wallet-withdrawal'"
-            :max-amount="customer.ewallet_saldo"
+            :max-amount="Number(customer.ewallet_saldo) || 0"
             @cancel="walletView = 'wallet'"
         />
 

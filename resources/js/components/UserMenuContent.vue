@@ -9,7 +9,7 @@ import {
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { LogOut, Settings } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
@@ -17,11 +17,10 @@ interface Props {
     user: User;
 }
 
+const logoutForm = useForm({});
+
 const handleLogout = () => {
-    router.post(logout.url(), {}, {
-        onStart: () => {
-            router.flushAll();
-        },
+    logoutForm.post(logout.url(), {
         onSuccess: () => {
             toast.success('Berhasil logout');
         },

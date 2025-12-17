@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import CategoryForm from '@/components/categories/CategoryForm.vue';
@@ -42,12 +42,11 @@ const form = ref({
 
 const existingImage = computed(() => props.category.image);
 
-const errors = ref<Record<string, string>>({});
-const processing = ref(false);
+const submitForm = useForm({});
+const errors = computed(() => submitForm.errors);
+const processing = computed(() => submitForm.processing);
 
 const submit = () => {
-    processing.value = true;
-
     const formData = new FormData();
     formData.append('_method', 'PUT');
     formData.append('name', form.value.name);
@@ -67,20 +66,18 @@ const submit = () => {
         formData.append('remove_image', '1');
     }
 
-    router.post(`/admin/categories/${props.category.id}`, formData, {
-        preserveScroll: true,
-        forceFormData: true,
-        onSuccess: () => {
-            toast.success('Kategori berhasil diperbarui');
-        },
-        onError: (err) => {
-            errors.value = err;
-            toast.error('Gagal memperbarui kategori');
-        },
-        onFinish: () => {
-            processing.value = false;
-        },
-    });
+    submitForm
+        .transform(() => formData)
+        .post(`/admin/categories/${props.category.id}`, {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => {
+                toast.success('Kategori berhasil diperbarui');
+            },
+            onError: () => {
+                toast.error('Gagal memperbarui kategori');
+            },
+        });
 };
 </script>
 

@@ -120,7 +120,7 @@ return new class extends Migration
             $table->enum('position', ['left', 'right'])->nullable();
             $table->string('ref_code', 50)->nullable()->unique();
             $table->string('name')->comment('Nama lengkap customer');
-            $table->string('email')->unique()->comment('Email unik untuk login dan komunikasi');
+            $table->string('email')->comment('Email unik untuk login dan komunikasi');
             $table->string('phone')->nullable()->comment('Nomor telepon / WhatsApp customer');
             $table->string('password')->comment('Password yang telah di-hash untuk autentikasi');
             $table->rememberToken()->comment('Token remember me untuk tetap login');

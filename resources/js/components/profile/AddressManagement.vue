@@ -25,7 +25,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { MapPin, Plus, Pencil, Trash2, Home, Building2 } from 'lucide-vue-next';
-import { router } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 
 interface Address {
@@ -276,7 +276,8 @@ const deleteAddress = (addressId: number) => {
 };
 
 const setDefaultAddress = (addressId: number) => {
-    router.post(`/client/profile/addresses/${addressId}/set-default`, {}, {
+    const setDefaultForm = useForm({});
+    setDefaultForm.post(`/client/profile/addresses/${addressId}/set-default`, {
         preserveScroll: true,
         onSuccess: () => {
             toast.success('Alamat utama berhasil diubah');

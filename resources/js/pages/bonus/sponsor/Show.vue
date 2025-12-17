@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     Calendar,
@@ -80,7 +80,8 @@ const formatDate = (date: string) => {
 const handleDelete = () => {
     if (!props.bonus?.id) return;
 
-    router.delete(sponsorDestroy.url(props.bonus.id), {
+    const deleteForm = useForm({});
+    deleteForm.delete(sponsorDestroy.url(props.bonus.id), {
         onSuccess: () => {
             router.visit(sponsorIndex.url());
         },
@@ -90,7 +91,8 @@ const handleDelete = () => {
 const handleRelease = () => {
     if (!props.bonus?.id) return;
 
-    router.post(sponsorRelease.url(props.bonus.id), {}, {
+    const releaseForm = useForm({});
+    releaseForm.post(sponsorRelease.url(props.bonus.id), {
         preserveScroll: true,
         onSuccess: () => {
             releaseDialog.value = false;

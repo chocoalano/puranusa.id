@@ -28,7 +28,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Package, Truck, User, MapPin, CreditCard, Gift } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { ref, onMounted } from 'vue';
@@ -202,9 +202,9 @@ const openCancelDialog = () => {
 const cancelOrder = () => {
     showCancelDialog.value = false;
 
-    router.post(
+    const cancelForm = useForm({});
+    cancelForm.post(
         `/admin/orders/${props.order.id}/cancel`,
-        {},
         {
             preserveScroll: true,
             onSuccess: () => {
@@ -225,9 +225,9 @@ const setupShipment = () => {
 
     isProcessing.value = true;
 
-    router.post(
+    const setupForm = useForm(shipmentForm.value);
+    setupForm.post(
         `/admin/orders/${props.order.id}/setup-shipment`,
-        shipmentForm.value,
         {
             preserveScroll: true,
             onSuccess: (page) => {
@@ -262,9 +262,9 @@ const shipOrder = () => {
 
     showShipDialog.value = false;
 
-    router.post(
+    const shipForm = useForm({ shipment_id: selectedShipmentId.value });
+    shipForm.post(
         `/admin/orders/${props.order.id}/ship`,
-        { shipment_id: selectedShipmentId.value },
         {
             preserveScroll: true,
             onSuccess: (page) => {
@@ -292,9 +292,9 @@ const deliverOrder = () => {
 
     showDeliverDialog.value = false;
 
-    router.post(
+    const deliverForm = useForm({ shipment_id: selectedShipmentId.value });
+    deliverForm.post(
         `/admin/orders/${props.order.id}/deliver`,
-        { shipment_id: selectedShipmentId.value },
         {
             preserveScroll: true,
             onSuccess: (page) => {

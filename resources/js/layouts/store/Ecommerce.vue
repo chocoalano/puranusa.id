@@ -21,7 +21,7 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { useAppearance } from '@/composables/useAppearance';
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
     Heart,
@@ -213,11 +213,10 @@ const toggleTheme = () => {
 };
 
 const handleLogout = () => {
-    router.post('/client/logout', {}, {
-        onStart: () => {
-            router.flushAll();
-        },
+    const logoutForm = useForm({});
+    logoutForm.post('/client/logout', {
         onSuccess: () => {
+            router.flushAll();
             toast.success('Berhasil logout');
         },
         onError: () => {
@@ -279,7 +278,8 @@ const subscribeNewsletter = async () => {
 
 // Stop impersonating function
 const stopImpersonating = () => {
-    router.post('/manage/customers/stop-impersonating', {}, {
+    const stopImpersonatingForm = useForm({});
+    stopImpersonatingForm.post('/manage/customers/stop-impersonating', {
         onSuccess: () => {
             toast.success('Kembali ke akun admin');
         },

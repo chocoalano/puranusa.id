@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch, defineAsyncComponent } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { ref, watch, defineAsyncComponent, computed } from 'vue';
+import { router, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -85,8 +85,9 @@ const form = ref({
     published_at: props.article.published_at || '',
 });
 
-const errors = ref<Record<string, string>>({});
-const processing = ref(false);
+const submitFormHelper = useForm({});
+const errors = computed(() => submitFormHelper.errors);
+const processing = computed(() => submitFormHelper.processing);
 const isDeleting = ref(false);
 const tagInput = ref('');
 const initialSlug = props.article.slug;
@@ -131,9 +132,6 @@ const removeTag = (index: number) => {
 };
 
 const submitForm = (publish: boolean | null = null) => {
-    processing.value = true;
-    errors.value = {};
-
     const isPublished = publish !== null ? publish : form.value.is_published;
 
     // Ensure content is up-to-date from blocks before submitting
@@ -151,18 +149,16 @@ const submitForm = (publish: boolean | null = null) => {
         _method: 'PUT',
     };
 
-    router.post(`/admin/articles/${props.article.id}`, data, {
-        onSuccess: () => {
-            toast.success('Artikel berhasil diperbarui');
-        },
-        onError: (err) => {
-            errors.value = err as Record<string, string>;
-            toast.error('Terjadi kesalahan, periksa form Anda');
-        },
-        onFinish: () => {
-            processing.value = false;
-        },
-    });
+    submitFormHelper
+        .transform(() => data)
+        .post(`/admin/articles/${props.article.id}`, {
+            onSuccess: () => {
+                toast.success('Artikel berhasil diperbarui');
+            },
+            onError: () => {
+                toast.error('Terjadi kesalahan, periksa form Anda');
+            },
+        });
 };
 
 const deleteArticle = () => {

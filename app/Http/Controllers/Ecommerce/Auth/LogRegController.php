@@ -31,48 +31,48 @@ class LogRegController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+            'username' => ['required', 'string'],
+            'password' => ['required', 'string'],
         ]);
 
-        // Check if user exists and is active
-        $customer = Customer::where('email', $credentials['email'])->first();
+        // Check if user exists
+        $customer = Customer::where('username', $credentials['username'])->first();
 
         if (! $customer) {
             throw ValidationException::withMessages([
-                'email' => 'Email tidak terdaftar.',
+                'username' => 'Username tidak terdaftar.',
             ]);
         }
 
-        // Attempt to authenticate
-        if (Auth::guard('client')->attempt($credentials, $request->boolean('remember'))) {
-            // Regenerate session to prevent session fixation
+        // Attempt to authenticate (pastikan provider guard 'client' pakai model Customer)
+        if (Auth::guard('client')->attempt([
+            'username' => $credentials['username'],
+            'password' => $credentials['password'],
+        ], $request->boolean('remember'))) {
+
             $request->session()->regenerate();
 
-            // Log successful login
             \Log::info('Customer logged in', [
                 'customer_id' => $customer->id,
-                'email' => $customer->email,
+                'username' => $customer->username,
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
 
-            // Get the intended URL or default to beranda
             $intendedUrl = redirect()->intended(route('ecommerce.beranda'))->getTargetUrl();
 
             return redirect($intendedUrl)
                 ->with('success', 'Selamat datang kembali, '.$customer->name.'!');
         }
 
-        // Authentication failed - log the attempt
         \Log::warning('Failed login attempt', [
-            'email' => $credentials['email'],
+            'username' => $credentials['username'],
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
 
         throw ValidationException::withMessages([
-            'email' => 'Email atau password salah.',
+            'username' => 'Username atau password salah.',
         ]);
     }
 

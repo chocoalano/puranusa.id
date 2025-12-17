@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -129,7 +129,8 @@ const deductAmount = ref(0);
 const deductDescription = ref('');
 
 const handleReleaseBonuses = () => {
-    router.post(releaseBonusesAction.url(props.customer.id), {}, {
+    const releaseForm = useForm({});
+    releaseForm.post(releaseBonusesAction.url(props.customer.id), {
         preserveScroll: true,
         onSuccess: () => {
             toast.success('Bonus berhasil dirilis');
@@ -146,12 +147,12 @@ const handleTopUp = () => {
         return;
     }
 
-    router.post(
+    const topUpForm = useForm({
+        amount: topUpAmount.value,
+        description: topUpDescription.value,
+    });
+    topUpForm.post(
         topUpAction.url(props.customer.id),
-        {
-            amount: topUpAmount.value,
-            description: topUpDescription.value,
-        },
         {
             preserveScroll: true,
             onSuccess: () => {
@@ -179,12 +180,12 @@ const handleDeduct = () => {
         return;
     }
 
-    router.post(
+    const deductForm = useForm({
+        amount: deductAmount.value,
+        description: deductDescription.value,
+    });
+    deductForm.post(
         deductAction.url(props.customer.id),
-        {
-            amount: deductAmount.value,
-            description: deductDescription.value,
-        },
         {
             preserveScroll: true,
             onSuccess: () => {

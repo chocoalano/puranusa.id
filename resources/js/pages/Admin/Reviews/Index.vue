@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { approve, reject, destroy } from '@/actions/App/Http/Controllers/Admin/ReviewManagementController';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import ReviewFilters from '@/components/reviews/ReviewFilters.vue';
@@ -65,11 +65,13 @@ const statistics = computed(() => {
 });
 
 const handleApprove = (id: number) => {
-    router.post(approve.url(id), {}, { preserveScroll: true });
+    const approveForm = useForm({});
+    approveForm.post(approve.url(id), { preserveScroll: true });
 };
 
 const handleReject = (id: number) => {
-    router.post(reject.url(id), {}, { preserveScroll: true });
+    const rejectForm = useForm({});
+    rejectForm.post(reject.url(id), { preserveScroll: true });
 };
 
 const openDeleteDialog = (id: number) => {
@@ -80,7 +82,8 @@ const openDeleteDialog = (id: number) => {
 const handleDelete = () => {
     if (!deleteDialog.value.review) return;
 
-    router.delete(destroy.url(deleteDialog.value.review.id), {
+    const deleteForm = useForm({});
+    deleteForm.delete(destroy.url(deleteDialog.value.review.id), {
         preserveScroll: true,
         onSuccess: () => {
             deleteDialog.value = { open: false, review: null };

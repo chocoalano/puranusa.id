@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { CheckCircle, Clock, UserPlus, GitBranch } from 'lucide-vue-next';
 import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 
 interface NetworkMember {
@@ -21,6 +21,9 @@ interface NetworkMember {
     name: string;
     email: string;
     phone: string | null;
+    package_name?: string;
+    total_left?: number;
+    total_right?: number;
     position: string | null;
     level: number | null;
     has_placement: boolean;
@@ -38,11 +41,17 @@ defineProps<{
 const showPlacementDialog = ref(false);
 const selectedMember = ref<NetworkMember | null>(null);
 const selectedPosition = ref<'left' | 'right' | null>(null);
-const isPlacing = ref(false);
+
+const placementForm = useForm({
+    member_id: 0,
+    position: '' as 'left' | 'right' | '',
+});
 
 const openPlacementDialog = (member: NetworkMember) => {
     selectedMember.value = member;
     selectedPosition.value = null;
+    placementForm.member_id = member.id;
+    placementForm.position = '';
     showPlacementDialog.value = true;
 };
 
@@ -50,6 +59,7 @@ const closePlacementDialog = () => {
     showPlacementDialog.value = false;
     selectedMember.value = null;
     selectedPosition.value = null;
+    placementForm.reset();
 };
 
 const placeToBinaryTree = () => {
@@ -58,28 +68,18 @@ const placeToBinaryTree = () => {
         return;
     }
 
-    isPlacing.value = true;
+    placementForm.position = selectedPosition.value;
 
-    router.post(
-        '/client/profile/place-member',
-        {
-            member_id: selectedMember.value.id,
-            position: selectedPosition.value,
+    placementForm.post('/client/profile/place-member', {
+        onSuccess: () => {
+            toast.success(`${selectedMember.value?.name} berhasil ditempatkan di posisi ${selectedPosition.value}`);
+            closePlacementDialog();
         },
-        {
-            onSuccess: () => {
-                toast.success(`${selectedMember.value?.name} berhasil ditempatkan di posisi ${selectedPosition.value}`);
-                closePlacementDialog();
-            },
-            onError: (errors) => {
-                const errorMessage = errors.error || 'Gagal menempatkan member ke binary tree';
-                toast.error(errorMessage);
-            },
-            onFinish: () => {
-                isPlacing.value = false;
-            },
+        onError: (errors) => {
+            const errorMessage = errors.error || 'Gagal menempatkan member ke binary tree';
+            toast.error(errorMessage);
         },
-    );
+    });
 };
 
 const formatDate = (dateString: string) => {
@@ -164,6 +164,14 @@ const getPositionBadge = (position: string | null): {
                                     <div class="space-y-1 text-sm text-muted-foreground">
                                         <p>{{ member.email }}</p>
                                         <p v-if="member.phone">{{ member.phone }}</p>
+                                        <p v-if="member.package_name" class="text-xs font-medium text-primary">
+                                            Paket: {{ member.package_name }}
+                                        </p>
+                                        <p v-if="(member.total_left ?? 0) > 0 || (member.total_right ?? 0) > 0" class="text-xs">
+                                            <span class="text-blue-600 dark:text-blue-400">Kiri: {{ member.total_left ?? 0 }}</span>
+                                            <span class="mx-1">|</span>
+                                            <span class="text-green-600 dark:text-green-400">Kanan: {{ member.total_right ?? 0 }}</span>
+                                        </p>
                                         <p class="text-xs">Bergabung: {{ formatDate(member.joined_at) }}</p>
                                         <p class="text-xs font-medium text-green-600 dark:text-green-400">
                                             Omzet: {{ formatCurrency(member.omzet) }}
@@ -206,6 +214,14 @@ const getPositionBadge = (position: string | null): {
                                     <div class="space-y-1 text-sm text-muted-foreground">
                                         <p>{{ member.email }}</p>
                                         <p v-if="member.phone">{{ member.phone }}</p>
+                                        <p v-if="member.package_name" class="text-xs font-medium text-primary">
+                                            Paket: {{ member.package_name }}
+                                        </p>
+                                        <p v-if="(member.total_left ?? 0) > 0 || (member.total_right ?? 0) > 0" class="text-xs">
+                                            <span class="text-blue-600 dark:text-blue-400">Kiri: {{ member.total_left ?? 0 }}</span>
+                                            <span class="mx-1">|</span>
+                                            <span class="text-green-600 dark:text-green-400">Kanan: {{ member.total_right ?? 0 }}</span>
+                                        </p>
                                         <p class="text-xs">Bergabung: {{ formatDate(member.joined_at) }}</p>
                                         <p class="text-xs font-medium text-orange-600 dark:text-orange-400">
                                             Omzet: {{ formatCurrency(member.omzet) }}
@@ -260,6 +276,14 @@ const getPositionBadge = (position: string | null): {
                                     <div class="space-y-1 text-sm text-muted-foreground">
                                         <p>{{ member.email }}</p>
                                         <p v-if="member.phone">{{ member.phone }}</p>
+                                        <p v-if="member.package_name" class="text-xs font-medium text-primary">
+                                            Paket: {{ member.package_name }}
+                                        </p>
+                                        <p v-if="(member.total_left ?? 0) > 0 || (member.total_right ?? 0) > 0" class="text-xs">
+                                            <span class="text-blue-600 dark:text-blue-400">Kiri: {{ member.total_left ?? 0 }}</span>
+                                            <span class="mx-1">|</span>
+                                            <span class="text-green-600 dark:text-green-400">Kanan: {{ member.total_right ?? 0 }}</span>
+                                        </p>
                                         <p class="text-xs">Bergabung: {{ formatDate(member.joined_at) }}</p>
                                         <p class="text-xs font-medium text-gray-500 dark:text-gray-400">
                                             Omzet: {{ formatCurrency(member.omzet) }}
@@ -328,14 +352,14 @@ const getPositionBadge = (position: string | null): {
             </div>
 
             <DialogFooter>
-                <Button variant="outline" @click="closePlacementDialog" :disabled="isPlacing">
+                <Button variant="outline" @click="closePlacementDialog" :disabled="placementForm.processing">
                     Batal
                 </Button>
                 <Button
                     @click="placeToBinaryTree"
-                    :disabled="!selectedPosition || isPlacing"
+                    :disabled="!selectedPosition || placementForm.processing"
                 >
-                    {{ isPlacing ? 'Memproses...' : 'Tempatkan' }}
+                    {{ placementForm.processing ? 'Memproses...' : 'Tempatkan' }}
                 </Button>
             </DialogFooter>
         </DialogContent>

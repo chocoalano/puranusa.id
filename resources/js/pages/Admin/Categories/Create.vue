@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import CategoryForm from '@/components/categories/CategoryForm.vue';
 import { ArrowLeft } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 interface ParentCategory {
     id: number;
@@ -28,12 +28,11 @@ const form = ref({
     image: null as File | string | null,
 });
 
-const errors = ref<Record<string, string>>({});
-const processing = ref(false);
+const submitForm = useForm({});
+const errors = computed(() => submitForm.errors);
+const processing = computed(() => submitForm.processing);
 
 const submit = () => {
-    processing.value = true;
-
     const formData = new FormData();
     formData.append('name', form.value.name);
     formData.append('slug', form.value.slug);
@@ -49,20 +48,18 @@ const submit = () => {
         formData.append('image', form.value.image);
     }
 
-    router.post('/admin/categories', formData, {
-        preserveScroll: true,
-        forceFormData: true,
-        onSuccess: () => {
-            toast.success('Kategori berhasil ditambahkan');
-        },
-        onError: (err) => {
-            errors.value = err;
-            toast.error('Gagal menambahkan kategori');
-        },
-        onFinish: () => {
-            processing.value = false;
-        },
-    });
+    submitForm
+        .transform(() => formData)
+        .post('/admin/categories', {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => {
+                toast.success('Kategori berhasil ditambahkan');
+            },
+            onError: () => {
+                toast.error('Gagal menambahkan kategori');
+            },
+        });
 };
 </script>
 

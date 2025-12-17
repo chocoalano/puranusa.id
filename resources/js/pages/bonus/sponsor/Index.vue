@@ -34,7 +34,7 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { valueUpdater } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import {
     FlexRender,
     getCoreRowModel,
@@ -204,17 +204,14 @@ const openReleaseDialog = (bonus: Bonus) => {
 const handleRelease = () => {
     if (!releaseDialog.value.bonus) return;
 
-    router.post(
-        sponsorRelease.url(releaseDialog.value.bonus.id),
-        {},
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                releaseDialog.value = { open: false, bonus: null };
-                rowSelection.value = {};
-            },
-        }
-    );
+    const releaseForm = useForm({});
+    releaseForm.post(sponsorRelease.url(releaseDialog.value.bonus.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            releaseDialog.value = { open: false, bonus: null };
+            rowSelection.value = {};
+        },
+    });
 };
 
 const openMassReleaseDialog = () => {
@@ -225,17 +222,14 @@ const openMassReleaseDialog = () => {
 const handleMassRelease = () => {
     const bonusIds = selectedPendingBonuses.value.map((b) => b.id);
 
-    router.post(
-        sponsorMassRelease.url(),
-        { bonus_ids: bonusIds },
-        {
-            preserveScroll: true,
-            onSuccess: () => {
-                rowSelection.value = {};
-                massReleaseDialog.value.open = false;
-            },
-        }
-    );
+    const massReleaseForm = useForm({ bonus_ids: bonusIds });
+    massReleaseForm.post(sponsorMassRelease.url(), {
+        preserveScroll: true,
+        onSuccess: () => {
+            rowSelection.value = {};
+            massReleaseDialog.value.open = false;
+        },
+    });
 };
 
 const columns: ColumnDef<Bonus>[] = [
