@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import PromotionForm from '@/components/promotions/PromotionForm.vue';
 import { ArrowLeft } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 interface Promotion {
     id: number;
@@ -38,13 +38,25 @@ const formatDateTimeLocal = (datetime: string) => {
     return date.toISOString().slice(0, 16);
 };
 
+// Get existing image URL for preview
+const existingImage = computed(() => {
+    if (props.promotion.image) {
+        // Check if it's already a full URL or needs storage path
+        if (props.promotion.image.startsWith('http')) {
+            return props.promotion.image;
+        }
+        return `/storage/${props.promotion.image}`;
+    }
+    return null;
+});
+
 const form = ref({
     code: props.promotion.code,
     name: props.promotion.name,
     type: props.promotion.type,
     landing_slug: props.promotion.landing_slug || '',
     description: props.promotion.description || '',
-    image: props.promotion.image || '',
+    image: null as File | string | null,
     start_at: formatDateTimeLocal(props.promotion.start_at),
     end_at: formatDateTimeLocal(props.promotion.end_at),
     is_active: props.promotion.is_active,
@@ -61,8 +73,30 @@ const processing = ref(false);
 
 const submit = () => {
     processing.value = true;
-    router.put(`/admin/promotions/${props.promotion.id}`, form.value, {
+
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('_method', 'PUT');
+
+    Object.entries(form.value).forEach(([key, value]) => {
+        if (key === 'image') {
+            // Only append image if it's a new file
+            if (value instanceof File) {
+                formData.append(key, value);
+            }
+            // Don't append if null/empty - keep existing image
+        } else if (value !== null && value !== undefined) {
+            if (typeof value === 'boolean') {
+                formData.append(key, value ? '1' : '0');
+            } else {
+                formData.append(key, String(value));
+            }
+        }
+    });
+
+    router.post(`/admin/promotions/${props.promotion.id}`, formData, {
         preserveScroll: true,
+        forceFormData: true,
         onSuccess: () => {
             toast.success('Promosi berhasil diperbarui');
         },
@@ -99,6 +133,7 @@ const submit = () => {
                     v-model:form-data="form"
                     :errors="errors"
                     :processing="processing"
+                    :existing-image="existingImage"
                     @submit="submit"
                 >
                     <template #actions="{ processing }">

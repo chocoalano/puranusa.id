@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import PromotionForm from '@/components/promotions/PromotionForm.vue';
 import { ArrowLeft } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 
 const form = ref({
     code: '',
@@ -13,7 +13,7 @@ const form = ref({
     type: 'discount',
     landing_slug: '',
     description: '',
-    image: '',
+    image: null as File | string | null,
     start_at: '',
     end_at: '',
     is_active: true,
@@ -25,22 +25,40 @@ const form = ref({
     page: '',
 });
 
-const submitForm = useForm({});
-const errors = computed(() => submitForm.errors);
-const processing = computed(() => submitForm.processing);
+const errors = ref<Record<string, string>>({});
+const processing = ref(false);
 
 const submit = () => {
-    submitForm
-        .transform(() => form.value)
-        .post('/admin/promotions', {
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success('Promosi berhasil ditambahkan');
-            },
-            onError: () => {
-                toast.error('Gagal menambahkan promosi');
-            },
-        });
+    processing.value = true;
+
+    // Create FormData for file upload
+    const formData = new FormData();
+    Object.entries(form.value).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+            if (value instanceof File) {
+                formData.append(key, value);
+            } else if (typeof value === 'boolean') {
+                formData.append(key, value ? '1' : '0');
+            } else {
+                formData.append(key, String(value));
+            }
+        }
+    });
+
+    router.post('/admin/promotions', formData, {
+        preserveScroll: true,
+        forceFormData: true,
+        onSuccess: () => {
+            toast.success('Promosi berhasil ditambahkan');
+        },
+        onError: (err) => {
+            errors.value = err;
+            toast.error('Gagal menambahkan promosi');
+        },
+        onFinish: () => {
+            processing.value = false;
+        },
+    });
 };
 </script>
 

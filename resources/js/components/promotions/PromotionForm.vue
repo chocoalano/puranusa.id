@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -16,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { ImagePlus, X, Upload } from 'lucide-vue-next';
 
 interface FormData {
     code: string;
@@ -23,7 +26,7 @@ interface FormData {
     type: string;
     landing_slug: string;
     description: string;
-    image: string;
+    image: string | File | null;
     start_at: string;
     end_at: string;
     is_active: boolean;
@@ -38,15 +41,91 @@ interface FormData {
 interface Props {
     errors?: Record<string, string>;
     processing?: boolean;
+    existingImage?: string | null;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
     submit: [];
 }>();
 
 const formData = defineModel<FormData>('formData', { required: true });
+
+const fileInput = ref<HTMLInputElement | null>(null);
+const imagePreview = ref<string | null>(null);
+const isDragging = ref(false);
+
+// Computed untuk menampilkan preview
+const displayImage = computed(() => {
+    if (imagePreview.value) return imagePreview.value;
+    if (props.existingImage) return props.existingImage;
+    return null;
+});
+
+const handleFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+        processFile(file);
+    }
+};
+
+const processFile = (file: File) => {
+    // Validasi tipe file
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('Hanya file gambar (JPEG, PNG, GIF, WebP) yang diizinkan');
+        return;
+    }
+
+    // Validasi ukuran file (max 2MB)
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+        alert('Ukuran file maksimal 2MB');
+        return;
+    }
+
+    formData.value.image = file;
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        imagePreview.value = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+};
+
+const handleDrop = (event: DragEvent) => {
+    event.preventDefault();
+    isDragging.value = false;
+
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+        processFile(file);
+    }
+};
+
+const handleDragOver = (event: DragEvent) => {
+    event.preventDefault();
+    isDragging.value = true;
+};
+
+const handleDragLeave = () => {
+    isDragging.value = false;
+};
+
+const removeImage = () => {
+    formData.value.image = null;
+    imagePreview.value = null;
+    if (fileInput.value) {
+        fileInput.value.value = '';
+    }
+};
+
+const triggerFileInput = () => {
+    fileInput.value?.click();
+};
 </script>
 
 <template>
@@ -127,12 +206,70 @@ const formData = defineModel<FormData>('formData', { required: true });
                 </div>
 
                 <div class="space-y-2">
-                    <Label for="image">URL Gambar</Label>
-                    <Input
-                        id="image"
-                        v-model="formData.image"
-                        placeholder="https://example.com/promo-banner.jpg"
-                    />
+                    <Label for="image">Gambar Promosi</Label>
+                    <div
+                        :class="[
+                            'relative border-2 border-dashed rounded-lg transition-colors',
+                            isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50',
+                            'min-h-[200px] flex items-center justify-center'
+                        ]"
+                        @drop="handleDrop"
+                        @dragover="handleDragOver"
+                        @dragleave="handleDragLeave"
+                    >
+                        <!-- Preview Image -->
+                        <div v-if="displayImage" class="relative w-full h-full p-4">
+                            <img
+                                :src="displayImage"
+                                alt="Preview"
+                                class="max-h-[300px] w-auto mx-auto rounded-lg object-contain"
+                            />
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                class="absolute top-2 right-2"
+                                @click="removeImage"
+                            >
+                                <X class="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <!-- Upload Placeholder -->
+                        <div v-else class="text-center p-6">
+                            <div
+                                class="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4"
+                            >
+                                <ImagePlus class="h-6 w-6 text-muted-foreground" />
+                            </div>
+                            <p class="text-sm text-muted-foreground mb-2">
+                                Drag & drop gambar di sini, atau
+                            </p>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                @click="triggerFileInput"
+                            >
+                                <Upload class="h-4 w-4 mr-2" />
+                                Pilih File
+                            </Button>
+                            <p class="text-xs text-muted-foreground mt-2">
+                                PNG, JPG, GIF, WebP (maks. 2MB)
+                            </p>
+                        </div>
+
+                        <input
+                            ref="fileInput"
+                            type="file"
+                            accept="image/jpeg,image/png,image/gif,image/webp"
+                            class="hidden"
+                            @change="handleFileSelect"
+                        />
+                    </div>
+                    <p v-if="errors?.image" class="text-sm text-destructive">
+                        {{ errors.image }}
+                    </p>
                 </div>
             </CardContent>
         </Card>

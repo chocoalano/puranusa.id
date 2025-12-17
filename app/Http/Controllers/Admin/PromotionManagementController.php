@@ -66,7 +66,7 @@ class PromotionManagementController extends Controller
             'type' => 'required|in:discount,bundle,flash_sale,promo',
             'landing_slug' => 'nullable|max:255',
             'description' => 'nullable',
-            'image' => 'nullable|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,gif,webp|max:2048',
             'start_at' => 'required|date',
             'end_at' => 'required|date|after:start_at',
             'is_active' => 'boolean',
@@ -77,6 +77,11 @@ class PromotionManagementController extends Controller
             'show_on' => 'nullable|in:homepage,product_page,checkout',
             'page' => 'nullable|in:home,product,category,cart',
         ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('promotions', 'public');
+        }
 
         Promotion::create($validated);
 
@@ -99,7 +104,7 @@ class PromotionManagementController extends Controller
             'type' => 'required|in:discount,bundle,flash_sale,promo',
             'landing_slug' => 'nullable|max:255',
             'description' => 'nullable',
-            'image' => 'nullable|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,gif,webp|max:2048',
             'start_at' => 'required|date',
             'end_at' => 'required|date|after:start_at',
             'is_active' => 'boolean',
@@ -110,6 +115,15 @@ class PromotionManagementController extends Controller
             'show_on' => 'nullable|in:homepage,product_page,checkout',
             'page' => 'nullable|in:home,product,category,cart',
         ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($promotion->image && \Storage::disk('public')->exists($promotion->image)) {
+                \Storage::disk('public')->delete($promotion->image);
+            }
+            $validated['image'] = $request->file('image')->store('promotions', 'public');
+        }
 
         $promotion->update($validated);
 
