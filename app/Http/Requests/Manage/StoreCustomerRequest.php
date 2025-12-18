@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @property string $name
+ * @property string $username
  * @property string $email
  * @property string|null $phone
  * @property string $password
@@ -34,6 +35,7 @@ class StoreCustomerRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:customers,username', 'alpha_dash'],
             'email' => ['required', 'email', 'max:255', 'unique:customers,email'],
             'phone' => ['nullable', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -52,6 +54,10 @@ class StoreCustomerRequest extends FormRequest
         return [
             'name.required' => 'Nama wajib diisi',
             'name.max' => 'Nama maksimal 255 karakter',
+            'username.required' => 'Username wajib diisi',
+            'username.max' => 'Username maksimal 255 karakter',
+            'username.unique' => 'Username sudah digunakan',
+            'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore',
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak valid',
             'email.unique' => 'Email sudah terdaftar',

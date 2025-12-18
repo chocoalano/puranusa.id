@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage, router } from '@inertiajs/vue3';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +22,7 @@ import {
     Upload,
     X
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 interface Setting {
     id: number;
@@ -43,6 +43,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const page = usePage();
+
+// Helper to populate form settings from props
+const populateFormSettings = () => {
+    Object.values(props.settings).flat().forEach((setting: Setting) => {
+        form.settings[setting.key] = setting.value;
+    });
+};
 
 // Initialize form with all settings
 const form = useForm({
@@ -51,9 +59,13 @@ const form = useForm({
 });
 
 // Populate form with current settings
-Object.values(props.settings).flat().forEach((setting: Setting) => {
-    form.settings[setting.key] = setting.value;
-});
+populateFormSettings();
+
+// Watch for props changes (when Inertia updates the page)
+watch(() => props.settings, () => {
+    populateFormSettings();
+    paymentMethods.value = getPaymentMethods();
+}, { deep: true });
 
 // Helper to get payment methods as array
 const getPaymentMethods = (): string[] => {
@@ -74,7 +86,7 @@ const newPaymentMethod = ref('');
 const logoInputMode = ref<'url' | 'upload'>('url');
 const logoPreview = ref<string | null>(null);
 
-// Computed for current logo URL
+// Computed for current logo URL (prioritize upload preview, then form URL, then existing setting)
 const currentLogoUrl = computed(() => {
     if (logoPreview.value) return logoPreview.value;
     return form.settings['site_logo'] || null;
@@ -87,6 +99,8 @@ const handleLogoUpload = (event: Event) => {
 
     if (file) {
         form.site_logo = file;
+        // Clear the URL input when uploading a file
+        form.settings['site_logo'] = null;
 
         // Create preview
         const reader = new FileReader();
@@ -117,6 +131,21 @@ const removeLogo = () => {
     }
 };
 
+// Handle logo input mode switch
+watch(logoInputMode, (newMode) => {
+    if (newMode === 'url') {
+        // Clear file upload when switching to URL mode
+        form.site_logo = null;
+        logoPreview.value = null;
+        if (typeof document !== 'undefined') {
+            const fileInput = document.getElementById('logo_upload') as HTMLInputElement;
+            if (fileInput) fileInput.value = '';
+        }
+    } else {
+        // Keep URL value when switching to upload mode (user might switch back)
+    }
+});
+
 // Add payment method
 const addPaymentMethod = () => {
     if (newPaymentMethod.value.trim() && !paymentMethods.value.includes(newPaymentMethod.value.trim())) {
@@ -138,10 +167,18 @@ const saveSettings = () => {
         preserveScroll: true,
         forceFormData: true,
         onSuccess: () => {
-            // Update local state after successful save
-            paymentMethods.value = getPaymentMethods();
+            // Reset upload state
             logoPreview.value = null;
             form.site_logo = null;
+
+            // Reset file input
+            if (typeof document !== 'undefined') {
+                const fileInput = document.getElementById('logo_upload') as HTMLInputElement;
+                if (fileInput) fileInput.value = '';
+            }
+
+            // Force reload to ensure all shared props (including appSettings) are refreshed
+            router.reload({ only: [] });
         },
     });
 };

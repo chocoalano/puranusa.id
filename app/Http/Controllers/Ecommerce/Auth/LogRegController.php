@@ -109,6 +109,33 @@ class LogRegController extends Controller
 
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'ref_code' => ['nullable', 'string', 'exists:customers,ref_code'],
+        ], [
+            // Custom validation messages in Indonesian
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'name.max' => 'Nama lengkap maksimal 255 karakter.',
+
+            'username.required' => 'Username wajib diisi.',
+            'username.max' => 'Username maksimal 100 karakter.',
+            'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash (-), dan underscore (_).',
+            'username.unique' => 'Username sudah digunakan, silakan pilih username lain.',
+
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 255 karakter.',
+
+            'phone.required' => 'Nomor telepon wajib diisi.',
+            'phone.max' => 'Nomor telepon maksimal 20 karakter.',
+
+            'nik.max' => 'NIK maksimal 32 karakter.',
+            'nik.regex' => 'NIK harus berupa 8-32 digit angka.',
+
+            'gender.in' => 'Jenis kelamin tidak valid.',
+
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+
+            'ref_code.exists' => 'Kode referral tidak ditemukan atau tidak valid.',
         ]);
 
         // Normalisasi sederhana

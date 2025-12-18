@@ -60,6 +60,7 @@ interface Customer {
     sponsor_id: number | null;
     upline_id: number | null;
     position: string | null;
+    status: number; // 1 = Aktif, 2 = Pasif, 3 = Prospek
 }
 
 interface Pagination {
@@ -244,7 +245,7 @@ const columns: ColumnDef<Customer>[] = [
         header: () => h('div', { class: 'text-center' }, 'Aksi'),
         cell: ({ row }) => {
             const customer = row.original;
-            return h('div', { class: 'flex items-center justify-center gap-2' }, [
+            const actions = [
                 h(
                     Button,
                     {
@@ -279,16 +280,24 @@ const columns: ColumnDef<Customer>[] = [
                             () => h(Pencil, { class: 'h-4 w-4' })
                         )
                 ),
-                h(
-                    Button,
-                    {
-                        variant: 'ghost',
-                        size: 'icon',
-                        onClick: () => openDeleteDialog(customer),
-                    },
-                    () => h(Trash2, { class: 'h-4 w-4 text-destructive' })
-                ),
-            ]);
+            ];
+
+            // Only show delete button if status is not Pasif (2)
+            if (customer.status !== 2) {
+                actions.push(
+                    h(
+                        Button,
+                        {
+                            variant: 'ghost',
+                            size: 'icon',
+                            onClick: () => openDeleteDialog(customer),
+                        },
+                        () => h(Trash2, { class: 'h-4 w-4 text-destructive' })
+                    )
+                );
+            }
+
+            return h('div', { class: 'flex items-center justify-center gap-2' }, actions);
         },
     },
 ];

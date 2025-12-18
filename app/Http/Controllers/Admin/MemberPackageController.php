@@ -17,7 +17,7 @@ class MemberPackageController extends Controller
             ->orderBy('price', 'asc')
             ->get();
 
-        return Inertia::render('settings/MemberPackage', [
+        return Inertia::render('Admin/Settings/MemberPackage', [
             'packages' => $packages,
         ]);
     }

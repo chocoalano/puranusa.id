@@ -18,6 +18,7 @@ import {
   Eye,
   EyeOff,
   Lock,
+  Mail,
   Phone,
   ShoppingBag,
   User,
@@ -142,7 +143,7 @@ const submit = () => {
 
               <!-- Name -->
               <div class="space-y-2">
-                <Label for="name">Nama Lengkap</Label>
+                <Label for="name">Nama Lengkap <span class="text-destructive">*</span></Label>
                 <div class="relative">
                   <User class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -160,11 +161,14 @@ const submit = () => {
                 <p v-if="form.errors.name" class="text-sm text-destructive">
                   {{ form.errors.name }}
                 </p>
+                <p v-else class="text-xs text-muted-foreground">
+                  Nama lengkap sesuai identitas, maksimal 255 karakter
+                </p>
               </div>
 
               <!-- Username -->
               <div class="space-y-2">
-                <Label for="username">Username</Label>
+                <Label for="username">Username <span class="text-destructive">*</span></Label>
                 <div class="relative">
                   <AtSign class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -182,15 +186,15 @@ const submit = () => {
                   {{ form.errors.username }}
                 </p>
                 <p v-else class="text-xs text-muted-foreground">
-                  Gunakan huruf/angka/underscore/dash (tanpa spasi).
+                  Username untuk login, hanya boleh huruf, angka, dash (-), dan underscore (_). Maksimal 100 karakter
                 </p>
               </div>
 
               <!-- Email -->
               <div class="space-y-2">
-                <Label for="email">Email</Label>
+                <Label for="email">Email <span class="text-destructive">*</span></Label>
                 <div class="relative">
-                  <!-- Mail icon kamu sebelumnya, boleh pakai lagi; aku tidak wajibkan -->
+                  <Mail class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     v-model="form.email"
@@ -205,11 +209,14 @@ const submit = () => {
                 <p v-if="form.errors.email" class="text-sm text-destructive">
                   {{ form.errors.email }}
                 </p>
+                <p v-else class="text-xs text-muted-foreground">
+                  Email aktif untuk menerima notifikasi dan informasi akun
+                </p>
               </div>
 
               <!-- Phone -->
               <div class="space-y-2">
-                <Label for="phone">Nomor Telepon</Label>
+                <Label for="phone">Nomor Telepon <span class="text-destructive">*</span></Label>
                 <div class="relative">
                   <Phone class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -226,6 +233,9 @@ const submit = () => {
                 <p v-if="form.errors.phone" class="text-sm text-destructive">
                   {{ form.errors.phone }}
                 </p>
+                <p v-else class="text-xs text-muted-foreground">
+                  Nomor telepon aktif (WhatsApp), maksimal 20 karakter
+                </p>
               </div>
 
               <!-- NIK (opsional) -->
@@ -238,7 +248,7 @@ const submit = () => {
                     v-model="form.nik"
                     type="text"
                     inputmode="numeric"
-                    placeholder="16 digit (jika diisi)"
+                    placeholder="Contoh: 3201234567890001"
                     class="pl-10"
                     :class="{ 'border-destructive': form.errors.nik }"
                     autocomplete="off"
@@ -246,6 +256,9 @@ const submit = () => {
                 </div>
                 <p v-if="form.errors.nik" class="text-sm text-destructive">
                   {{ form.errors.nik }}
+                </p>
+                <p v-else class="text-xs text-muted-foreground">
+                  Nomor Induk Kependudukan (8-32 digit angka)
                 </p>
               </div>
 
@@ -257,16 +270,15 @@ const submit = () => {
                     <SelectValue placeholder="Pilih jenis kelamin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <!-- kalau mau dukung L/P juga, buka komentar ini:
-                    <SelectItem value="L">L</SelectItem>
-                    <SelectItem value="P">P</SelectItem>
-                    -->
+                    <SelectItem value="male">Laki-laki</SelectItem>
+                    <SelectItem value="female">Perempuan</SelectItem>
                   </SelectContent>
                 </Select>
                 <p v-if="form.errors.gender" class="text-sm text-destructive">
                   {{ form.errors.gender }}
+                </p>
+                <p v-else class="text-xs text-muted-foreground">
+                  Pilih jenis kelamin Anda
                 </p>
               </div>
 
@@ -276,12 +288,15 @@ const submit = () => {
                 <Textarea
                   id="alamat"
                   v-model="form.alamat"
-                  placeholder="Tulis alamat lengkap"
+                  placeholder="Tulis alamat lengkap (jalan, RT/RW, kelurahan, kecamatan, kota)"
                   :class="{ 'border-destructive': form.errors.alamat }"
                   rows="3"
                 />
                 <p v-if="form.errors.alamat" class="text-sm text-destructive">
                   {{ form.errors.alamat }}
+                </p>
+                <p v-else class="text-xs text-muted-foreground">
+                  Alamat lengkap untuk keperluan pengiriman
                 </p>
               </div>
 
@@ -294,7 +309,7 @@ const submit = () => {
                     id="ref_code"
                     v-model="form.ref_code"
                     type="text"
-                    placeholder="REF-XXXXXXXX"
+                    placeholder="Contoh: REF-XXXXXXXX"
                     class="pl-10"
                     :class="{ 'border-destructive': form.errors.ref_code }"
                     autocomplete="off"
@@ -304,13 +319,13 @@ const submit = () => {
                   {{ form.errors.ref_code }}
                 </p>
                 <p v-else class="text-xs text-muted-foreground">
-                  Masukkan kode referral sponsor (jika ada).
+                  Masukkan kode referral dari sponsor yang mengajak Anda (jika ada)
                 </p>
               </div>
 
               <!-- Password -->
               <div class="space-y-2">
-                <Label for="password">Password</Label>
+                <Label for="password">Password <span class="text-destructive">*</span></Label>
                 <div class="relative">
                   <Lock class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -335,11 +350,14 @@ const submit = () => {
                 <p v-if="form.errors.password" class="text-sm text-destructive">
                   {{ form.errors.password }}
                 </p>
+                <p v-else class="text-xs text-muted-foreground">
+                  Password minimal 8 karakter, gunakan kombinasi huruf dan angka
+                </p>
               </div>
 
               <!-- Password Confirmation -->
               <div class="space-y-2">
-                <Label for="password_confirmation">Konfirmasi Password</Label>
+                <Label for="password_confirmation">Konfirmasi Password <span class="text-destructive">*</span></Label>
                 <div class="relative">
                   <Lock class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -348,6 +366,7 @@ const submit = () => {
                     :type="showPasswordConfirmation ? 'text' : 'password'"
                     placeholder="Ulangi password"
                     class="pr-10 pl-10"
+                    :class="{ 'border-destructive': form.errors.password_confirmation }"
                     required
                     autocomplete="new-password"
                   />
@@ -360,6 +379,12 @@ const submit = () => {
                     <EyeOff v-else class="h-4 w-4" />
                   </button>
                 </div>
+                <p v-if="form.errors.password_confirmation" class="text-sm text-destructive">
+                  {{ form.errors.password_confirmation }}
+                </p>
+                <p v-else class="text-xs text-muted-foreground">
+                  Ketik ulang password yang sama untuk konfirmasi
+                </p>
               </div>
 
               <!-- Terms -->

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MemberPackageController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
@@ -44,6 +45,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Settings Management Routes
     Route::get('admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
     Route::post('admin/settings', [SettingController::class, 'update'])->name('admin.settings.update');
+
+    // Member Package Route
+    Route::get('admin/settings/member-package', [MemberPackageController::class, 'index'])->name('admin.member-package.index');
 
     // Documentation Route
     Route::get('documentation', [DocumentationController::class, 'index'])->name('documentation');

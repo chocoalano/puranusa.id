@@ -19,6 +19,7 @@ import { index, update } from '@/actions/App/Http/Controllers/Admin/CustomerCont
 interface Customer {
     id: number;
     name: string;
+    username: string;
     email: string;
     phone: string | null;
     ewallet_id: string;
@@ -40,6 +41,7 @@ const props = defineProps<Props>();
 
 const form = useForm({
     name: props.customer.name,
+    username: props.customer.username,
     email: props.customer.email,
     phone: props.customer.phone || '',
     password: '',
@@ -110,10 +112,31 @@ const submit = () => {
                                     id="name"
                                     v-model="form.name"
                                     placeholder="Masukkan nama lengkap"
+                                    :class="{ 'border-destructive': form.errors.name }"
                                     required
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Nama lengkap sesuai identitas, maksimal 255 karakter
+                                </p>
                                 <p v-if="form.errors.name" class="text-sm text-destructive">
                                     {{ form.errors.name }}
+                                </p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="username">Username *</Label>
+                                <Input
+                                    id="username"
+                                    v-model="form.username"
+                                    placeholder="contoh: johndoe123"
+                                    :class="{ 'border-destructive': form.errors.username }"
+                                    required
+                                />
+                                <p class="text-xs text-muted-foreground">
+                                    Username untuk login. Hanya boleh huruf, angka, dash (-) dan underscore (_)
+                                </p>
+                                <p v-if="form.errors.username" class="text-sm text-destructive">
+                                    {{ form.errors.username }}
                                 </p>
                             </div>
 
@@ -124,8 +147,12 @@ const submit = () => {
                                     v-model="form.email"
                                     type="email"
                                     placeholder="nama@email.com"
+                                    :class="{ 'border-destructive': form.errors.email }"
                                     required
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Email aktif untuk menerima notifikasi dan verifikasi akun
+                                </p>
                                 <p v-if="form.errors.email" class="text-sm text-destructive">
                                     {{ form.errors.email }}
                                 </p>
@@ -137,7 +164,11 @@ const submit = () => {
                                     id="phone"
                                     v-model="form.phone"
                                     placeholder="08xxxxxxxxxx"
+                                    :class="{ 'border-destructive': form.errors.phone }"
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Nomor telepon aktif (opsional), maksimal 20 karakter
+                                </p>
                                 <p v-if="form.errors.phone" class="text-sm text-destructive">
                                     {{ form.errors.phone }}
                                 </p>
@@ -153,6 +184,9 @@ const submit = () => {
                                 rows="3"
                                 class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                             />
+                            <p class="text-xs text-muted-foreground">
+                                Catatan tambahan tentang pelanggan, seperti sumber referral atau informasi penting lainnya
+                            </p>
                         </div>
                     </CardContent>
                 </Card>
@@ -215,7 +249,11 @@ const submit = () => {
                                     v-model="form.password"
                                     type="password"
                                     placeholder="Minimal 8 karakter"
+                                    :class="{ 'border-destructive': form.errors.password }"
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Password minimal 8 karakter, gunakan kombinasi huruf dan angka
+                                </p>
                                 <p v-if="form.errors.password" class="text-sm text-destructive">
                                     {{ form.errors.password }}
                                 </p>
@@ -229,6 +267,9 @@ const submit = () => {
                                     type="password"
                                     placeholder="Ulangi password"
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Ketik ulang password baru yang sama untuk konfirmasi
+                                </p>
                             </div>
                         </div>
                     </CardContent>

@@ -26,6 +26,7 @@ import { index as addressIndex } from '@/actions/App/Http/Controllers/Admin/Addr
 import { index as paymentMethodIndex } from '@/actions/App/Http/Controllers/Admin/PaymentMethodManagementController';
 import { index as courierIndex } from '@/actions/App/Http/Controllers/Admin/CourierManagementController';
 import { index as settingIndex } from '@/actions/App/Http/Controllers/Admin/SettingController';
+import { index as memberPackageIndex } from '@/actions/App/Http/Controllers/Admin/MemberPackageController';
 import { promotions as promotionsRewardIndex, lifetime as lifetimeRewardIndex } from '@/actions/App/Http/Controllers/Admin/RewardController';
 
 import { index as documentationIndex } from '@/actions/App/Http/Controllers/DocumentationController';
@@ -307,6 +308,11 @@ const mainNavItems: NavItem[] = [
                 title: 'Lifetime Cash Rewards',
                 href: lifetimeRewardIndex(),
                 icon: Infinity,
+            },
+            {
+                title: 'Paket Member',
+                href: memberPackageIndex(),
+                icon: Package,
             },
         ],
     },

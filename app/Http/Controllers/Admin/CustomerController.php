@@ -78,6 +78,7 @@ class CustomerController extends Controller
                     'sponsor_id' => $customer->matrixPosition?->sponsor_id,
                     'upline_id' => $customer->networkPosition?->upline_id,
                     'position' => $customer->networkPosition?->position,
+                    'status' => $customer->status,
                 ];
             });
 
@@ -121,6 +122,7 @@ class CustomerController extends Controller
             // Create customer with status only (no binary tree placement)
             $customer = Customer::create([
                 'name' => $request->name,
+                'username' => $request->username,
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'password' => bcrypt($request->password),
@@ -242,6 +244,7 @@ class CustomerController extends Controller
             'customer' => [
                 'id' => $customer->id,
                 'name' => $customer->name,
+                'username' => $customer->username,
                 'email' => $customer->email,
                 'phone' => $customer->phone,
                 'ewallet_id' => $customer->ewallet_id,
@@ -263,7 +266,7 @@ class CustomerController extends Controller
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
         try {
-            $customer->update($request->only(['name', 'email', 'phone', 'description']));
+            $customer->update($request->only(['name', 'username', 'email', 'phone', 'description']));
 
             if ($request->filled('password')) {
                 $customer->update(['password' => $request->password]);

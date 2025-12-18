@@ -37,6 +37,7 @@ const props = defineProps<Props>();
 
 const form = useForm({
     name: '',
+    username: '',
     email: '',
     phone: '',
     password: '',
@@ -126,10 +127,31 @@ const submit = () => {
                                     id="name"
                                     v-model="form.name"
                                     placeholder="Masukkan nama lengkap"
+                                    :class="{ 'border-destructive': form.errors.name }"
                                     required
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Nama lengkap sesuai identitas, maksimal 255 karakter
+                                </p>
                                 <p v-if="form.errors.name" class="text-sm text-destructive">
                                     {{ form.errors.name }}
+                                </p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="username">Username *</Label>
+                                <Input
+                                    id="username"
+                                    v-model="form.username"
+                                    placeholder="contoh: johndoe123"
+                                    :class="{ 'border-destructive': form.errors.username }"
+                                    required
+                                />
+                                <p class="text-xs text-muted-foreground">
+                                    Username untuk login. Hanya boleh huruf, angka, dash (-) dan underscore (_)
+                                </p>
+                                <p v-if="form.errors.username" class="text-sm text-destructive">
+                                    {{ form.errors.username }}
                                 </p>
                             </div>
 
@@ -140,8 +162,12 @@ const submit = () => {
                                     v-model="form.email"
                                     type="email"
                                     placeholder="nama@email.com"
+                                    :class="{ 'border-destructive': form.errors.email }"
                                     required
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Email aktif untuk menerima notifikasi dan verifikasi akun
+                                </p>
                                 <p v-if="form.errors.email" class="text-sm text-destructive">
                                     {{ form.errors.email }}
                                 </p>
@@ -153,7 +179,11 @@ const submit = () => {
                                     id="phone"
                                     v-model="form.phone"
                                     placeholder="08xxxxxxxxxx"
+                                    :class="{ 'border-destructive': form.errors.phone }"
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Nomor telepon aktif (opsional), maksimal 20 karakter
+                                </p>
                                 <p v-if="form.errors.phone" class="text-sm text-destructive">
                                     {{ form.errors.phone }}
                                 </p>
@@ -167,8 +197,12 @@ const submit = () => {
                                     type="number"
                                     min="0"
                                     step="1000"
+                                    :class="{ 'border-destructive': form.errors.registration_amount }"
                                     required
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Biaya pendaftaran dalam Rupiah (Rp), minimal 0
+                                </p>
                                 <p v-if="form.errors.registration_amount" class="text-sm text-destructive">
                                     {{ form.errors.registration_amount }}
                                 </p>
@@ -181,8 +215,12 @@ const submit = () => {
                                     v-model="form.password"
                                     type="password"
                                     placeholder="Minimal 8 karakter"
+                                    :class="{ 'border-destructive': form.errors.password }"
                                     required
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Password minimal 8 karakter, gunakan kombinasi huruf dan angka
+                                </p>
                                 <p v-if="form.errors.password" class="text-sm text-destructive">
                                     {{ form.errors.password }}
                                 </p>
@@ -197,6 +235,9 @@ const submit = () => {
                                     placeholder="Ulangi password"
                                     required
                                 />
+                                <p class="text-xs text-muted-foreground">
+                                    Ketik ulang password yang sama untuk konfirmasi
+                                </p>
                             </div>
                         </div>
 
@@ -209,6 +250,9 @@ const submit = () => {
                                 rows="3"
                                 class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                             />
+                            <p class="text-xs text-muted-foreground">
+                                Catatan tambahan tentang pelanggan, seperti sumber referral atau informasi penting lainnya
+                            </p>
                         </div>
                     </CardContent>
                 </Card>
@@ -231,7 +275,8 @@ const submit = () => {
                                             v-model="searchSponsor"
                                             @focus="showSponsorDropdown = true"
                                             @blur="handleSponsorBlur"
-                                            placeholder="Cari sponsor..."
+                                            placeholder="Cari sponsor berdasarkan nama atau ID..."
+                                            :class="{ 'border-destructive': form.errors.sponsor_id }"
                                         />
                                         <Search class="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                                     </div>
@@ -265,6 +310,9 @@ const submit = () => {
                                     </p>
                                 </div>
 
+                                <p class="text-xs text-muted-foreground">
+                                    Member yang merekomendasikan pelanggan ini (opsional). Kosongkan jika tidak ada sponsor
+                                </p>
                                 <p v-if="form.errors.sponsor_id" class="text-sm text-destructive">
                                     {{ form.errors.sponsor_id }}
                                 </p>
@@ -274,7 +322,7 @@ const submit = () => {
                             <div class="space-y-2">
                                 <Label for="status">Status *</Label>
                                 <Select v-model="form.status">
-                                    <SelectTrigger>
+                                    <SelectTrigger :class="{ 'border-destructive': form.errors.status }">
                                         <SelectValue placeholder="Pilih status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -284,7 +332,9 @@ const submit = () => {
                                     </SelectContent>
                                 </Select>
                                 <p class="text-xs text-muted-foreground">
-                                    Prospek: belum terdaftar di jaringan, Pasif: terdaftar tapi belum aktif, Aktif: terdaftar dan aktif
+                                    <strong>Prospek:</strong> Calon member, belum masuk jaringan MLM<br>
+                                    <strong>Pasif:</strong> Sudah terdaftar tapi belum aktif bertransaksi<br>
+                                    <strong>Aktif:</strong> Member aktif dengan akses penuh ke sistem
                                 </p>
                                 <p v-if="form.errors.status" class="text-sm text-destructive">
                                     {{ form.errors.status }}

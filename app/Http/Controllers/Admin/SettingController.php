@@ -42,19 +42,45 @@ class SettingController extends Controller
             }
         }
 
+        // Define setting groups and types
+        $settingConfig = [
+            'site_name' => ['group' => 'general', 'type' => 'text'],
+            'site_description' => ['group' => 'general', 'type' => 'text'],
+            'site_logo' => ['group' => 'general', 'type' => 'text'],
+            'social_facebook' => ['group' => 'social', 'type' => 'text'],
+            'social_twitter' => ['group' => 'social', 'type' => 'text'],
+            'social_instagram' => ['group' => 'social', 'type' => 'text'],
+            'social_youtube' => ['group' => 'social', 'type' => 'text'],
+            'payment_methods' => ['group' => 'payment', 'type' => 'json'],
+        ];
+
         foreach ($validated['settings'] as $key => $value) {
-            $existingSetting = Setting::where('key', $key)->first();
-
-            if ($existingSetting) {
-                // Handle JSON type
-                if ($existingSetting->type === 'json' && is_array($value)) {
-                    $value = json_encode($value);
-                }
-
-                $existingSetting->update(['value' => $value]);
+            // Skip null values for non-essential fields (but allow empty string)
+            if ($value === null && ! in_array($key, ['site_logo'])) {
+                continue;
             }
+
+            $config = $settingConfig[$key] ?? ['group' => 'general', 'type' => 'text'];
+
+            // Handle JSON type
+            if ($config['type'] === 'json' && is_array($value)) {
+                $value = json_encode($value);
+            }
+
+            // Use updateOrCreate to handle both new and existing settings
+            Setting::updateOrCreate(
+                ['key' => $key],
+                [
+                    'value' => $value,
+                    'type' => $config['type'],
+                    'group' => $config['group'],
+                ]
+            );
         }
 
-        return redirect()->route('admin.settings.index')->with('success', 'Pengaturan berhasil diperbarui');
+        // Clear the settings cache to ensure fresh data
+        \Illuminate\Support\Facades\Cache::forget('settings');
+
+        return back()->with('success', 'Pengaturan berhasil diperbarui');
     }
 }
