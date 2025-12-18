@@ -8,6 +8,7 @@ import { index as bonusRetailIndex } from '@/actions/App/Http/Controllers/BonusC
 import { index as bonusLifetimeCashRewardIndex } from '@/actions/App/Http/Controllers/BonusComission/BonusLifetimeCashRewardController';
 import { index as userIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import { index as customerIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
+import { index as stockistIndex } from '@/actions/App/Http/Controllers/Admin/StockistController';
 
 // Admin E-Commerce Controllers
 import { index as productIndex } from '@/actions/App/Http/Controllers/Admin/ProductManagementController';
@@ -52,6 +53,7 @@ import {
     Settings,
     Users,
     Users2Icon,
+    Store,
     Wallet,
     Wallet2,
     Wallet2Icon,
@@ -96,6 +98,11 @@ const mainNavItems: NavItem[] = [
                 title: 'Pelanggan',
                 href: customerIndex(),
                 icon: Users2Icon,
+            },
+            {
+                title: 'Stokist',
+                href: stockistIndex(),
+                icon: Store,
             },
         ],
     },

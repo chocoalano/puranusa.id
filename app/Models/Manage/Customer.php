@@ -96,6 +96,11 @@ class Customer extends Authenticatable
         'omzet_group_left',
         'omzet_group_right',
         'status',
+        'is_stockist',
+        'stockist_kabupaten_id',
+        'stockist_kabupaten_name',
+        'stockist_province_id',
+        'stockist_province_name',
     ];
 
     /**

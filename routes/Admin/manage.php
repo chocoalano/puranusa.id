@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MemberPackageController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\StockistController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DocumentationController;
 
@@ -31,6 +32,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Customer Management Routes
     Route::resource('manage/customers', CustomerController::class);
+
+    // Stockist Management Routes
+    Route::get('admin/stockists/cities', [StockistController::class, 'getCities'])
+        ->name('admin.stockists.cities');
+    Route::resource('admin/stockists', StockistController::class)->names([
+        'index' => 'admin.stockists.index',
+        'create' => 'admin.stockists.create',
+        'store' => 'admin.stockists.store',
+        'edit' => 'admin.stockists.edit',
+        'update' => 'admin.stockists.update',
+        'destroy' => 'admin.stockists.destroy',
+    ])->parameters([
+        'stockists' => 'stockist',
+    ]);
 
     // Pages Management Routes
     Route::resource('admin/pages', PageController::class)->names([
