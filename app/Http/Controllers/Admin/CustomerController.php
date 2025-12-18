@@ -137,6 +137,7 @@ class CustomerController extends Controller
                 ->route('customers.show', $customer)
                 ->with('success', 'Customer berhasil ditambahkan dengan Ewallet ID: '.$customer->ewallet_id);
         } catch (\Exception $e) {
+            dd($e->getMessage());
             return redirect()
                 ->back()
                 ->withInput()
