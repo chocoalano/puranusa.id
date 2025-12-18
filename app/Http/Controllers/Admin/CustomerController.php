@@ -134,7 +134,7 @@ class CustomerController extends Controller
             ]);
 
             return redirect()
-                ->route('admin.customers.show', $customer)
+                ->route('customers.show', $customer)
                 ->with('success', 'Customer berhasil ditambahkan dengan Ewallet ID: '.$customer->ewallet_id);
         } catch (\Exception $e) {
             return redirect()
@@ -273,7 +273,7 @@ class CustomerController extends Controller
             }
 
             return redirect()
-                ->route('admin.customers.show', $customer)
+                ->route('customers.show', $customer)
                 ->with('success', 'Data customer berhasil diperbarui');
         } catch (\Exception $e) {
             return redirect()
@@ -293,7 +293,7 @@ class CustomerController extends Controller
             $customer->delete();
 
             return redirect()
-                ->route('admin.customers.index')
+                ->route('customers.index')
                 ->with('success', "Customer {$name} berhasil dihapus");
         } catch (\Exception $e) {
             return redirect()

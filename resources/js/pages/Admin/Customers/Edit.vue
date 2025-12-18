@@ -55,8 +55,19 @@ const submit = () => {
         onSuccess: () => {
             toast.success('Data pelanggan berhasil diperbarui');
         },
-        onError: () => {
-            toast.error('Gagal memperbarui data pelanggan');
+        onError: (errors) => {
+            const errorMessages = Object.values(errors);
+            if (errorMessages.length > 0) {
+                // Show first error in toast
+                toast.error(errorMessages[0] as string);
+
+                // If there are multiple errors, show summary
+                if (errorMessages.length > 1) {
+                    toast.warning(`Terdapat ${errorMessages.length} kesalahan pada form. Silakan periksa kembali.`);
+                }
+            } else {
+                toast.error('Gagal memperbarui data pelanggan. Silakan periksa data yang dimasukkan.');
+            }
         },
     });
 };

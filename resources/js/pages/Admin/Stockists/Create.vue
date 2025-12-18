@@ -36,7 +36,6 @@ import { ArrowLeft, Check, ChevronsUpDown, MapPin, Store, User, AlertCircle, Loa
 import { cn } from '@/lib/utils';
 import { index, store, getCities } from '@/actions/App/Http/Controllers/Admin/StockistController';
 import { toast } from 'vue-sonner';
-import axios from 'axios';
 
 interface Customer {
     id: number;
@@ -123,10 +122,21 @@ watch(selectedProvinceId, async (provinceId) => {
 
     loadingCities.value = true;
     try {
-        const response = await axios.get(getCities.url(), {
-            params: { province_id: provinceId },
+        const url = `${getCities.url()}?province_id=${provinceId}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
         });
-        citiesList.value = response.data;
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch cities');
+        }
+
+        citiesList.value = await response.json();
     } catch {
         toast.error('Gagal memuat daftar kota');
         citiesList.value = [];

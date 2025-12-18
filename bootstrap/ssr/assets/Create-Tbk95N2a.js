@@ -70,8 +70,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         onSuccess: () => {
           toast.success("Pelanggan berhasil didaftarkan");
         },
-        onError: () => {
-          toast.error("Gagal mendaftarkan pelanggan");
+        onError: (errors) => {
+          const errorMessages = Object.values(errors);
+          if (errorMessages.length > 0) {
+            toast.error(errorMessages[0]);
+            if (errorMessages.length > 1) {
+              toast.warning(`Terdapat ${errorMessages.length} kesalahan pada form. Silakan periksa kembali.`);
+            }
+          } else {
+            toast.error("Gagal mendaftarkan pelanggan. Silakan periksa data yang dimasukkan.");
+          }
         }
       });
     };

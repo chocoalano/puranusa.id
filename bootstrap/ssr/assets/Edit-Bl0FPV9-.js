@@ -10,7 +10,6 @@ import { _ as _sfc_main$f, a as _sfc_main$g, b as _sfc_main$h, c as _sfc_main$i,
 import { _ as _sfc_main$8 } from "./index-BpQimeTM.js";
 import { ArrowLeft, User, Store, MapPin, Loader2, ChevronsUpDown, Check, AlertCircle } from "lucide-vue-next";
 import { toast } from "vue-sonner";
-import axios from "axios";
 import "class-variance-authority";
 import "./DropdownMenuTrigger-B1v6pHML.js";
 import "reka-ui";
@@ -66,10 +65,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
       loadingCities.value = true;
       try {
-        const response = await axios.get(getCities.url(), {
-          params: { province_id: provinceId }
+        const url = `${getCities.url()}?province_id=${provinceId}`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          credentials: "same-origin"
         });
-        citiesList.value = response.data;
+        if (!response.ok) {
+          throw new Error("Failed to fetch cities");
+        }
+        citiesList.value = await response.json();
       } catch (error) {
         console.error(error);
         toast.error("Gagal memuat daftar kota");
