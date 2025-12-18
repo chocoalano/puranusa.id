@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { computed, ref, watch, watchEffect, onUnmounted } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,9 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, Package, MapPin, Truck, CreditCard, Loader2 } from 'lucide-vue-next';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { CheckCircle, Package, MapPin, Truck, CreditCard, Loader2, Wallet } from 'lucide-vue-next';
 import { useFormatter } from '@/composables/useFormatter';
 import { toast } from 'vue-sonner';
 
@@ -76,12 +78,47 @@ const emit = defineEmits<{
 
 const { formatCurrency, formatDate, getStatusLabel } = useFormatter();
 
+const page = usePage();
+const userWalletBalance = computed(() => {
+    return (page.props.auth?.user as any)?.ewallet_saldo ?? 0;
+});
+
 const loadingOrder = ref(false);
 const updatingStatus = ref(false);
+const processingPayment = ref(false);
+const midtransPopupOpen = ref(false);
 const orderDetail = ref<OrderDetail | null>(null);
+const paymentMethod = ref<'midtrans' | 'wallet'>('midtrans');
 
 const canMarkCompleted = computed(() => {
     return orderDetail.value?.status?.toUpperCase() === 'SHIPPED';
+});
+
+const canPay = computed(() => {
+    return orderDetail.value?.status?.toUpperCase() === 'PENDING' && !orderDetail.value?.paid_at;
+});
+
+const isWalletSufficient = computed(() => {
+    if (!orderDetail.value) return false;
+    return userWalletBalance.value >= orderDetail.value.grand_total;
+});
+
+// Watch for Midtrans popup state and manage overlay pointer-events
+watchEffect(() => {
+    if (typeof document !== 'undefined') {
+        if (midtransPopupOpen.value) {
+            document.body.classList.add('midtrans-popup-active');
+        } else {
+            document.body.classList.remove('midtrans-popup-active');
+        }
+    }
+});
+
+// Cleanup on unmount
+onUnmounted(() => {
+    if (typeof document !== 'undefined') {
+        document.body.classList.remove('midtrans-popup-active');
+    }
 });
 
 const statusBadgeClass = computed(() => {
@@ -128,6 +165,109 @@ const markAsCompleted = async () => {
         toast.error(error.response?.data?.message || 'Gagal memperbarui status pesanan');
     } finally {
         updatingStatus.value = false;
+    }
+};
+
+const payWithMidtrans = async () => {
+    if (!orderDetail.value || !canPay.value || processingPayment.value) return;
+
+    // Check if Midtrans Snap is loaded
+    const snapInstance = (window as any).snap;
+    if (!snapInstance) {
+        toast.error('Sistem pembayaran belum siap. Mohon refresh halaman.');
+        return;
+    }
+
+    processingPayment.value = true;
+    try {
+        // Get snap token from backend
+        const response = await axios.post(`/api/client/orders/${orderDetail.value.id}/pay`);
+        const data = response.data;
+
+        if (data.success && data.snap_token) {
+            midtransPopupOpen.value = true;
+            snapInstance.pay(data.snap_token, {
+                onSuccess: function () {
+                    midtransPopupOpen.value = false;
+                    processingPayment.value = false;
+                    toast.success('Pembayaran berhasil!');
+                    // Refresh order detail
+                    loadOrderDetail();
+                    // Refresh the orders list on the profile page
+                    router.reload({ only: ['orders'] });
+                },
+                onPending: function () {
+                    midtransPopupOpen.value = false;
+                    processingPayment.value = false;
+                    toast.info('Pembayaran tertunda. Silakan selesaikan pembayaran.');
+                    loadOrderDetail();
+                    router.reload({ only: ['orders'] });
+                },
+                onError: function () {
+                    midtransPopupOpen.value = false;
+                    processingPayment.value = false;
+                    toast.error('Pembayaran gagal. Silakan coba lagi.');
+                    setTimeout(() => {
+                        document.body.classList.remove('midtrans-popup-active');
+                    }, 100);
+                },
+                onClose: function () {
+                    midtransPopupOpen.value = false;
+                    processingPayment.value = false;
+                    toast.info('Pembayaran dibatalkan.');
+                    setTimeout(() => {
+                        document.body.classList.remove('midtrans-popup-active');
+                    }, 100);
+                },
+            });
+        } else {
+            toast.error(data.message || 'Gagal memproses pembayaran');
+        }
+    } catch (error: any) {
+        console.error('Failed to initiate payment:', error);
+        toast.error(error.response?.data?.message || 'Gagal memproses pembayaran');
+    } finally {
+        if (!midtransPopupOpen.value) {
+            processingPayment.value = false;
+        }
+    }
+};
+
+const payWithWallet = async () => {
+    if (!orderDetail.value || !canPay.value || processingPayment.value) return;
+
+    if (!isWalletSufficient.value) {
+        toast.error('Saldo e-wallet Anda tidak mencukupi');
+        return;
+    }
+
+    processingPayment.value = true;
+    try {
+        const response = await axios.post(`/api/client/orders/${orderDetail.value.id}/pay-wallet`);
+        const data = response.data;
+
+        if (data.success) {
+            toast.success(data.message || 'Pembayaran berhasil!');
+            // Refresh order detail
+            await loadOrderDetail();
+            // Refresh the orders list and auth user data (to update wallet balance)
+            router.reload({ only: ['orders', 'auth'] });
+        } else {
+            toast.error(data.message || 'Gagal memproses pembayaran');
+        }
+    } catch (error: any) {
+        console.error('Failed to pay with wallet:', error);
+        toast.error(error.response?.data?.message || 'Gagal memproses pembayaran');
+    } finally {
+        processingPayment.value = false;
+    }
+};
+
+const handlePayment = () => {
+    if (paymentMethod.value === 'wallet') {
+        payWithWallet();
+    } else {
+        payWithMidtrans();
     }
 };
 
@@ -304,6 +444,92 @@ watch(
                         <p class="text-sm font-medium">Catatan</p>
                         <p class="text-sm text-muted-foreground">{{ orderDetail.notes }}</p>
                     </div>
+                </div>
+
+                <!-- Pay Button for Pending Orders -->
+                <div v-if="canPay" class="space-y-4 pt-4">
+                    <Separator />
+
+                    <!-- Payment Method Selection -->
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 text-sm font-medium">
+                            <Wallet class="h-4 w-4" />
+                            <span>Metode Pembayaran</span>
+                        </div>
+
+                        <RadioGroup v-model="paymentMethod" class="space-y-3">
+                            <!-- E-Wallet Option -->
+                            <div
+                                class="flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors"
+                                :class="{
+                                    'border-primary bg-primary/10': paymentMethod === 'wallet',
+                                    'hover:bg-muted': paymentMethod !== 'wallet',
+                                    'cursor-not-allowed opacity-50': !isWalletSufficient,
+                                }"
+                                @click="isWalletSufficient && (paymentMethod = 'wallet')"
+                            >
+                                <RadioGroupItem value="wallet" id="payment-wallet-detail" :disabled="!isWalletSufficient" />
+                                <Label for="payment-wallet-detail" class="flex-1 cursor-pointer" :class="{ 'cursor-not-allowed': !isWalletSufficient }">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <div class="flex items-center gap-2 font-medium text-sm">
+                                                <Wallet class="h-4 w-4" />
+                                                E-Wallet
+                                            </div>
+                                            <div class="text-xs text-muted-foreground">
+                                                Saldo: {{ formatCurrency(userWalletBalance) }}
+                                            </div>
+                                            <div v-if="!isWalletSufficient" class="mt-1 text-xs text-destructive">
+                                                Saldo tidak mencukupi (kurang {{ formatCurrency(orderDetail.grand_total - userWalletBalance) }})
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Label>
+                            </div>
+
+                            <!-- Midtrans Option -->
+                            <div
+                                class="flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors"
+                                :class="{
+                                    'border-primary bg-primary/10': paymentMethod === 'midtrans',
+                                    'hover:bg-muted': paymentMethod !== 'midtrans',
+                                }"
+                                @click="paymentMethod = 'midtrans'"
+                            >
+                                <RadioGroupItem value="midtrans" id="payment-midtrans-detail" />
+                                <Label for="payment-midtrans-detail" class="flex-1 cursor-pointer">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <div class="flex items-center gap-2 font-medium text-sm">
+                                                <CreditCard class="h-4 w-4" />
+                                                Payment Gateway
+                                            </div>
+                                            <div class="text-xs text-muted-foreground">
+                                                Transfer Bank, E-wallet, Kartu Kredit
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
+
+                    <Button
+                        @click="handlePayment"
+                        :disabled="processingPayment || midtransPopupOpen || (paymentMethod === 'wallet' && !isWalletSufficient)"
+                        class="w-full"
+                        size="lg"
+                    >
+                        <Loader2 v-if="processingPayment" class="h-4 w-4 mr-2 animate-spin" />
+                        <Wallet v-else-if="paymentMethod === 'wallet'" class="h-4 w-4 mr-2" />
+                        <CreditCard v-else class="h-4 w-4 mr-2" />
+                        <span v-if="paymentMethod === 'wallet'">
+                            Bayar dengan E-Wallet {{ formatCurrency(orderDetail.grand_total) }}
+                        </span>
+                        <span v-else>
+                            Bayar {{ formatCurrency(orderDetail.grand_total) }}
+                        </span>
+                    </Button>
                 </div>
 
                 <!-- Mark as Completed Button -->

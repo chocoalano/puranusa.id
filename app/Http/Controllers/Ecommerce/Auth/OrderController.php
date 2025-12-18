@@ -711,4 +711,215 @@ class OrderController extends Controller
             'grand_total' => 0,
         ]);
     }
+
+    /**
+     * Get new Snap token for pending order payment
+     */
+    public function pay(Order $order): JsonResponse
+    {
+        // Ensure the order belongs to the authenticated user
+        if ($order->customer_id !== auth('client')->id()) {
+            abort(403, 'Unauthorized access to this order');
+        }
+
+        // Only allow payment for pending orders
+        if ($order->status !== 'PENDING') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesanan tidak dalam status menunggu pembayaran',
+            ], 400);
+        }
+
+        // Only allow if not yet paid
+        if ($order->paid_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesanan sudah dibayar',
+            ], 400);
+        }
+
+        try {
+            $customer = auth('client')->user();
+
+            // Generate new transaction ID
+            $transactionId = $order->order_no.'-'.time();
+
+            // Configure Midtrans
+            \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+            \Midtrans\Config::$isProduction = config('services.midtrans.is_production');
+            \Midtrans\Config::$isSanitized = true;
+            \Midtrans\Config::$is3ds = true;
+
+            // Get order items for Midtrans
+            $items = [];
+            foreach ($order->items as $item) {
+                $items[] = [
+                    'id' => $item->product_id,
+                    'price' => (int) $item->unit_price,
+                    'quantity' => $item->qty,
+                    'name' => substr($item->name, 0, 50),
+                ];
+            }
+
+            // Add shipping cost as item
+            if ($order->shipping_amount > 0) {
+                $items[] = [
+                    'id' => 'SHIPPING',
+                    'price' => (int) $order->shipping_amount,
+                    'quantity' => 1,
+                    'name' => 'Ongkos Kirim',
+                ];
+            }
+
+            // Build Midtrans transaction data
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $transactionId,
+                    'gross_amount' => (int) $order->grand_total,
+                ],
+                'customer_details' => [
+                    'first_name' => $customer->name,
+                    'email' => $customer->email,
+                    'phone' => $customer->phone ?? '',
+                ],
+                'item_details' => $items,
+                'callbacks' => [
+                    'finish' => route('checkout.finish').'?order_no='.$order->order_no,
+                ],
+            ];
+
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+            // Update applied_promos with new transaction_id
+            $appliedPromos = $order->applied_promos ?? [];
+            $appliedPromos['payment'] = [
+                'transaction_id' => $transactionId,
+                'method' => 'midtrans',
+            ];
+
+            $order->update([
+                'applied_promos' => $appliedPromos,
+            ]);
+
+            Log::info('New Snap token generated for order payment', [
+                'order_id' => $order->id,
+                'order_no' => $order->order_no,
+                'transaction_id' => $transactionId,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'snap_token' => $snapToken,
+                'order_no' => $order->order_no,
+                'transaction_id' => $transactionId,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to generate Snap token for order payment', [
+                'order_id' => $order->id,
+                'order_no' => $order->order_no,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memproses pembayaran: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Pay order with E-Wallet
+     */
+    public function payWithWallet(Order $order): JsonResponse
+    {
+        // Ensure the order belongs to the authenticated user
+        if ($order->customer_id !== auth('client')->id()) {
+            abort(403, 'Unauthorized access to this order');
+        }
+
+        // Only allow payment for pending orders
+        if ($order->status !== 'PENDING') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesanan tidak dalam status menunggu pembayaran',
+            ], 400);
+        }
+
+        // Only allow if not yet paid
+        if ($order->paid_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesanan sudah dibayar',
+            ], 400);
+        }
+
+        $customer = auth('client')->user();
+        $total = $order->grand_total;
+
+        // Check wallet balance
+        if ($customer->ewallet_saldo < $total) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Saldo e-wallet tidak mencukupi. Saldo Anda: Rp '.number_format($customer->ewallet_saldo, 0, ',', '.'),
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Deduct from wallet
+            $customer->decrement('ewallet_saldo', $total);
+
+            // Update order status
+            $order->update([
+                'status' => 'PAID',
+                'paid_at' => now(),
+                'applied_promos' => array_merge($order->applied_promos ?? [], [
+                    'payment' => [
+                        'method' => 'wallet',
+                        'paid_at' => now()->toDateTimeString(),
+                    ],
+                ]),
+            ]);
+
+            // Reduce product stock
+            foreach ($order->items as $item) {
+                $product = \App\Models\Product::find($item->product_id);
+                if ($product) {
+                    $product->decrement('stock', $item->qty);
+                }
+            }
+
+            // Clear cart
+            $this->clearCustomerCart($customer->id);
+
+            DB::commit();
+
+            Log::info('Order paid with wallet', [
+                'order_id' => $order->id,
+                'order_no' => $order->order_no,
+                'customer_id' => $customer->id,
+                'amount' => $total,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran berhasil! Pesanan Anda akan segera diproses.',
+                'order_no' => $order->order_no,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Failed to pay order with wallet', [
+                'order_id' => $order->id,
+                'order_no' => $order->order_no,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memproses pembayaran: '.$e->getMessage(),
+            ], 500);
+        }
+    }
 }

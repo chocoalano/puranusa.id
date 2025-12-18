@@ -48,6 +48,7 @@ class CheckoutController extends Controller
             'shipping_cost' => 'required|numeric|min:0',
             'total' => 'required|numeric|min:0',
             'payment_method' => 'required|in:wallet,midtrans',
+            'transaction_type' => 'nullable|in:planA,planB',
         ]);
 
         if (! Auth::guard('client')->check()) {
@@ -191,6 +192,7 @@ class CheckoutController extends Controller
         return Order::create([
             'order_no' => $orderNo,
             'customer_id' => $customerId,
+            'type' => $validated['transaction_type'] ?? null,
             'currency' => 'IDR',
             'status' => 'PENDING',
             'subtotal_amount' => $validated['subtotal'],
@@ -435,6 +437,7 @@ class CheckoutController extends Controller
             'shipping_cost' => 'required|numeric|min:0',
             'total' => 'required|numeric|min:0',
             'payment_method' => 'required|in:wallet,midtrans',
+            'transaction_type' => 'nullable|in:planA,planB',
         ]);
 
         if (! Auth::guard('client')->check()) {
@@ -1161,6 +1164,7 @@ class CheckoutController extends Controller
         return Order::create([
             'order_no' => $orderNo,
             'customer_id' => $customerId,
+            'type' => $validated['transaction_type'] ?? null,
             'currency' => 'IDR',
             'status' => 'PENDING',
             'subtotal_amount' => $validated['subtotal'],

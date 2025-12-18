@@ -94,6 +94,8 @@ Route::prefix('api/shipping')->name('api.shipping.')->group(function () {
 // Order API routes (require authentication)
 Route::middleware(['client.auth'])->prefix('api/client/orders')->name('api.client.orders.')->group(function () {
     Route::get('/{order}', [OrderController::class, 'show'])->name('show');
+    Route::post('/{order}/pay', [OrderController::class, 'pay'])->name('pay');
+    Route::post('/{order}/pay-wallet', [OrderController::class, 'payWithWallet'])->name('pay-wallet');
     Route::post('/{order}/complete', [OrderController::class, 'complete'])->name('complete');
     Route::post('/{order}/check-payment-status', [OrderController::class, 'checkPaymentStatus'])->name('check-payment-status');
     Route::post('/{order}/reviews', [OrderController::class, 'submitReview'])->name('reviews.submit');

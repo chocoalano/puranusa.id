@@ -31,6 +31,7 @@ import {
     Package,
     Truck,
     Wallet,
+    ClipboardList,
 } from 'lucide-vue-next';
 import { computed, ref, watch, watchEffect, onUnmounted } from 'vue';
 import { toast } from 'vue-sonner';
@@ -113,6 +114,11 @@ const userWalletBalance = computed(() => {
     return (page.props.auth?.user as any)?.ewallet_saldo ?? 0;
 });
 
+// Check if customer is active (status = 3)
+const isActiveCustomer = computed(() => {
+    return (page.props.auth?.user as any)?.status === 3;
+});
+
 // Alert state
 const alertMessage = ref<{ type: 'success' | 'error'; message: string } | null>(
     null,
@@ -184,6 +190,7 @@ const form = ref({
     shipping_etd: '',
     notes: '',
     payment_method: 'midtrans',
+    transaction_type: '' as '' | 'planA' | 'planB',
 });
 
 // Filter valid data (only items with ID)
@@ -222,6 +229,11 @@ const isFormValid = computed(() => {
 
     // If wallet payment selected, ensure sufficient balance
     if (form.value.payment_method === 'wallet' && !isWalletSufficient.value) {
+        return false;
+    }
+
+    // If active customer, require transaction type
+    if (isActiveCustomer.value && !form.value.transaction_type) {
         return false;
     }
 
@@ -431,6 +443,7 @@ const handleCheckout = async () => {
             shipping_cost: form.value.shipping_cost,
             total: total.value,
             payment_method: form.value.payment_method,
+            transaction_type: form.value.transaction_type || null,
         };
 
         console.log('Full payload:', JSON.stringify(payload, null, 2));
@@ -512,6 +525,7 @@ const handleCheckout = async () => {
                     shipping_etd: '',
                     notes: '',
                     payment_method: 'midtrans',
+                    transaction_type: '',
                 };
             }
         } else {
@@ -677,6 +691,54 @@ watch(
                 </div>
 
                 <Separator />
+
+                <!-- Transaction Type (Only for Active Customers) -->
+                <div v-if="isActiveCustomer" class="space-y-4">
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        <ClipboardList class="h-4 w-4" />
+                        <span>Jenis Transaksi</span>
+                    </div>
+
+                    <RadioGroup v-model="form.transaction_type" class="space-y-3">
+                        <!-- Plan A Option -->
+                        <div
+                            class="flex cursor-pointer items-center space-x-3 rounded-lg border p-4 transition-colors"
+                            :class="{
+                                'border-primary bg-primary/10': form.transaction_type === 'planA',
+                                'hover:bg-muted': form.transaction_type !== 'planA',
+                            }"
+                            @click="form.transaction_type = 'planA'"
+                        >
+                            <RadioGroupItem value="planA" id="transaction-planA" />
+                            <Label for="transaction-planA" class="flex-1 cursor-pointer">
+                                <div class="font-medium">Plan A</div>
+                                <div class="text-sm text-muted-foreground">
+                                    Transaksi dengan skema Plan A
+                                </div>
+                            </Label>
+                        </div>
+
+                        <!-- Plan B Option -->
+                        <div
+                            class="flex cursor-pointer items-center space-x-3 rounded-lg border p-4 transition-colors"
+                            :class="{
+                                'border-primary bg-primary/10': form.transaction_type === 'planB',
+                                'hover:bg-muted': form.transaction_type !== 'planB',
+                            }"
+                            @click="form.transaction_type = 'planB'"
+                        >
+                            <RadioGroupItem value="planB" id="transaction-planB" />
+                            <Label for="transaction-planB" class="flex-1 cursor-pointer">
+                                <div class="font-medium">Plan B</div>
+                                <div class="text-sm text-muted-foreground">
+                                    Transaksi dengan skema Plan B
+                                </div>
+                            </Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+
+                <Separator v-if="isActiveCustomer" />
 
                 <!-- Shipping Address Form -->
                 <div class="space-y-4">

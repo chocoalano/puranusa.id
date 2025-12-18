@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $order_no
  * @property int $customer_id
+ * @property string|null $type
  * @property string $currency
  * @property string $status
  * @property float $subtotal_amount
@@ -42,6 +43,7 @@ class Order extends Model
     protected $fillable = [
         'order_no',
         'customer_id',
+        'type',
         'currency',
         'status',
         'subtotal_amount',

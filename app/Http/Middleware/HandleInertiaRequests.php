@@ -340,6 +340,7 @@ class HandleInertiaRequests extends Middleware
                 'name' => auth('client')->user()->name,
                 'email' => auth('client')->user()->email,
                 'ewallet_saldo' => auth('client')->user()->ewallet_saldo ?? 0,
+                'status' => auth('client')->user()->status,
             ];
         }
 
