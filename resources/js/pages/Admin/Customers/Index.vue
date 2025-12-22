@@ -359,8 +359,8 @@ const columns: ColumnDef<Customer>[] = [
                 ),
             ];
 
-            // Only show delete button if status is not Pasif (2)
-            if (customer.status !== 2) {
+            // Only show delete button if status is not Pasif (2) or Aktif (3)
+            if (customer.status !== 2 && customer.status !== 3) {
                 actions.push(
                     h(
                         Button,

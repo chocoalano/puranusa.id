@@ -282,7 +282,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               )
             )
           ];
-          if (customer.status !== 2) {
+          if (customer.status !== 2 && customer.status !== 3) {
             actions.push(
               h(
                 _sfc_main$2,
