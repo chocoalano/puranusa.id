@@ -484,7 +484,7 @@ class ProfileController extends Controller
             ]);
 
             // Step 3: Call stored procedure to update networks and matrix
-            $sp = DB::select('CALL sp_registration(?)', [$memberId]);
+            // $sp = DB::select('CALL sp_registration(?)', [$memberId]);
             $row = DB::select('CALL sp_registration(?)', [$memberId])[0] ?? null;
 
             abort_if(!$row, 500, 'SP tidak mengembalikan output');
