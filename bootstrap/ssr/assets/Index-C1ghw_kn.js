@@ -1,7 +1,7 @@
 import { defineComponent, ref, computed, unref, withCtx, createVNode, toDisplayString, createTextVNode, createBlock, createCommentVNode, openBlock, withKeys, Fragment, renderList, withModifiers, useSSRContext } from "vue";
 import { ssrRenderComponent, ssrInterpolate, ssrRenderAttr, ssrRenderList } from "vue/server-renderer";
 import { Head, router } from "@inertiajs/vue3";
-import { _ as _sfc_main$1 } from "./Ecommerce-CG0fcxUt.js";
+import { _ as _sfc_main$1 } from "./Ecommerce-CcXwhgpk.js";
 import { _ as _sfc_main$2 } from "./Input-BGi8wCMh.js";
 import { _ as _sfc_main$3 } from "./index-SN_CnQ_F.js";
 import { _ as _sfc_main$6 } from "./index-BpQimeTM.js";

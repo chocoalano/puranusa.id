@@ -6,7 +6,7 @@ import { _ as _sfc_main$e } from "./Input-BGi8wCMh.js";
 import { _ as _sfc_main$d } from "./Label-16aMY2sx.js";
 import { reactiveOmit } from "@vueuse/core";
 import { useForwardPropsEmits, RadioGroupRoot, useForwardProps, RadioGroupItem, RadioGroupIndicator } from "reka-ui";
-import { Circle, CheckCircle2, AlertCircle, Package, ClipboardList, MapPin, Truck, Loader2, Wallet, CreditCard, Home, Smartphone, Laptop, Tv, LockIcon, Search, Sun, Moon, Heart, Trash2, ShoppingCart, Minus, Plus, User, UserCircle, Shield, Info, LogOut, Menu } from "lucide-vue-next";
+import { Circle, CheckCircle2, AlertCircle, Package, ClipboardList, Truck, Loader2, MapPin, Wallet, CreditCard, Home, Smartphone, Laptop, Tv, LockIcon, Search, Sun, Moon, Heart, Trash2, ShoppingCart, Minus, Plus, User, UserCircle, Shield, Info, LogOut, Menu } from "lucide-vue-next";
 import { _ as _sfc_main$f, a as _sfc_main$g, b as _sfc_main$h, c as _sfc_main$i, d as _sfc_main$j } from "./SelectValue-BUnv4mQg.js";
 import { h as _sfc_main$4, i as _sfc_main$5, j as _sfc_main$6, k as _sfc_main$7, l as _sfc_main$8, e as _sfc_main$c, n as _sfc_main$k, _ as _sfc_main$m, a as _sfc_main$n, b as _sfc_main$p, f as _sfc_main$q, g as _sfc_main$r, c as _sfc_main$t, o as _sfc_main$u } from "./DropdownMenuTrigger-B1v6pHML.js";
 import { usePage, Link, useForm, router } from "@inertiajs/vue3";
@@ -228,7 +228,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       return userWalletBalance.value >= total.value;
     });
     const isFormValid = computed(() => {
-      const basicValid = form.value.recipient_name && form.value.recipient_phone && form.value.address_line1 && form.value.province_id && form.value.city_id && form.value.postal_code && form.value.shipping_courier && form.value.shipping_service && form.value.shipping_cost > 0 && form.value.payment_method;
+      const isShippingValid = isPickUpSelected.value ? form.value.shipping_courier && form.value.shipping_service : form.value.shipping_courier && form.value.shipping_service && form.value.shipping_cost > 0;
+      const isAddressValid = isPickUpSelected.value ? form.value.recipient_name && form.value.recipient_phone : form.value.recipient_name && form.value.recipient_phone && form.value.address_line1 && form.value.province_id && form.value.city_id && form.value.postal_code;
+      const basicValid = isAddressValid && isShippingValid && form.value.payment_method;
       if (form.value.payment_method === "wallet" && !isWalletSufficient.value) {
         return false;
       }
@@ -335,6 +337,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       form.value.shipping_cost = service.cost[0].value;
       form.value.shipping_etd = service.cost[0].etd;
     };
+    const selectPickUp = () => {
+      form.value.shipping_courier = "pickup";
+      form.value.shipping_service = "Pick Up";
+      form.value.shipping_cost = 0;
+      form.value.shipping_etd = "-";
+    };
+    const isPickUpSelected = computed(() => {
+      return form.value.shipping_courier === "pickup" && form.value.shipping_service === "Pick Up";
+    });
     const handleCheckout = async () => {
       if (!isFormValid.value) {
         alertMessage.value = {
@@ -389,12 +400,12 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           shipping: {
             recipient_name: form.value.recipient_name,
             recipient_phone: form.value.recipient_phone,
-            address_line1: form.value.address_line1,
-            province_label: selectedProvince.value?.name,
-            province_id: form.value.province_id,
-            city_label: `${selectedCity.value?.type} ${selectedCity.value?.name}`,
-            city_id: form.value.city_id,
-            postal_code: form.value.postal_code,
+            address_line1: isPickUpSelected.value ? "PICKUP" : form.value.address_line1,
+            province_label: isPickUpSelected.value ? "-" : selectedProvince.value?.name || "",
+            province_id: isPickUpSelected.value ? "0" : form.value.province_id,
+            city_label: isPickUpSelected.value ? "-" : `${selectedCity.value?.type || ""} ${selectedCity.value?.name || ""}`.trim(),
+            city_id: isPickUpSelected.value ? "0" : form.value.city_id,
+            postal_code: isPickUpSelected.value ? "-" : form.value.postal_code,
             courier: form.value.shipping_courier,
             service: form.value.shipping_service,
             cost: form.value.shipping_cost,
@@ -836,307 +847,25 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     _push3(`<!---->`);
                   }
                   _push3(`<div class="space-y-4"${_scopeId2}><div class="flex items-center gap-2 text-sm font-medium"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(MapPin), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
-                  _push3(`<span${_scopeId2}>Alamat Pengiriman</span></div><div class="space-y-4"${_scopeId2}><div class="grid grid-cols-2 gap-4"${_scopeId2}><div class="space-y-2"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "recipient_name" }, {
-                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                      if (_push4) {
-                        _push4(`Nama Penerima`);
-                      } else {
-                        return [
-                          createTextVNode("Nama Penerima")
-                        ];
-                      }
-                    }),
-                    _: 1
-                  }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$e), {
-                    id: "recipient_name",
-                    modelValue: form.value.recipient_name,
-                    "onUpdate:modelValue": ($event) => form.value.recipient_name = $event,
-                    placeholder: "Nama lengkap"
-                  }, null, _parent3, _scopeId2));
-                  _push3(`</div><div class="space-y-2"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "recipient_phone" }, {
-                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                      if (_push4) {
-                        _push4(`No. Telepon`);
-                      } else {
-                        return [
-                          createTextVNode("No. Telepon")
-                        ];
-                      }
-                    }),
-                    _: 1
-                  }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$e), {
-                    id: "recipient_phone",
-                    modelValue: form.value.recipient_phone,
-                    "onUpdate:modelValue": ($event) => form.value.recipient_phone = $event,
-                    placeholder: "08xxxxxxxxxx"
-                  }, null, _parent3, _scopeId2));
-                  _push3(`</div></div><div class="space-y-2"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "address_line1" }, {
-                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                      if (_push4) {
-                        _push4(`Alamat Lengkap`);
-                      } else {
-                        return [
-                          createTextVNode("Alamat Lengkap")
-                        ];
-                      }
-                    }),
-                    _: 1
-                  }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$e), {
-                    id: "address_line1",
-                    modelValue: form.value.address_line1,
-                    "onUpdate:modelValue": ($event) => form.value.address_line1 = $event,
-                    placeholder: "Jalan, nomor rumah, RT/RW"
-                  }, null, _parent3, _scopeId2));
-                  _push3(`</div><div class="grid grid-cols-2 gap-4"${_scopeId2}><div class="space-y-2"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "province" }, {
-                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                      if (_push4) {
-                        _push4(`Provinsi`);
-                      } else {
-                        return [
-                          createTextVNode("Provinsi")
-                        ];
-                      }
-                    }),
-                    _: 1
-                  }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$f), {
-                    modelValue: form.value.province_id,
-                    "onUpdate:modelValue": ($event) => form.value.province_id = $event,
-                    disabled: loadingProvinces.value
-                  }, {
-                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                      if (_push4) {
-                        _push4(ssrRenderComponent(unref(_sfc_main$g), { id: "province" }, {
-                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
-                            if (_push5) {
-                              _push5(ssrRenderComponent(unref(_sfc_main$h), {
-                                placeholder: loadingProvinces.value ? "Memuat provinsi..." : "Pilih provinsi"
-                              }, null, _parent5, _scopeId4));
-                            } else {
-                              return [
-                                createVNode(unref(_sfc_main$h), {
-                                  placeholder: loadingProvinces.value ? "Memuat provinsi..." : "Pilih provinsi"
-                                }, null, 8, ["placeholder"])
-                              ];
-                            }
-                          }),
-                          _: 1
-                        }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$i), null, {
-                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
-                            if (_push5) {
-                              _push5(`<!--[-->`);
-                              ssrRenderList(validProvinces.value, (province) => {
-                                _push5(ssrRenderComponent(unref(_sfc_main$j), {
-                                  key: province.id,
-                                  value: String(province.id)
-                                }, {
-                                  default: withCtx((_5, _push6, _parent6, _scopeId5) => {
-                                    if (_push6) {
-                                      _push6(`${ssrInterpolate(province.name)}`);
-                                    } else {
-                                      return [
-                                        createTextVNode(toDisplayString(province.name), 1)
-                                      ];
-                                    }
-                                  }),
-                                  _: 2
-                                }, _parent5, _scopeId4));
-                              });
-                              _push5(`<!--]-->`);
-                            } else {
-                              return [
-                                (openBlock(true), createBlock(Fragment, null, renderList(validProvinces.value, (province) => {
-                                  return openBlock(), createBlock(unref(_sfc_main$j), {
-                                    key: province.id,
-                                    value: String(province.id)
-                                  }, {
-                                    default: withCtx(() => [
-                                      createTextVNode(toDisplayString(province.name), 1)
-                                    ]),
-                                    _: 2
-                                  }, 1032, ["value"]);
-                                }), 128))
-                              ];
-                            }
-                          }),
-                          _: 1
-                        }, _parent4, _scopeId3));
-                      } else {
-                        return [
-                          createVNode(unref(_sfc_main$g), { id: "province" }, {
-                            default: withCtx(() => [
-                              createVNode(unref(_sfc_main$h), {
-                                placeholder: loadingProvinces.value ? "Memuat provinsi..." : "Pilih provinsi"
-                              }, null, 8, ["placeholder"])
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(_sfc_main$i), null, {
-                            default: withCtx(() => [
-                              (openBlock(true), createBlock(Fragment, null, renderList(validProvinces.value, (province) => {
-                                return openBlock(), createBlock(unref(_sfc_main$j), {
-                                  key: province.id,
-                                  value: String(province.id)
-                                }, {
-                                  default: withCtx(() => [
-                                    createTextVNode(toDisplayString(province.name), 1)
-                                  ]),
-                                  _: 2
-                                }, 1032, ["value"]);
-                              }), 128))
-                            ]),
-                            _: 1
-                          })
-                        ];
-                      }
-                    }),
-                    _: 1
-                  }, _parent3, _scopeId2));
-                  _push3(`</div><div class="space-y-2"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "city" }, {
-                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                      if (_push4) {
-                        _push4(`Kota/Kabupaten`);
-                      } else {
-                        return [
-                          createTextVNode("Kota/Kabupaten")
-                        ];
-                      }
-                    }),
-                    _: 1
-                  }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$f), {
-                    modelValue: form.value.city_id,
-                    "onUpdate:modelValue": ($event) => form.value.city_id = $event,
-                    disabled: loadingCities.value || !form.value.province_id
-                  }, {
-                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                      if (_push4) {
-                        _push4(ssrRenderComponent(unref(_sfc_main$g), { id: "city" }, {
-                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
-                            if (_push5) {
-                              _push5(ssrRenderComponent(unref(_sfc_main$h), {
-                                placeholder: loadingCities.value ? "Memuat kota..." : !form.value.province_id ? "Pilih provinsi terlebih dahulu" : "Pilih kota"
-                              }, null, _parent5, _scopeId4));
-                            } else {
-                              return [
-                                createVNode(unref(_sfc_main$h), {
-                                  placeholder: loadingCities.value ? "Memuat kota..." : !form.value.province_id ? "Pilih provinsi terlebih dahulu" : "Pilih kota"
-                                }, null, 8, ["placeholder"])
-                              ];
-                            }
-                          }),
-                          _: 1
-                        }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$i), null, {
-                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
-                            if (_push5) {
-                              _push5(`<!--[-->`);
-                              ssrRenderList(validCities.value, (city) => {
-                                _push5(ssrRenderComponent(unref(_sfc_main$j), {
-                                  key: city.id,
-                                  value: String(city.id)
-                                }, {
-                                  default: withCtx((_5, _push6, _parent6, _scopeId5) => {
-                                    if (_push6) {
-                                      _push6(`${ssrInterpolate(city.type)} ${ssrInterpolate(city.name)}`);
-                                    } else {
-                                      return [
-                                        createTextVNode(toDisplayString(city.type) + " " + toDisplayString(city.name), 1)
-                                      ];
-                                    }
-                                  }),
-                                  _: 2
-                                }, _parent5, _scopeId4));
-                              });
-                              _push5(`<!--]-->`);
-                            } else {
-                              return [
-                                (openBlock(true), createBlock(Fragment, null, renderList(validCities.value, (city) => {
-                                  return openBlock(), createBlock(unref(_sfc_main$j), {
-                                    key: city.id,
-                                    value: String(city.id)
-                                  }, {
-                                    default: withCtx(() => [
-                                      createTextVNode(toDisplayString(city.type) + " " + toDisplayString(city.name), 1)
-                                    ]),
-                                    _: 2
-                                  }, 1032, ["value"]);
-                                }), 128))
-                              ];
-                            }
-                          }),
-                          _: 1
-                        }, _parent4, _scopeId3));
-                      } else {
-                        return [
-                          createVNode(unref(_sfc_main$g), { id: "city" }, {
-                            default: withCtx(() => [
-                              createVNode(unref(_sfc_main$h), {
-                                placeholder: loadingCities.value ? "Memuat kota..." : !form.value.province_id ? "Pilih provinsi terlebih dahulu" : "Pilih kota"
-                              }, null, 8, ["placeholder"])
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(_sfc_main$i), null, {
-                            default: withCtx(() => [
-                              (openBlock(true), createBlock(Fragment, null, renderList(validCities.value, (city) => {
-                                return openBlock(), createBlock(unref(_sfc_main$j), {
-                                  key: city.id,
-                                  value: String(city.id)
-                                }, {
-                                  default: withCtx(() => [
-                                    createTextVNode(toDisplayString(city.type) + " " + toDisplayString(city.name), 1)
-                                  ]),
-                                  _: 2
-                                }, 1032, ["value"]);
-                              }), 128))
-                            ]),
-                            _: 1
-                          })
-                        ];
-                      }
-                    }),
-                    _: 1
-                  }, _parent3, _scopeId2));
-                  _push3(`</div></div><div class="space-y-2"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "postal_code" }, {
-                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                      if (_push4) {
-                        _push4(`Kode Pos`);
-                      } else {
-                        return [
-                          createTextVNode("Kode Pos")
-                        ];
-                      }
-                    }),
-                    _: 1
-                  }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$e), {
-                    id: "postal_code",
-                    modelValue: form.value.postal_code,
-                    "onUpdate:modelValue": ($event) => form.value.postal_code = $event,
-                    placeholder: "12345"
-                  }, null, _parent3, _scopeId2));
-                  _push3(`</div></div></div>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$c), null, null, _parent3, _scopeId2));
-                  _push3(`<div class="space-y-4"${_scopeId2}><div class="flex items-center gap-2 text-sm font-medium"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(Truck), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
-                  _push3(`<span${_scopeId2}>Metode Pengiriman</span></div>`);
-                  if (loadingShipping.value) {
+                  _push3(`<span${_scopeId2}>Metode Pengiriman</span></div><div class="space-y-2"${_scopeId2}><div class="text-sm font-medium uppercase text-muted-foreground"${_scopeId2}> Ambil di Tempat </div><div class="${ssrRenderClass([{
+                    "border-primary bg-primary/10": isPickUpSelected.value,
+                    "hover:bg-muted": !isPickUpSelected.value
+                  }, "flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors"])}"${_scopeId2}><div class="flex-shrink-0"${_scopeId2}><div class="${ssrRenderClass([{
+                    "border-primary bg-primary": isPickUpSelected.value,
+                    "border-muted-foreground": !isPickUpSelected.value
+                  }, "flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors"])}"${_scopeId2}>`);
+                  if (isPickUpSelected.value) {
+                    _push3(`<div class="h-2 w-2 rounded-full bg-primary-foreground"${_scopeId2}></div>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`</div></div><div class="flex-1"${_scopeId2}><div class="flex items-start justify-between"${_scopeId2}><div${_scopeId2}><div class="font-medium"${_scopeId2}>Pick Up</div><div class="text-sm text-muted-foreground"${_scopeId2}> Ambil pesanan langsung di lokasi kami </div></div><div class="font-semibold text-green-600"${_scopeId2}> Gratis </div></div></div></div></div>`);
+                  if (loadingShipping.value && !isPickUpSelected.value) {
                     _push3(`<div class="flex items-center justify-center py-8"${_scopeId2}>`);
                     _push3(ssrRenderComponent(unref(Loader2), { class: "h-6 w-6 animate-spin text-muted-foreground" }, null, _parent3, _scopeId2));
                     _push3(`</div>`);
-                  } else if (shippingMethods.value.length > 0) {
+                  } else if (shippingMethods.value.length > 0 && !isPickUpSelected.value) {
                     _push3(`<div class="space-y-3"${_scopeId2}><!--[-->`);
                     ssrRenderList(shippingMethods.value, (courier) => {
                       _push3(`<div class="space-y-2"${_scopeId2}><div class="text-sm font-medium uppercase"${_scopeId2}>${ssrInterpolate(courier.name)}</div><!--[-->`);
@@ -1160,12 +889,352 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       _push3(`<!--]--></div>`);
                     });
                     _push3(`<!--]--></div>`);
-                  } else if (form.value.city_id) {
-                    _push3(`<div class="py-8 text-center text-muted-foreground"${_scopeId2}> Tidak ada metode pengiriman tersedia </div>`);
+                  } else if (form.value.city_id && !isPickUpSelected.value) {
+                    _push3(`<div class="py-4 text-center text-sm text-muted-foreground"${_scopeId2}> Tidak ada kurir tersedia untuk lokasi ini. Gunakan Pick Up. </div>`);
+                  } else if (!isPickUpSelected.value) {
+                    _push3(`<div class="py-4 text-center text-sm text-muted-foreground"${_scopeId2}> Isi alamat pengiriman di bawah untuk melihat opsi kurir lainnya </div>`);
                   } else {
-                    _push3(`<div class="py-8 text-center text-muted-foreground"${_scopeId2}> Pilih alamat pengiriman untuk melihat metode pengiriman </div>`);
+                    _push3(`<!---->`);
                   }
                   _push3(`</div>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$c), null, null, _parent3, _scopeId2));
+                  if (isPickUpSelected.value) {
+                    _push3(`<div class="space-y-4"${_scopeId2}><div class="flex items-center gap-2 text-sm font-medium"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(MapPin), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
+                    _push3(`<span${_scopeId2}>Informasi Penerima</span></div><div class="grid grid-cols-2 gap-4"${_scopeId2}><div class="space-y-2"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "recipient_name" }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(`Nama Penerima`);
+                        } else {
+                          return [
+                            createTextVNode("Nama Penerima")
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(ssrRenderComponent(unref(_sfc_main$e), {
+                      id: "recipient_name",
+                      modelValue: form.value.recipient_name,
+                      "onUpdate:modelValue": ($event) => form.value.recipient_name = $event,
+                      placeholder: "Nama lengkap"
+                    }, null, _parent3, _scopeId2));
+                    _push3(`</div><div class="space-y-2"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "recipient_phone" }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(`No. Telepon`);
+                        } else {
+                          return [
+                            createTextVNode("No. Telepon")
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(ssrRenderComponent(unref(_sfc_main$e), {
+                      id: "recipient_phone",
+                      modelValue: form.value.recipient_phone,
+                      "onUpdate:modelValue": ($event) => form.value.recipient_phone = $event,
+                      placeholder: "08xxxxxxxxxx"
+                    }, null, _parent3, _scopeId2));
+                    _push3(`</div></div></div>`);
+                  } else {
+                    _push3(`<div class="space-y-4"${_scopeId2}><div class="flex items-center gap-2 text-sm font-medium"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(MapPin), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
+                    _push3(`<span${_scopeId2}>Alamat Pengiriman</span></div><div class="space-y-4"${_scopeId2}><div class="grid grid-cols-2 gap-4"${_scopeId2}><div class="space-y-2"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "recipient_name" }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(`Nama Penerima`);
+                        } else {
+                          return [
+                            createTextVNode("Nama Penerima")
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(ssrRenderComponent(unref(_sfc_main$e), {
+                      id: "recipient_name",
+                      modelValue: form.value.recipient_name,
+                      "onUpdate:modelValue": ($event) => form.value.recipient_name = $event,
+                      placeholder: "Nama lengkap"
+                    }, null, _parent3, _scopeId2));
+                    _push3(`</div><div class="space-y-2"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "recipient_phone" }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(`No. Telepon`);
+                        } else {
+                          return [
+                            createTextVNode("No. Telepon")
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(ssrRenderComponent(unref(_sfc_main$e), {
+                      id: "recipient_phone",
+                      modelValue: form.value.recipient_phone,
+                      "onUpdate:modelValue": ($event) => form.value.recipient_phone = $event,
+                      placeholder: "08xxxxxxxxxx"
+                    }, null, _parent3, _scopeId2));
+                    _push3(`</div></div><div class="space-y-2"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "address_line1" }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(`Alamat Lengkap`);
+                        } else {
+                          return [
+                            createTextVNode("Alamat Lengkap")
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(ssrRenderComponent(unref(_sfc_main$e), {
+                      id: "address_line1",
+                      modelValue: form.value.address_line1,
+                      "onUpdate:modelValue": ($event) => form.value.address_line1 = $event,
+                      placeholder: "Jalan, nomor rumah, RT/RW"
+                    }, null, _parent3, _scopeId2));
+                    _push3(`</div><div class="grid grid-cols-2 gap-4"${_scopeId2}><div class="space-y-2"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "province" }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(`Provinsi`);
+                        } else {
+                          return [
+                            createTextVNode("Provinsi")
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(ssrRenderComponent(unref(_sfc_main$f), {
+                      modelValue: form.value.province_id,
+                      "onUpdate:modelValue": ($event) => form.value.province_id = $event,
+                      disabled: loadingProvinces.value
+                    }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(ssrRenderComponent(unref(_sfc_main$g), { id: "province" }, {
+                            default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                              if (_push5) {
+                                _push5(ssrRenderComponent(unref(_sfc_main$h), {
+                                  placeholder: loadingProvinces.value ? "Memuat provinsi..." : "Pilih provinsi"
+                                }, null, _parent5, _scopeId4));
+                              } else {
+                                return [
+                                  createVNode(unref(_sfc_main$h), {
+                                    placeholder: loadingProvinces.value ? "Memuat provinsi..." : "Pilih provinsi"
+                                  }, null, 8, ["placeholder"])
+                                ];
+                              }
+                            }),
+                            _: 1
+                          }, _parent4, _scopeId3));
+                          _push4(ssrRenderComponent(unref(_sfc_main$i), null, {
+                            default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                              if (_push5) {
+                                _push5(`<!--[-->`);
+                                ssrRenderList(validProvinces.value, (province) => {
+                                  _push5(ssrRenderComponent(unref(_sfc_main$j), {
+                                    key: province.id,
+                                    value: String(province.id)
+                                  }, {
+                                    default: withCtx((_5, _push6, _parent6, _scopeId5) => {
+                                      if (_push6) {
+                                        _push6(`${ssrInterpolate(province.name)}`);
+                                      } else {
+                                        return [
+                                          createTextVNode(toDisplayString(province.name), 1)
+                                        ];
+                                      }
+                                    }),
+                                    _: 2
+                                  }, _parent5, _scopeId4));
+                                });
+                                _push5(`<!--]-->`);
+                              } else {
+                                return [
+                                  (openBlock(true), createBlock(Fragment, null, renderList(validProvinces.value, (province) => {
+                                    return openBlock(), createBlock(unref(_sfc_main$j), {
+                                      key: province.id,
+                                      value: String(province.id)
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode(toDisplayString(province.name), 1)
+                                      ]),
+                                      _: 2
+                                    }, 1032, ["value"]);
+                                  }), 128))
+                                ];
+                              }
+                            }),
+                            _: 1
+                          }, _parent4, _scopeId3));
+                        } else {
+                          return [
+                            createVNode(unref(_sfc_main$g), { id: "province" }, {
+                              default: withCtx(() => [
+                                createVNode(unref(_sfc_main$h), {
+                                  placeholder: loadingProvinces.value ? "Memuat provinsi..." : "Pilih provinsi"
+                                }, null, 8, ["placeholder"])
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(_sfc_main$i), null, {
+                              default: withCtx(() => [
+                                (openBlock(true), createBlock(Fragment, null, renderList(validProvinces.value, (province) => {
+                                  return openBlock(), createBlock(unref(_sfc_main$j), {
+                                    key: province.id,
+                                    value: String(province.id)
+                                  }, {
+                                    default: withCtx(() => [
+                                      createTextVNode(toDisplayString(province.name), 1)
+                                    ]),
+                                    _: 2
+                                  }, 1032, ["value"]);
+                                }), 128))
+                              ]),
+                              _: 1
+                            })
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(`</div><div class="space-y-2"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "city" }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(`Kota/Kabupaten`);
+                        } else {
+                          return [
+                            createTextVNode("Kota/Kabupaten")
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(ssrRenderComponent(unref(_sfc_main$f), {
+                      modelValue: form.value.city_id,
+                      "onUpdate:modelValue": ($event) => form.value.city_id = $event,
+                      disabled: loadingCities.value || !form.value.province_id
+                    }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(ssrRenderComponent(unref(_sfc_main$g), { id: "city" }, {
+                            default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                              if (_push5) {
+                                _push5(ssrRenderComponent(unref(_sfc_main$h), {
+                                  placeholder: loadingCities.value ? "Memuat kota..." : !form.value.province_id ? "Pilih provinsi terlebih dahulu" : "Pilih kota"
+                                }, null, _parent5, _scopeId4));
+                              } else {
+                                return [
+                                  createVNode(unref(_sfc_main$h), {
+                                    placeholder: loadingCities.value ? "Memuat kota..." : !form.value.province_id ? "Pilih provinsi terlebih dahulu" : "Pilih kota"
+                                  }, null, 8, ["placeholder"])
+                                ];
+                              }
+                            }),
+                            _: 1
+                          }, _parent4, _scopeId3));
+                          _push4(ssrRenderComponent(unref(_sfc_main$i), null, {
+                            default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                              if (_push5) {
+                                _push5(`<!--[-->`);
+                                ssrRenderList(validCities.value, (city) => {
+                                  _push5(ssrRenderComponent(unref(_sfc_main$j), {
+                                    key: city.id,
+                                    value: String(city.id)
+                                  }, {
+                                    default: withCtx((_5, _push6, _parent6, _scopeId5) => {
+                                      if (_push6) {
+                                        _push6(`${ssrInterpolate(city.type)} ${ssrInterpolate(city.name)}`);
+                                      } else {
+                                        return [
+                                          createTextVNode(toDisplayString(city.type) + " " + toDisplayString(city.name), 1)
+                                        ];
+                                      }
+                                    }),
+                                    _: 2
+                                  }, _parent5, _scopeId4));
+                                });
+                                _push5(`<!--]-->`);
+                              } else {
+                                return [
+                                  (openBlock(true), createBlock(Fragment, null, renderList(validCities.value, (city) => {
+                                    return openBlock(), createBlock(unref(_sfc_main$j), {
+                                      key: city.id,
+                                      value: String(city.id)
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode(toDisplayString(city.type) + " " + toDisplayString(city.name), 1)
+                                      ]),
+                                      _: 2
+                                    }, 1032, ["value"]);
+                                  }), 128))
+                                ];
+                              }
+                            }),
+                            _: 1
+                          }, _parent4, _scopeId3));
+                        } else {
+                          return [
+                            createVNode(unref(_sfc_main$g), { id: "city" }, {
+                              default: withCtx(() => [
+                                createVNode(unref(_sfc_main$h), {
+                                  placeholder: loadingCities.value ? "Memuat kota..." : !form.value.province_id ? "Pilih provinsi terlebih dahulu" : "Pilih kota"
+                                }, null, 8, ["placeholder"])
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(_sfc_main$i), null, {
+                              default: withCtx(() => [
+                                (openBlock(true), createBlock(Fragment, null, renderList(validCities.value, (city) => {
+                                  return openBlock(), createBlock(unref(_sfc_main$j), {
+                                    key: city.id,
+                                    value: String(city.id)
+                                  }, {
+                                    default: withCtx(() => [
+                                      createTextVNode(toDisplayString(city.type) + " " + toDisplayString(city.name), 1)
+                                    ]),
+                                    _: 2
+                                  }, 1032, ["value"]);
+                                }), 128))
+                              ]),
+                              _: 1
+                            })
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(`</div></div><div class="space-y-2"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(_sfc_main$d), { for: "postal_code" }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(`Kode Pos`);
+                        } else {
+                          return [
+                            createTextVNode("Kode Pos")
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(ssrRenderComponent(unref(_sfc_main$e), {
+                      id: "postal_code",
+                      modelValue: form.value.postal_code,
+                      "onUpdate:modelValue": ($event) => form.value.postal_code = $event,
+                      placeholder: "12345"
+                    }, null, _parent3, _scopeId2));
+                    _push3(`</div></div></div>`);
+                  }
                   _push3(ssrRenderComponent(unref(_sfc_main$c), null, null, _parent3, _scopeId2));
                   _push3(`<div class="space-y-4"${_scopeId2}><div class="flex items-center gap-2 text-sm font-medium"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(Wallet), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
@@ -1599,6 +1668,147 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       isActiveCustomer.value ? (openBlock(), createBlock(unref(_sfc_main$c), { key: 3 })) : createCommentVNode("", true),
                       createVNode("div", { class: "space-y-4" }, [
                         createVNode("div", { class: "flex items-center gap-2 text-sm font-medium" }, [
+                          createVNode(unref(Truck), { class: "h-4 w-4" }),
+                          createVNode("span", null, "Metode Pengiriman")
+                        ]),
+                        createVNode("div", { class: "space-y-2" }, [
+                          createVNode("div", { class: "text-sm font-medium uppercase text-muted-foreground" }, " Ambil di Tempat "),
+                          createVNode("div", {
+                            class: ["flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors", {
+                              "border-primary bg-primary/10": isPickUpSelected.value,
+                              "hover:bg-muted": !isPickUpSelected.value
+                            }],
+                            onClick: selectPickUp
+                          }, [
+                            createVNode("div", { class: "flex-shrink-0" }, [
+                              createVNode("div", {
+                                class: ["flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors", {
+                                  "border-primary bg-primary": isPickUpSelected.value,
+                                  "border-muted-foreground": !isPickUpSelected.value
+                                }]
+                              }, [
+                                isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                                  key: 0,
+                                  class: "h-2 w-2 rounded-full bg-primary-foreground"
+                                })) : createCommentVNode("", true)
+                              ], 2)
+                            ]),
+                            createVNode("div", { class: "flex-1" }, [
+                              createVNode("div", { class: "flex items-start justify-between" }, [
+                                createVNode("div", null, [
+                                  createVNode("div", { class: "font-medium" }, "Pick Up"),
+                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Ambil pesanan langsung di lokasi kami ")
+                                ]),
+                                createVNode("div", { class: "font-semibold text-green-600" }, " Gratis ")
+                              ])
+                            ])
+                          ], 2)
+                        ]),
+                        loadingShipping.value && !isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                          key: 0,
+                          class: "flex items-center justify-center py-8"
+                        }, [
+                          createVNode(unref(Loader2), { class: "h-6 w-6 animate-spin text-muted-foreground" })
+                        ])) : shippingMethods.value.length > 0 && !isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                          key: 1,
+                          class: "space-y-3"
+                        }, [
+                          (openBlock(true), createBlock(Fragment, null, renderList(shippingMethods.value, (courier) => {
+                            return openBlock(), createBlock("div", {
+                              key: courier.code,
+                              class: "space-y-2"
+                            }, [
+                              createVNode("div", { class: "text-sm font-medium uppercase" }, toDisplayString(courier.name), 1),
+                              (openBlock(true), createBlock(Fragment, null, renderList(courier.costs, (service) => {
+                                return openBlock(), createBlock("div", {
+                                  key: `${courier.code}-${service.service}`,
+                                  class: ["flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors", {
+                                    "border-primary bg-primary/10": form.value.shipping_service === service.service && form.value.shipping_courier === courier.code,
+                                    "hover:bg-muted": !(form.value.shipping_service === service.service && form.value.shipping_courier === courier.code)
+                                  }],
+                                  onClick: ($event) => selectShippingService(courier, service)
+                                }, [
+                                  createVNode("div", { class: "flex-shrink-0" }, [
+                                    createVNode("div", {
+                                      class: ["flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors", {
+                                        "border-primary bg-primary": form.value.shipping_service === service.service && form.value.shipping_courier === courier.code,
+                                        "border-muted-foreground": !(form.value.shipping_service === service.service && form.value.shipping_courier === courier.code)
+                                      }]
+                                    }, [
+                                      form.value.shipping_service === service.service && form.value.shipping_courier === courier.code ? (openBlock(), createBlock("div", {
+                                        key: 0,
+                                        class: "h-2 w-2 rounded-full bg-primary-foreground"
+                                      })) : createCommentVNode("", true)
+                                    ], 2)
+                                  ]),
+                                  createVNode("div", { class: "flex-1" }, [
+                                    createVNode("div", { class: "flex items-start justify-between" }, [
+                                      createVNode("div", null, [
+                                        createVNode("div", { class: "font-medium" }, toDisplayString(service.service), 1),
+                                        createVNode("div", { class: "text-sm text-muted-foreground" }, toDisplayString(service.description), 1),
+                                        createVNode("div", { class: "text-sm text-muted-foreground" }, " Estimasi: " + toDisplayString(service.cost[0].etd) + " hari ", 1)
+                                      ]),
+                                      createVNode("div", { class: "font-semibold" }, toDisplayString(formatCurrency(
+                                        service.cost[0].value
+                                      )), 1)
+                                    ])
+                                  ])
+                                ], 10, ["onClick"]);
+                              }), 128))
+                            ]);
+                          }), 128))
+                        ])) : form.value.city_id && !isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                          key: 2,
+                          class: "py-4 text-center text-sm text-muted-foreground"
+                        }, " Tidak ada kurir tersedia untuk lokasi ini. Gunakan Pick Up. ")) : !isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                          key: 3,
+                          class: "py-4 text-center text-sm text-muted-foreground"
+                        }, " Isi alamat pengiriman di bawah untuk melihat opsi kurir lainnya ")) : createCommentVNode("", true)
+                      ]),
+                      createVNode(unref(_sfc_main$c)),
+                      isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                        key: 4,
+                        class: "space-y-4"
+                      }, [
+                        createVNode("div", { class: "flex items-center gap-2 text-sm font-medium" }, [
+                          createVNode(unref(MapPin), { class: "h-4 w-4" }),
+                          createVNode("span", null, "Informasi Penerima")
+                        ]),
+                        createVNode("div", { class: "grid grid-cols-2 gap-4" }, [
+                          createVNode("div", { class: "space-y-2" }, [
+                            createVNode(unref(_sfc_main$d), { for: "recipient_name" }, {
+                              default: withCtx(() => [
+                                createTextVNode("Nama Penerima")
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(_sfc_main$e), {
+                              id: "recipient_name",
+                              modelValue: form.value.recipient_name,
+                              "onUpdate:modelValue": ($event) => form.value.recipient_name = $event,
+                              placeholder: "Nama lengkap"
+                            }, null, 8, ["modelValue", "onUpdate:modelValue"])
+                          ]),
+                          createVNode("div", { class: "space-y-2" }, [
+                            createVNode(unref(_sfc_main$d), { for: "recipient_phone" }, {
+                              default: withCtx(() => [
+                                createTextVNode("No. Telepon")
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(_sfc_main$e), {
+                              id: "recipient_phone",
+                              modelValue: form.value.recipient_phone,
+                              "onUpdate:modelValue": ($event) => form.value.recipient_phone = $event,
+                              placeholder: "08xxxxxxxxxx"
+                            }, null, 8, ["modelValue", "onUpdate:modelValue"])
+                          ])
+                        ])
+                      ])) : (openBlock(), createBlock("div", {
+                        key: 5,
+                        class: "space-y-4"
+                      }, [
+                        createVNode("div", { class: "flex items-center gap-2 text-sm font-medium" }, [
                           createVNode(unref(MapPin), { class: "h-4 w-4" }),
                           createVNode("span", null, "Alamat Pengiriman")
                         ]),
@@ -1746,74 +1956,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             }, null, 8, ["modelValue", "onUpdate:modelValue"])
                           ])
                         ])
-                      ]),
-                      createVNode(unref(_sfc_main$c)),
-                      createVNode("div", { class: "space-y-4" }, [
-                        createVNode("div", { class: "flex items-center gap-2 text-sm font-medium" }, [
-                          createVNode(unref(Truck), { class: "h-4 w-4" }),
-                          createVNode("span", null, "Metode Pengiriman")
-                        ]),
-                        loadingShipping.value ? (openBlock(), createBlock("div", {
-                          key: 0,
-                          class: "flex items-center justify-center py-8"
-                        }, [
-                          createVNode(unref(Loader2), { class: "h-6 w-6 animate-spin text-muted-foreground" })
-                        ])) : shippingMethods.value.length > 0 ? (openBlock(), createBlock("div", {
-                          key: 1,
-                          class: "space-y-3"
-                        }, [
-                          (openBlock(true), createBlock(Fragment, null, renderList(shippingMethods.value, (courier) => {
-                            return openBlock(), createBlock("div", {
-                              key: courier.code,
-                              class: "space-y-2"
-                            }, [
-                              createVNode("div", { class: "text-sm font-medium uppercase" }, toDisplayString(courier.name), 1),
-                              (openBlock(true), createBlock(Fragment, null, renderList(courier.costs, (service) => {
-                                return openBlock(), createBlock("div", {
-                                  key: `${courier.code}-${service.service}`,
-                                  class: ["flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors", {
-                                    "border-primary bg-primary/10": form.value.shipping_service === service.service && form.value.shipping_courier === courier.code,
-                                    "hover:bg-muted": !(form.value.shipping_service === service.service && form.value.shipping_courier === courier.code)
-                                  }],
-                                  onClick: ($event) => selectShippingService(courier, service)
-                                }, [
-                                  createVNode("div", { class: "flex-shrink-0" }, [
-                                    createVNode("div", {
-                                      class: ["flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors", {
-                                        "border-primary bg-primary": form.value.shipping_service === service.service && form.value.shipping_courier === courier.code,
-                                        "border-muted-foreground": !(form.value.shipping_service === service.service && form.value.shipping_courier === courier.code)
-                                      }]
-                                    }, [
-                                      form.value.shipping_service === service.service && form.value.shipping_courier === courier.code ? (openBlock(), createBlock("div", {
-                                        key: 0,
-                                        class: "h-2 w-2 rounded-full bg-primary-foreground"
-                                      })) : createCommentVNode("", true)
-                                    ], 2)
-                                  ]),
-                                  createVNode("div", { class: "flex-1" }, [
-                                    createVNode("div", { class: "flex items-start justify-between" }, [
-                                      createVNode("div", null, [
-                                        createVNode("div", { class: "font-medium" }, toDisplayString(service.service), 1),
-                                        createVNode("div", { class: "text-sm text-muted-foreground" }, toDisplayString(service.description), 1),
-                                        createVNode("div", { class: "text-sm text-muted-foreground" }, " Estimasi: " + toDisplayString(service.cost[0].etd) + " hari ", 1)
-                                      ]),
-                                      createVNode("div", { class: "font-semibold" }, toDisplayString(formatCurrency(
-                                        service.cost[0].value
-                                      )), 1)
-                                    ])
-                                  ])
-                                ], 10, ["onClick"]);
-                              }), 128))
-                            ]);
-                          }), 128))
-                        ])) : form.value.city_id ? (openBlock(), createBlock("div", {
-                          key: 2,
-                          class: "py-8 text-center text-muted-foreground"
-                        }, " Tidak ada metode pengiriman tersedia ")) : (openBlock(), createBlock("div", {
-                          key: 3,
-                          class: "py-8 text-center text-muted-foreground"
-                        }, " Pilih alamat pengiriman untuk melihat metode pengiriman "))
-                      ]),
+                      ])),
                       createVNode(unref(_sfc_main$c)),
                       createVNode("div", { class: "space-y-4" }, [
                         createVNode("div", { class: "flex items-center gap-2 text-sm font-medium" }, [
@@ -2145,6 +2288,147 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     isActiveCustomer.value ? (openBlock(), createBlock(unref(_sfc_main$c), { key: 3 })) : createCommentVNode("", true),
                     createVNode("div", { class: "space-y-4" }, [
                       createVNode("div", { class: "flex items-center gap-2 text-sm font-medium" }, [
+                        createVNode(unref(Truck), { class: "h-4 w-4" }),
+                        createVNode("span", null, "Metode Pengiriman")
+                      ]),
+                      createVNode("div", { class: "space-y-2" }, [
+                        createVNode("div", { class: "text-sm font-medium uppercase text-muted-foreground" }, " Ambil di Tempat "),
+                        createVNode("div", {
+                          class: ["flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors", {
+                            "border-primary bg-primary/10": isPickUpSelected.value,
+                            "hover:bg-muted": !isPickUpSelected.value
+                          }],
+                          onClick: selectPickUp
+                        }, [
+                          createVNode("div", { class: "flex-shrink-0" }, [
+                            createVNode("div", {
+                              class: ["flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors", {
+                                "border-primary bg-primary": isPickUpSelected.value,
+                                "border-muted-foreground": !isPickUpSelected.value
+                              }]
+                            }, [
+                              isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                                key: 0,
+                                class: "h-2 w-2 rounded-full bg-primary-foreground"
+                              })) : createCommentVNode("", true)
+                            ], 2)
+                          ]),
+                          createVNode("div", { class: "flex-1" }, [
+                            createVNode("div", { class: "flex items-start justify-between" }, [
+                              createVNode("div", null, [
+                                createVNode("div", { class: "font-medium" }, "Pick Up"),
+                                createVNode("div", { class: "text-sm text-muted-foreground" }, " Ambil pesanan langsung di lokasi kami ")
+                              ]),
+                              createVNode("div", { class: "font-semibold text-green-600" }, " Gratis ")
+                            ])
+                          ])
+                        ], 2)
+                      ]),
+                      loadingShipping.value && !isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                        key: 0,
+                        class: "flex items-center justify-center py-8"
+                      }, [
+                        createVNode(unref(Loader2), { class: "h-6 w-6 animate-spin text-muted-foreground" })
+                      ])) : shippingMethods.value.length > 0 && !isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                        key: 1,
+                        class: "space-y-3"
+                      }, [
+                        (openBlock(true), createBlock(Fragment, null, renderList(shippingMethods.value, (courier) => {
+                          return openBlock(), createBlock("div", {
+                            key: courier.code,
+                            class: "space-y-2"
+                          }, [
+                            createVNode("div", { class: "text-sm font-medium uppercase" }, toDisplayString(courier.name), 1),
+                            (openBlock(true), createBlock(Fragment, null, renderList(courier.costs, (service) => {
+                              return openBlock(), createBlock("div", {
+                                key: `${courier.code}-${service.service}`,
+                                class: ["flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors", {
+                                  "border-primary bg-primary/10": form.value.shipping_service === service.service && form.value.shipping_courier === courier.code,
+                                  "hover:bg-muted": !(form.value.shipping_service === service.service && form.value.shipping_courier === courier.code)
+                                }],
+                                onClick: ($event) => selectShippingService(courier, service)
+                              }, [
+                                createVNode("div", { class: "flex-shrink-0" }, [
+                                  createVNode("div", {
+                                    class: ["flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors", {
+                                      "border-primary bg-primary": form.value.shipping_service === service.service && form.value.shipping_courier === courier.code,
+                                      "border-muted-foreground": !(form.value.shipping_service === service.service && form.value.shipping_courier === courier.code)
+                                    }]
+                                  }, [
+                                    form.value.shipping_service === service.service && form.value.shipping_courier === courier.code ? (openBlock(), createBlock("div", {
+                                      key: 0,
+                                      class: "h-2 w-2 rounded-full bg-primary-foreground"
+                                    })) : createCommentVNode("", true)
+                                  ], 2)
+                                ]),
+                                createVNode("div", { class: "flex-1" }, [
+                                  createVNode("div", { class: "flex items-start justify-between" }, [
+                                    createVNode("div", null, [
+                                      createVNode("div", { class: "font-medium" }, toDisplayString(service.service), 1),
+                                      createVNode("div", { class: "text-sm text-muted-foreground" }, toDisplayString(service.description), 1),
+                                      createVNode("div", { class: "text-sm text-muted-foreground" }, " Estimasi: " + toDisplayString(service.cost[0].etd) + " hari ", 1)
+                                    ]),
+                                    createVNode("div", { class: "font-semibold" }, toDisplayString(formatCurrency(
+                                      service.cost[0].value
+                                    )), 1)
+                                  ])
+                                ])
+                              ], 10, ["onClick"]);
+                            }), 128))
+                          ]);
+                        }), 128))
+                      ])) : form.value.city_id && !isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                        key: 2,
+                        class: "py-4 text-center text-sm text-muted-foreground"
+                      }, " Tidak ada kurir tersedia untuk lokasi ini. Gunakan Pick Up. ")) : !isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                        key: 3,
+                        class: "py-4 text-center text-sm text-muted-foreground"
+                      }, " Isi alamat pengiriman di bawah untuk melihat opsi kurir lainnya ")) : createCommentVNode("", true)
+                    ]),
+                    createVNode(unref(_sfc_main$c)),
+                    isPickUpSelected.value ? (openBlock(), createBlock("div", {
+                      key: 4,
+                      class: "space-y-4"
+                    }, [
+                      createVNode("div", { class: "flex items-center gap-2 text-sm font-medium" }, [
+                        createVNode(unref(MapPin), { class: "h-4 w-4" }),
+                        createVNode("span", null, "Informasi Penerima")
+                      ]),
+                      createVNode("div", { class: "grid grid-cols-2 gap-4" }, [
+                        createVNode("div", { class: "space-y-2" }, [
+                          createVNode(unref(_sfc_main$d), { for: "recipient_name" }, {
+                            default: withCtx(() => [
+                              createTextVNode("Nama Penerima")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(_sfc_main$e), {
+                            id: "recipient_name",
+                            modelValue: form.value.recipient_name,
+                            "onUpdate:modelValue": ($event) => form.value.recipient_name = $event,
+                            placeholder: "Nama lengkap"
+                          }, null, 8, ["modelValue", "onUpdate:modelValue"])
+                        ]),
+                        createVNode("div", { class: "space-y-2" }, [
+                          createVNode(unref(_sfc_main$d), { for: "recipient_phone" }, {
+                            default: withCtx(() => [
+                              createTextVNode("No. Telepon")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(_sfc_main$e), {
+                            id: "recipient_phone",
+                            modelValue: form.value.recipient_phone,
+                            "onUpdate:modelValue": ($event) => form.value.recipient_phone = $event,
+                            placeholder: "08xxxxxxxxxx"
+                          }, null, 8, ["modelValue", "onUpdate:modelValue"])
+                        ])
+                      ])
+                    ])) : (openBlock(), createBlock("div", {
+                      key: 5,
+                      class: "space-y-4"
+                    }, [
+                      createVNode("div", { class: "flex items-center gap-2 text-sm font-medium" }, [
                         createVNode(unref(MapPin), { class: "h-4 w-4" }),
                         createVNode("span", null, "Alamat Pengiriman")
                       ]),
@@ -2292,74 +2576,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["modelValue", "onUpdate:modelValue"])
                         ])
                       ])
-                    ]),
-                    createVNode(unref(_sfc_main$c)),
-                    createVNode("div", { class: "space-y-4" }, [
-                      createVNode("div", { class: "flex items-center gap-2 text-sm font-medium" }, [
-                        createVNode(unref(Truck), { class: "h-4 w-4" }),
-                        createVNode("span", null, "Metode Pengiriman")
-                      ]),
-                      loadingShipping.value ? (openBlock(), createBlock("div", {
-                        key: 0,
-                        class: "flex items-center justify-center py-8"
-                      }, [
-                        createVNode(unref(Loader2), { class: "h-6 w-6 animate-spin text-muted-foreground" })
-                      ])) : shippingMethods.value.length > 0 ? (openBlock(), createBlock("div", {
-                        key: 1,
-                        class: "space-y-3"
-                      }, [
-                        (openBlock(true), createBlock(Fragment, null, renderList(shippingMethods.value, (courier) => {
-                          return openBlock(), createBlock("div", {
-                            key: courier.code,
-                            class: "space-y-2"
-                          }, [
-                            createVNode("div", { class: "text-sm font-medium uppercase" }, toDisplayString(courier.name), 1),
-                            (openBlock(true), createBlock(Fragment, null, renderList(courier.costs, (service) => {
-                              return openBlock(), createBlock("div", {
-                                key: `${courier.code}-${service.service}`,
-                                class: ["flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors", {
-                                  "border-primary bg-primary/10": form.value.shipping_service === service.service && form.value.shipping_courier === courier.code,
-                                  "hover:bg-muted": !(form.value.shipping_service === service.service && form.value.shipping_courier === courier.code)
-                                }],
-                                onClick: ($event) => selectShippingService(courier, service)
-                              }, [
-                                createVNode("div", { class: "flex-shrink-0" }, [
-                                  createVNode("div", {
-                                    class: ["flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors", {
-                                      "border-primary bg-primary": form.value.shipping_service === service.service && form.value.shipping_courier === courier.code,
-                                      "border-muted-foreground": !(form.value.shipping_service === service.service && form.value.shipping_courier === courier.code)
-                                    }]
-                                  }, [
-                                    form.value.shipping_service === service.service && form.value.shipping_courier === courier.code ? (openBlock(), createBlock("div", {
-                                      key: 0,
-                                      class: "h-2 w-2 rounded-full bg-primary-foreground"
-                                    })) : createCommentVNode("", true)
-                                  ], 2)
-                                ]),
-                                createVNode("div", { class: "flex-1" }, [
-                                  createVNode("div", { class: "flex items-start justify-between" }, [
-                                    createVNode("div", null, [
-                                      createVNode("div", { class: "font-medium" }, toDisplayString(service.service), 1),
-                                      createVNode("div", { class: "text-sm text-muted-foreground" }, toDisplayString(service.description), 1),
-                                      createVNode("div", { class: "text-sm text-muted-foreground" }, " Estimasi: " + toDisplayString(service.cost[0].etd) + " hari ", 1)
-                                    ]),
-                                    createVNode("div", { class: "font-semibold" }, toDisplayString(formatCurrency(
-                                      service.cost[0].value
-                                    )), 1)
-                                  ])
-                                ])
-                              ], 10, ["onClick"]);
-                            }), 128))
-                          ]);
-                        }), 128))
-                      ])) : form.value.city_id ? (openBlock(), createBlock("div", {
-                        key: 2,
-                        class: "py-8 text-center text-muted-foreground"
-                      }, " Tidak ada metode pengiriman tersedia ")) : (openBlock(), createBlock("div", {
-                        key: 3,
-                        class: "py-8 text-center text-muted-foreground"
-                      }, " Pilih alamat pengiriman untuk melihat metode pengiriman "))
-                    ]),
+                    ])),
                     createVNode(unref(_sfc_main$c)),
                     createVNode("div", { class: "space-y-4" }, [
                       createVNode("div", { class: "flex items-center gap-2 text-sm font-medium" }, [
