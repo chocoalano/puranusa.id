@@ -41,7 +41,7 @@ class DashboardController extends Controller
             ->map(function ($order) {
                 return [
                     'order_no' => $order->order_no,
-                    'customer_name' => $order->customer->name,
+                    'customer_name' => $order->customer?->name ?? 'Unknown',
                     'grand_total' => (float) $order->grand_total,
                     'status' => $order->status,
                     'created_at' => $order->created_at->toISOString(),
