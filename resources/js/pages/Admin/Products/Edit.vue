@@ -53,6 +53,7 @@ interface Product {
     b_matching: number | null;
     b_pairing: number | null;
     b_cashback: number | null;
+    b_retail: number | null;
     is_active: boolean;
     categories: Category[];
     media: ProductMedia[];
@@ -101,6 +102,7 @@ const formatFieldName = (field: string): string => {
         b_matching: 'Bonus Matching',
         b_pairing: 'Bonus Pairing',
         b_cashback: 'Bonus Cashback',
+        b_retail: 'Bonus Retail',
         is_active: 'Status Aktif',
         categories: 'Kategori',
         images: 'Gambar Produk',
@@ -163,6 +165,7 @@ const form = ref({
     b_matching: props.product.b_matching || 0,
     b_pairing: props.product.b_pairing || 0,
     b_cashback: props.product.b_cashback || 0,
+    b_retail: props.product.b_retail || 0,
     is_active: props.product.is_active,
     categories: props.product.categories.map((c) => c.id),
     images: [] as File[],
@@ -536,6 +539,15 @@ const submit = () => {
                                         min="0" placeholder="0.00" />
                                     <p v-if="errors.b_cashback" class="text-sm font-medium text-destructive">
                                         {{ errors.b_cashback }}
+                                    </p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label for="b_retail">Bonus Retail</Label>
+                                    <Input id="b_retail" v-model.number="form.b_retail" type="number" step="0.01"
+                                        min="0" placeholder="0.00" />
+                                    <p v-if="errors.b_retail" class="text-sm font-medium text-destructive">
+                                        {{ errors.b_retail }}
                                     </p>
                                 </div>
                             </div>

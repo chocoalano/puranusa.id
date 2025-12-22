@@ -52,7 +52,7 @@ class Product extends Model
         'length_mm',
         'width_mm',
         'height_mm',
-        'bv', 'b_sponsor', 'b_matching', 'b_pairing', 'b_cashback',
+        'bv', 'b_sponsor', 'b_matching', 'b_pairing', 'b_cashback', 'b_retail',
         'is_active',
     ];
 
@@ -71,6 +71,7 @@ class Product extends Model
             'b_matching' => 'decimal:2',
             'b_pairing' => 'decimal:2',
             'b_cashback' => 'decimal:2',
+            'b_retail' => 'decimal:2',
             'is_active' => 'boolean',
         ];
     }

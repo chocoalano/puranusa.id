@@ -503,10 +503,25 @@ class ProfileController extends Controller
      */
     private function buildBinaryTree($customer, int $maxDepth = 15): array
     {
-        // Check if customer has foot_left or foot_right
-        if (! $customer->foot_left || ! $customer->foot_right) {
+        // Check if customer has at least one child (foot_left OR foot_right)
+        // Also show tree if customer itself is the root even without children
+        if (! $customer->foot_left && ! $customer->foot_right) {
+            // Still return the root node so user can see their position and add children
             return [
-                'tree' => null,
+                'tree' => [
+                    'id' => $customer->id,
+                    'member_id' => $customer->id,
+                    'name' => $customer->name,
+                    'email' => $customer->email,
+                    'package_name' => $customer->package?->name ?? $customer->get_package_name(),
+                    'total_left' => $customer->total_left ?? 0,
+                    'total_right' => $customer->total_right ?? 0,
+                    'position' => null,
+                    'level' => 1,
+                    'status' => true, // Root is always active
+                    'left' => null,
+                    'right' => null,
+                ],
                 'totalDownlines' => 0,
                 'totalLeft' => 0,
                 'totalRight' => 0,

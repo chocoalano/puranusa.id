@@ -29,16 +29,83 @@ import {
     Search,
     Trash2,
     LogIn,
+    Wallet,
 } from 'lucide-vue-next';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Pagination from '@/components/Pagination.vue';
-import { index, show, edit, create, destroy } from '@/actions/App/Http/Controllers/Admin/CustomerController';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { index, show, edit, create, destroy, topUp, loginAsCustomer as loginAsCustomerAction } from '@/actions/App/Http/Controllers/Admin/CustomerController';
 import { toast } from 'vue-sonner';
+
+// Inject ewallet dialog state
+const injectDialog = ref({
+    open: false,
+    data: null as Customer | null,
+});
+
+const injectForm = useForm({
+    amount: '' as string | number,
+    description: '',
+});
+
+const openInjectDialog = (customer: Customer) => {
+    injectDialog.value = {
+        open: true,
+        data: customer,
+    };
+    injectForm.reset();
+    injectForm.clearErrors();
+    injectForm.amount = '';
+    injectForm.description = '';
+};
+
+const closeInjectDialog = () => {
+    injectDialog.value.open = false;
+    injectForm.reset();
+    injectForm.clearErrors();
+};
+
+const handleInject = () => {
+    if (!injectDialog.value.data) return;
+
+    const amount = Number(injectForm.amount);
+
+    // Validate amount before submitting
+    if (!amount || amount < 10000) {
+        toast.error('Jumlah minimal Rp 10.000');
+        return;
+    }
+
+    injectForm.post(topUp.url(injectDialog.value.data.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.success('Saldo berhasil ditambahkan');
+            closeInjectDialog();
+        },
+        onError: (errors) => {
+            if (errors.amount) {
+                toast.error(errors.amount);
+            } else {
+                toast.error('Gagal menambahkan saldo');
+            }
+        },
+    });
+};
+
+// Login as customer form
+const loginForm = useForm({});
 
 // Login as customer action
 const loginAsCustomer = (id: number, name: string) => {
-    const loginForm = useForm({});
-    loginForm.post(`/manage/customers/${id}/login-as`, {
+    loginForm.post(loginAsCustomerAction.url(id), {
         onSuccess: () => {
             toast.success(`Login sebagai ${name}`);
         },
@@ -251,6 +318,16 @@ const columns: ColumnDef<Customer>[] = [
                     {
                         variant: 'ghost',
                         size: 'icon',
+                        onClick: () => openInjectDialog(customer),
+                        title: 'Inject Ewallet',
+                    },
+                    () => h(Wallet, { class: 'h-4 w-4 text-green-600' })
+                ),
+                h(
+                    Button,
+                    {
+                        variant: 'ghost',
+                        size: 'icon',
                         onClick: () => loginAsCustomer(customer.id, customer.name),
                         title: 'Login sebagai customer',
                     },
@@ -419,5 +496,60 @@ const table = useVueTable({
             variant="destructive"
             @confirm="handleDelete"
         />
+
+        <!-- Inject Ewallet Dialog -->
+        <Dialog :open="injectDialog.open" @update:open="(val) => !val && closeInjectDialog()">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Inject Ewallet</DialogTitle>
+                    <DialogDescription>
+                        Tambahkan saldo ke ewallet {{ injectDialog.data?.name }} ({{ injectDialog.data?.ewallet_id }})
+                    </DialogDescription>
+                </DialogHeader>
+                <form @submit.prevent="handleInject" class="space-y-4">
+                    <div class="space-y-2">
+                        <Label for="amount">Jumlah (Rp)</Label>
+                        <Input
+                            id="amount"
+                            v-model.number="injectForm.amount"
+                            type="number"
+                            min="10000"
+                            step="1000"
+                            placeholder="Minimal Rp 10.000"
+                            required
+                        />
+                        <p v-if="injectForm.errors.amount" class="text-sm text-destructive">
+                            {{ injectForm.errors.amount }}
+                        </p>
+                    </div>
+                    <div class="space-y-2">
+                        <Label for="description">Keterangan (Opsional)</Label>
+                        <Input
+                            id="description"
+                            v-model="injectForm.description"
+                            type="text"
+                            placeholder="Contoh: Top up manual oleh admin"
+                        />
+                    </div>
+                    <DialogFooter class="gap-2 sm:gap-0">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            :disabled="injectForm.processing"
+                            @click="closeInjectDialog"
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            type="submit"
+                            :disabled="injectForm.processing || !injectForm.amount || Number(injectForm.amount) < 10000"
+                        >
+                            <Wallet class="mr-2 h-4 w-4" />
+                            {{ injectForm.processing ? 'Memproses...' : 'Tambahkan Saldo' }}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

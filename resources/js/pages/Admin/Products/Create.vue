@@ -61,6 +61,7 @@ const form = ref({
     b_matching: 0,
     b_pairing: 0,
     b_cashback: 0,
+    b_retail: 0,
     is_active: true,
     categories: [] as number[],
     images: [] as File[],
@@ -103,6 +104,7 @@ const formatFieldName = (field: string): string => {
         b_matching: 'Bonus Matching',
         b_pairing: 'Bonus Pairing',
         b_cashback: 'Bonus Cashback',
+        b_retail: 'Bonus Retail',
         is_active: 'Status Aktif',
         categories: 'Kategori',
         images: 'Gambar Produk',
@@ -479,6 +481,17 @@ const submit = () => {
                                 <Input
                                     id="b_cashback"
                                     v-model.number="form.b_cashback"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="0"
+                                />
+                            </div>
+                            <div class="space-y-2">
+                                <Label for="b_retail">Bonus Retail</Label>
+                                <Input
+                                    id="b_retail"
+                                    v-model.number="form.b_retail"
                                     type="number"
                                     min="0"
                                     step="0.01"

@@ -40,6 +40,7 @@ interface Product {
     b_matching: number | null;
     b_pairing: number | null;
     b_cashback: number | null;
+    b_retail: number | null;
     is_active: boolean;
     categories: Array<{ id: number; name: string }>;
 }
@@ -105,7 +106,7 @@ const handleSort = (column: string) => {
 };
 
 const totalBonus = (product: Product) => {
-    const bonus = (product.b_sponsor || 0) + (product.b_matching || 0) + (product.b_pairing || 0) + (product.b_cashback || 0);
+    const bonus = (product.b_sponsor || 0) + (product.b_matching || 0) + (product.b_pairing || 0) + (product.b_cashback || 0) + (product.b_retail || 0);
     return bonus > 0 ? formatCurrency(bonus) : '-';
 };
 
@@ -209,6 +210,12 @@ const deleteProduct = (id: number) => {
                             </TableHead>
                             <TableHead>Total Bonus</TableHead>
                             <TableHead>
+                                <Button variant="ghost" @click="handleSort('b_retail')" class="flex items-center gap-1 p-0 h-auto">
+                                    B. Retail
+                                    <ArrowUpDown class="h-3 w-3" />
+                                </Button>
+                            </TableHead>
+                            <TableHead>
                                 <Button variant="ghost" @click="handleSort('stock')" class="flex items-center gap-1 p-0 h-auto">
                                     Stok
                                     <ArrowUpDown class="h-3 w-3" />
@@ -220,7 +227,7 @@ const deleteProduct = (id: number) => {
                     </TableHeader>
                     <TableBody>
                         <TableRow v-if="products.data.length === 0">
-                            <TableCell colspan="9" class="text-center text-muted-foreground">
+                            <TableCell colspan="10" class="text-center text-muted-foreground">
                                 Tidak ada produk ditemukan
                             </TableCell>
                         </TableRow>
@@ -241,6 +248,11 @@ const deleteProduct = (id: number) => {
                                 </Badge>
                             </TableCell>
                             <TableCell>{{ totalBonus(product) }}</TableCell>
+                            <TableCell>
+                                <Badge variant="outline">
+                                    {{ product.b_retail ? formatCurrency(product.b_retail) : '-' }}
+                                </Badge>
+                            </TableCell>
                             <TableCell>
                                 <Badge :variant="product.stock > 0 ? 'default' : 'destructive'">
                                     {{ product.stock }}

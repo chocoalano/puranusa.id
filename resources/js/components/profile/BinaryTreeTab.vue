@@ -41,7 +41,7 @@ interface PassiveMember {
 }
 
 interface Props {
-    binaryTree: TreeNode;
+    binaryTree: TreeNode | null;
     totalDownlines: number;
     totalLeft: number;
     totalRight: number;
@@ -181,6 +181,7 @@ const buildCompleteTree = (node: TreeNode | null, parentId: number | null, posit
 };
 
 const completeTree = computed(() => {
+    if (!props.binaryTree) return null;
     const tree = buildCompleteTree(props.binaryTree, null, null, props.binaryTree.level);
     return tree || props.binaryTree;
 });
@@ -344,11 +345,16 @@ const formatDate = (dateString: string) => {
                         }"
                     >
                         <TreeNodeComponent
+                            v-if="completeTree"
                             :node="completeTree"
                             :is-root="true"
                             :max-level="maxVisibleLevels"
                             @open-placement="openPlacementDialog"
                         />
+                        <div v-else class="text-center py-12 text-muted-foreground">
+                            <Users class="w-12 h-12 mx-auto mb-4 opacity-20" />
+                            <p>Belum ada jaringan binary tree</p>
+                        </div>
                     </div>
                 </div>
 
