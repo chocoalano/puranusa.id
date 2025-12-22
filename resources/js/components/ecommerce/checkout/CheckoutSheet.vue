@@ -215,17 +215,22 @@ const isWalletSufficient = computed(() => {
 });
 
 const isFormValid = computed(() => {
-    const basicValid =
-        form.value.recipient_name &&
-        form.value.recipient_phone &&
-        form.value.address_line1 &&
-        form.value.province_id &&
-        form.value.city_id &&
-        form.value.postal_code &&
-        form.value.shipping_courier &&
-        form.value.shipping_service &&
-        form.value.shipping_cost > 0 &&
-        form.value.payment_method;
+    // For Pick Up, shipping cost can be 0; for other couriers, must be > 0
+    const isShippingValid = isPickUpSelected.value
+        ? (form.value.shipping_courier && form.value.shipping_service)
+        : (form.value.shipping_courier && form.value.shipping_service && form.value.shipping_cost > 0);
+
+    // Address is required only for non-Pick Up shipping
+    const isAddressValid = isPickUpSelected.value
+        ? (form.value.recipient_name && form.value.recipient_phone) // Only name and phone for Pick Up
+        : (form.value.recipient_name &&
+           form.value.recipient_phone &&
+           form.value.address_line1 &&
+           form.value.province_id &&
+           form.value.city_id &&
+           form.value.postal_code);
+
+    const basicValid = isAddressValid && isShippingValid && form.value.payment_method;
 
     // If wallet payment selected, ensure sufficient balance
     if (form.value.payment_method === 'wallet' && !isWalletSufficient.value) {
@@ -361,6 +366,19 @@ const selectShippingService = (
     form.value.shipping_cost = service.cost[0].value;
     form.value.shipping_etd = service.cost[0].etd;
 };
+
+// Handle Pick Up selection
+const selectPickUp = () => {
+    form.value.shipping_courier = 'pickup';
+    form.value.shipping_service = 'Pick Up';
+    form.value.shipping_cost = 0;
+    form.value.shipping_etd = '-';
+};
+
+// Check if Pick Up is selected
+const isPickUpSelected = computed(() => {
+    return form.value.shipping_courier === 'pickup' && form.value.shipping_service === 'Pick Up';
+});
 
 // Handle checkout
 const handleCheckout = async () => {
@@ -740,117 +758,6 @@ watch(
 
                 <Separator v-if="isActiveCustomer" />
 
-                <!-- Shipping Address Form -->
-                <div class="space-y-4">
-                    <div class="flex items-center gap-2 text-sm font-medium">
-                        <MapPin class="h-4 w-4" />
-                        <span>Alamat Pengiriman</span>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="space-y-2">
-                                <Label for="recipient_name"
-                                    >Nama Penerima</Label
-                                >
-                                <Input
-                                    id="recipient_name"
-                                    v-model="form.recipient_name"
-                                    placeholder="Nama lengkap"
-                                />
-                            </div>
-                            <div class="space-y-2">
-                                <Label for="recipient_phone">No. Telepon</Label>
-                                <Input
-                                    id="recipient_phone"
-                                    v-model="form.recipient_phone"
-                                    placeholder="08xxxxxxxxxx"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="space-y-2">
-                            <Label for="address_line1">Alamat Lengkap</Label>
-                            <Input
-                                id="address_line1"
-                                v-model="form.address_line1"
-                                placeholder="Jalan, nomor rumah, RT/RW"
-                            />
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="space-y-2">
-                                <Label for="province">Provinsi</Label>
-                                <Select
-                                    v-model="form.province_id"
-                                    :disabled="loadingProvinces"
-                                >
-                                    <SelectTrigger id="province">
-                                        <SelectValue
-                                            :placeholder="
-                                                loadingProvinces
-                                                    ? 'Memuat provinsi...'
-                                                    : 'Pilih provinsi'
-                                            "
-                                        />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem
-                                            v-for="province in validProvinces"
-                                            :key="province.id"
-                                            :value="String(province.id)"
-                                        >
-                                            {{ province.name }}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div class="space-y-2">
-                                <Label for="city">Kota/Kabupaten</Label>
-                                <Select
-                                    v-model="form.city_id"
-                                    :disabled="
-                                        loadingCities || !form.province_id
-                                    "
-                                >
-                                    <SelectTrigger id="city">
-                                        <SelectValue
-                                            :placeholder="
-                                                loadingCities
-                                                    ? 'Memuat kota...'
-                                                    : !form.province_id
-                                                      ? 'Pilih provinsi terlebih dahulu'
-                                                      : 'Pilih kota'
-                                            "
-                                        />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem
-                                            v-for="city in validCities"
-                                            :key="city.id"
-                                            :value="String(city.id)"
-                                        >
-                                            {{ city.type }} {{ city.name }}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <div class="space-y-2">
-                            <Label for="postal_code">Kode Pos</Label>
-                            <Input
-                                id="postal_code"
-                                v-model="form.postal_code"
-                                placeholder="12345"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <Separator />
-
                 <!-- Shipping Method -->
                 <div class="space-y-4">
                     <div class="flex items-center gap-2 text-sm font-medium">
@@ -858,8 +765,53 @@ watch(
                         <span>Metode Pengiriman</span>
                     </div>
 
+                    <!-- Pick Up Option (Always Available) -->
+                    <div class="space-y-2">
+                        <div class="text-sm font-medium uppercase text-muted-foreground">
+                            Ambil di Tempat
+                        </div>
+                        <div
+                            class="flex cursor-pointer items-center space-x-3 rounded-lg border p-3 transition-colors"
+                            :class="{
+                                'border-primary bg-primary/10': isPickUpSelected,
+                                'hover:bg-muted': !isPickUpSelected,
+                            }"
+                            @click="selectPickUp"
+                        >
+                            <!-- Radio Indicator -->
+                            <div class="flex-shrink-0">
+                                <div
+                                    class="flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors"
+                                    :class="{
+                                        'border-primary bg-primary': isPickUpSelected,
+                                        'border-muted-foreground': !isPickUpSelected,
+                                    }"
+                                >
+                                    <div
+                                        v-if="isPickUpSelected"
+                                        class="h-2 w-2 rounded-full bg-primary-foreground"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <div class="flex-1">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <div class="font-medium">Pick Up</div>
+                                        <div class="text-sm text-muted-foreground">
+                                            Ambil pesanan langsung di lokasi kami
+                                        </div>
+                                    </div>
+                                    <div class="font-semibold text-green-600">
+                                        Gratis
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div
-                        v-if="loadingShipping"
+                        v-if="loadingShipping && !isPickUpSelected"
                         class="flex items-center justify-center py-8"
                     >
                         <Loader2
@@ -868,7 +820,7 @@ watch(
                     </div>
 
                     <div
-                        v-else-if="shippingMethods.length > 0"
+                        v-else-if="shippingMethods.length > 0 && !isPickUpSelected"
                         class="space-y-3"
                     >
                         <div
@@ -960,14 +912,148 @@ watch(
                     </div>
 
                     <div
-                        v-else-if="form.city_id"
-                        class="py-8 text-center text-muted-foreground"
+                        v-else-if="form.city_id && !isPickUpSelected"
+                        class="py-4 text-center text-sm text-muted-foreground"
                     >
-                        Tidak ada metode pengiriman tersedia
+                        Tidak ada kurir tersedia untuk lokasi ini. Gunakan Pick Up.
                     </div>
 
-                    <div v-else class="py-8 text-center text-muted-foreground">
-                        Pilih alamat pengiriman untuk melihat metode pengiriman
+                    <div v-else-if="!isPickUpSelected" class="py-4 text-center text-sm text-muted-foreground">
+                        Isi alamat pengiriman di bawah untuk melihat opsi kurir lainnya
+                    </div>
+                </div>
+
+                <Separator />
+
+                <!-- Recipient Info (For Pick Up) -->
+                <div v-if="isPickUpSelected" class="space-y-4">
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        <MapPin class="h-4 w-4" />
+                        <span>Informasi Penerima</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label for="recipient_name">Nama Penerima</Label>
+                            <Input
+                                id="recipient_name"
+                                v-model="form.recipient_name"
+                                placeholder="Nama lengkap"
+                            />
+                        </div>
+                        <div class="space-y-2">
+                            <Label for="recipient_phone">No. Telepon</Label>
+                            <Input
+                                id="recipient_phone"
+                                v-model="form.recipient_phone"
+                                placeholder="08xxxxxxxxxx"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Address Form (For Courier Delivery) -->
+                <div v-else class="space-y-4">
+                    <div class="flex items-center gap-2 text-sm font-medium">
+                        <MapPin class="h-4 w-4" />
+                        <span>Alamat Pengiriman</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <Label for="recipient_name">Nama Penerima</Label>
+                                <Input
+                                    id="recipient_name"
+                                    v-model="form.recipient_name"
+                                    placeholder="Nama lengkap"
+                                />
+                            </div>
+                            <div class="space-y-2">
+                                <Label for="recipient_phone">No. Telepon</Label>
+                                <Input
+                                    id="recipient_phone"
+                                    v-model="form.recipient_phone"
+                                    placeholder="08xxxxxxxxxx"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="address_line1">Alamat Lengkap</Label>
+                            <Input
+                                id="address_line1"
+                                v-model="form.address_line1"
+                                placeholder="Jalan, nomor rumah, RT/RW"
+                            />
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <Label for="province">Provinsi</Label>
+                                <Select
+                                    v-model="form.province_id"
+                                    :disabled="loadingProvinces"
+                                >
+                                    <SelectTrigger id="province">
+                                        <SelectValue
+                                            :placeholder="
+                                                loadingProvinces
+                                                    ? 'Memuat provinsi...'
+                                                    : 'Pilih provinsi'
+                                            "
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem
+                                            v-for="province in validProvinces"
+                                            :key="province.id"
+                                            :value="String(province.id)"
+                                        >
+                                            {{ province.name }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="city">Kota/Kabupaten</Label>
+                                <Select
+                                    v-model="form.city_id"
+                                    :disabled="loadingCities || !form.province_id"
+                                >
+                                    <SelectTrigger id="city">
+                                        <SelectValue
+                                            :placeholder="
+                                                loadingCities
+                                                    ? 'Memuat kota...'
+                                                    : !form.province_id
+                                                      ? 'Pilih provinsi terlebih dahulu'
+                                                      : 'Pilih kota'
+                                            "
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem
+                                            v-for="city in validCities"
+                                            :key="city.id"
+                                            :value="String(city.id)"
+                                        >
+                                            {{ city.type }} {{ city.name }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="postal_code">Kode Pos</Label>
+                            <Input
+                                id="postal_code"
+                                v-model="form.postal_code"
+                                placeholder="12345"
+                            />
+                        </div>
                     </div>
                 </div>
 
