@@ -29,16 +29,14 @@ class CheckoutController extends Controller
      */
     public function processFromCart(Request $request): JsonResponse
     {
-        $validated = $request->validate([
+        // Check if shipping method is pickup
+        $isPickup = $request->input('shipping.courier') === 'pickup';
+
+        // Base validation rules
+        $rules = [
             'shipping' => 'required|array',
             'shipping.recipient_name' => 'required|string|max:255',
             'shipping.recipient_phone' => 'required|string|max:20',
-            'shipping.address_line1' => 'required|string',
-            'shipping.province_label' => 'required|string',
-            'shipping.province_id' => 'required|string',
-            'shipping.city_label' => 'required|string',
-            'shipping.city_id' => 'required|string',
-            'shipping.postal_code' => 'required|string|max:10',
             'shipping.courier' => 'required|string',
             'shipping.service' => 'required|string',
             'shipping.cost' => 'required|numeric|min:0',
@@ -49,7 +47,26 @@ class CheckoutController extends Controller
             'total' => 'required|numeric|min:0',
             'payment_method' => 'required|in:wallet,midtrans',
             'transaction_type' => 'nullable|in:planA,planB',
-        ]);
+        ];
+
+        // Add address validation rules only for non-pickup shipping
+        if (! $isPickup) {
+            $rules['shipping.address_line1'] = 'required|string';
+            $rules['shipping.province_label'] = 'required|string';
+            $rules['shipping.province_id'] = 'required|string';
+            $rules['shipping.city_label'] = 'required|string';
+            $rules['shipping.city_id'] = 'required|string';
+            $rules['shipping.postal_code'] = 'required|string|max:10';
+        } else {
+            $rules['shipping.address_line1'] = 'nullable|string';
+            $rules['shipping.province_label'] = 'nullable|string';
+            $rules['shipping.province_id'] = 'nullable|string';
+            $rules['shipping.city_label'] = 'nullable|string';
+            $rules['shipping.city_id'] = 'nullable|string';
+            $rules['shipping.postal_code'] = 'nullable|string|max:10';
+        }
+
+        $validated = $request->validate($rules);
 
         if (! Auth::guard('client')->check()) {
             return response()->json([
@@ -86,7 +103,13 @@ class CheckoutController extends Controller
 
             DB::beginTransaction();
 
-            $shippingAddress = $this->createOrUpdateShippingAddress($customer->id, $validated['shipping']);
+            // Handle shipping address based on pickup or delivery
+            if ($isPickup) {
+                $shippingAddress = $this->createPickupAddress($customer->id, $validated['shipping']);
+            } else {
+                $shippingAddress = $this->createOrUpdateShippingAddress($customer->id, $validated['shipping']);
+            }
+
             $bonusAmounts = $this->calculateCartBonusAmounts($cart);
             $order = $this->createCartOrder($customer->id, $orderNo, $validated, $shippingAddress->id, $bonusAmounts);
             $this->createCartOrderItems($order->id, $cart);
@@ -411,7 +434,11 @@ class CheckoutController extends Controller
             'items_count' => is_array($request->input('items')) ? count($request->input('items')) : 'not_array',
         ]);
 
-        $validated = $request->validate([
+        // Check if shipping method is pickup
+        $isPickup = $request->input('shipping.courier') === 'pickup';
+
+        // Base validation rules
+        $rules = [
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|integer|exists:products,id',
             'items.*.product_name' => 'required|string',
@@ -422,12 +449,6 @@ class CheckoutController extends Controller
             'shipping' => 'required|array',
             'shipping.recipient_name' => 'required|string|max:255',
             'shipping.recipient_phone' => 'required|string|max:20',
-            'shipping.address_line1' => 'required|string',
-            'shipping.province_label' => 'required|string',
-            'shipping.province_id' => 'required|string',
-            'shipping.city_label' => 'required|string',
-            'shipping.city_id' => 'required|string',
-            'shipping.postal_code' => 'required|string|max:10',
             'shipping.courier' => 'required|string',
             'shipping.service' => 'required|string',
             'shipping.cost' => 'required|numeric|min:0',
@@ -438,7 +459,26 @@ class CheckoutController extends Controller
             'total' => 'required|numeric|min:0',
             'payment_method' => 'required|in:wallet,midtrans',
             'transaction_type' => 'nullable|in:planA,planB',
-        ]);
+        ];
+
+        // Add address validation rules only for non-pickup shipping
+        if (! $isPickup) {
+            $rules['shipping.address_line1'] = 'required|string';
+            $rules['shipping.province_label'] = 'required|string';
+            $rules['shipping.province_id'] = 'required|string';
+            $rules['shipping.city_label'] = 'required|string';
+            $rules['shipping.city_id'] = 'required|string';
+            $rules['shipping.postal_code'] = 'required|string|max:10';
+        } else {
+            $rules['shipping.address_line1'] = 'nullable|string';
+            $rules['shipping.province_label'] = 'nullable|string';
+            $rules['shipping.province_id'] = 'nullable|string';
+            $rules['shipping.city_label'] = 'nullable|string';
+            $rules['shipping.city_id'] = 'nullable|string';
+            $rules['shipping.postal_code'] = 'nullable|string|max:10';
+        }
+
+        $validated = $request->validate($rules);
 
         if (! Auth::guard('client')->check()) {
             return response()->json([
@@ -474,8 +514,18 @@ class CheckoutController extends Controller
 
             DB::beginTransaction();
 
-            $shippingAddress = $this->createOrUpdateShippingAddress($customer->id, $validated['shipping']);
-            $order = $this->createMultiItemOrder($customer->id, $orderNo, $validated, $shippingAddress->id);
+            // Handle shipping address based on pickup or delivery
+            $shippingAddressId = null;
+            if ($isPickup) {
+                // For pickup, create a minimal address record or use null
+                $shippingAddress = $this->createPickupAddress($customer->id, $validated['shipping']);
+                $shippingAddressId = $shippingAddress->id;
+            } else {
+                $shippingAddress = $this->createOrUpdateShippingAddress($customer->id, $validated['shipping']);
+                $shippingAddressId = $shippingAddress->id;
+            }
+
+            $order = $this->createMultiItemOrder($customer->id, $orderNo, $validated, $shippingAddressId);
             $this->createMultiOrderItems($order->id, $validated['items']);
 
             if ($validated['payment_method'] === 'wallet') {
@@ -538,6 +588,33 @@ class CheckoutController extends Controller
                 'city_label' => $shippingData['city_label'],
                 'city_id' => (int) $shippingData['city_id'],
                 'postal_code' => $shippingData['postal_code'],
+                'country' => 'Indonesia',
+                'is_default' => false,
+            ]
+        );
+    }
+
+    /**
+     * Create pickup address record (minimal info for pickup orders).
+     */
+    protected function createPickupAddress(int $customerId, array $shippingData): CustomerAddress
+    {
+        return CustomerAddress::updateOrCreate(
+            [
+                'customer_id' => $customerId,
+                'address_line1' => 'PICKUP',
+                'city_id' => 0,
+            ],
+            [
+                'label' => 'Pick Up',
+                'recipient_name' => $shippingData['recipient_name'],
+                'recipient_phone' => $shippingData['recipient_phone'],
+                'address_line1' => 'PICKUP - Ambil di tempat',
+                'province_label' => '-',
+                'province_id' => 0,
+                'city_label' => '-',
+                'city_id' => 0,
+                'postal_code' => '-',
                 'country' => 'Indonesia',
                 'is_default' => false,
             ]
