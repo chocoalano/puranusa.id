@@ -15928,57 +15928,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     _: 1
                   }, _parent3, _scopeId2));
                   _push3(`</div>`);
-                  if (__props.customer.upline || __props.customer.sponsor) {
-                    _push3(`<!--[-->`);
-                    _push3(ssrRenderComponent(unref(_sfc_main$x), { class: "my-4" }, null, _parent3, _scopeId2));
-                    if (__props.customer.upline) {
-                      _push3(`<div class="space-y-2"${_scopeId2}><p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase"${_scopeId2}>Upline</p><div class="flex items-center gap-2"${_scopeId2}>`);
-                      _push3(ssrRenderComponent(unref(_sfc_main$q), { class: "h-8 w-8" }, {
-                        default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                          if (_push4) {
-                            _push4(ssrRenderComponent(unref(_sfc_main$r), {
-                              src: `https://api.dicebear.com/7.x/initials/svg?seed=${__props.customer.upline.name}`
-                            }, null, _parent4, _scopeId3));
-                          } else {
-                            return [
-                              createVNode(unref(_sfc_main$r), {
-                                src: `https://api.dicebear.com/7.x/initials/svg?seed=${__props.customer.upline.name}`
-                              }, null, 8, ["src"])
-                            ];
-                          }
-                        }),
-                        _: 1
-                      }, _parent3, _scopeId2));
-                      _push3(`<div${_scopeId2}><p class="text-sm font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.upline.name)}</p><p class="text-xs text-gray-500 dark:text-gray-400"${_scopeId2}>${ssrInterpolate(__props.customer.upline.email)}</p></div></div></div>`);
-                    } else {
-                      _push3(`<!---->`);
-                    }
-                    if (__props.customer.sponsor) {
-                      _push3(`<div class="space-y-2"${_scopeId2}><p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase"${_scopeId2}>Sponsor</p><div class="flex items-center gap-2"${_scopeId2}>`);
-                      _push3(ssrRenderComponent(unref(_sfc_main$q), { class: "h-8 w-8" }, {
-                        default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                          if (_push4) {
-                            _push4(ssrRenderComponent(unref(_sfc_main$r), {
-                              src: `https://api.dicebear.com/7.x/initials/svg?seed=${__props.customer.sponsor.name}`
-                            }, null, _parent4, _scopeId3));
-                          } else {
-                            return [
-                              createVNode(unref(_sfc_main$r), {
-                                src: `https://api.dicebear.com/7.x/initials/svg?seed=${__props.customer.sponsor.name}`
-                              }, null, 8, ["src"])
-                            ];
-                          }
-                        }),
-                        _: 1
-                      }, _parent3, _scopeId2));
-                      _push3(`<div${_scopeId2}><p class="text-sm font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.sponsor.name)}</p><p class="text-xs text-gray-500 dark:text-gray-400"${_scopeId2}>${ssrInterpolate(__props.customer.sponsor.email)}</p></div></div></div>`);
-                    } else {
-                      _push3(`<!---->`);
-                    }
-                    _push3(`<!--]-->`);
-                  } else {
-                    _push3(`<!---->`);
-                  }
                 } else {
                   return [
                     createVNode("div", { class: "flex items-center justify-between" }, [
@@ -15999,50 +15948,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       })
-                    ]),
-                    __props.customer.upline || __props.customer.sponsor ? (openBlock(), createBlock(Fragment, { key: 0 }, [
-                      createVNode(unref(_sfc_main$x), { class: "my-4" }),
-                      __props.customer.upline ? (openBlock(), createBlock("div", {
-                        key: 0,
-                        class: "space-y-2"
-                      }, [
-                        createVNode("p", { class: "text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase" }, "Upline"),
-                        createVNode("div", { class: "flex items-center gap-2" }, [
-                          createVNode(unref(_sfc_main$q), { class: "h-8 w-8" }, {
-                            default: withCtx(() => [
-                              createVNode(unref(_sfc_main$r), {
-                                src: `https://api.dicebear.com/7.x/initials/svg?seed=${__props.customer.upline.name}`
-                              }, null, 8, ["src"])
-                            ]),
-                            _: 1
-                          }),
-                          createVNode("div", null, [
-                            createVNode("p", { class: "text-sm font-medium" }, toDisplayString(__props.customer.upline.name), 1),
-                            createVNode("p", { class: "text-xs text-gray-500 dark:text-gray-400" }, toDisplayString(__props.customer.upline.email), 1)
-                          ])
-                        ])
-                      ])) : createCommentVNode("", true),
-                      __props.customer.sponsor ? (openBlock(), createBlock("div", {
-                        key: 1,
-                        class: "space-y-2"
-                      }, [
-                        createVNode("p", { class: "text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase" }, "Sponsor"),
-                        createVNode("div", { class: "flex items-center gap-2" }, [
-                          createVNode(unref(_sfc_main$q), { class: "h-8 w-8" }, {
-                            default: withCtx(() => [
-                              createVNode(unref(_sfc_main$r), {
-                                src: `https://api.dicebear.com/7.x/initials/svg?seed=${__props.customer.sponsor.name}`
-                              }, null, 8, ["src"])
-                            ]),
-                            _: 1
-                          }),
-                          createVNode("div", null, [
-                            createVNode("p", { class: "text-sm font-medium" }, toDisplayString(__props.customer.sponsor.name), 1),
-                            createVNode("p", { class: "text-xs text-gray-500 dark:text-gray-400" }, toDisplayString(__props.customer.sponsor.email), 1)
-                          ])
-                        ])
-                      ])) : createCommentVNode("", true)
-                    ], 64)) : createCommentVNode("", true)
+                    ])
                   ];
                 }
               }),
@@ -16082,50 +15988,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       ]),
                       _: 1
                     })
-                  ]),
-                  __props.customer.upline || __props.customer.sponsor ? (openBlock(), createBlock(Fragment, { key: 0 }, [
-                    createVNode(unref(_sfc_main$x), { class: "my-4" }),
-                    __props.customer.upline ? (openBlock(), createBlock("div", {
-                      key: 0,
-                      class: "space-y-2"
-                    }, [
-                      createVNode("p", { class: "text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase" }, "Upline"),
-                      createVNode("div", { class: "flex items-center gap-2" }, [
-                        createVNode(unref(_sfc_main$q), { class: "h-8 w-8" }, {
-                          default: withCtx(() => [
-                            createVNode(unref(_sfc_main$r), {
-                              src: `https://api.dicebear.com/7.x/initials/svg?seed=${__props.customer.upline.name}`
-                            }, null, 8, ["src"])
-                          ]),
-                          _: 1
-                        }),
-                        createVNode("div", null, [
-                          createVNode("p", { class: "text-sm font-medium" }, toDisplayString(__props.customer.upline.name), 1),
-                          createVNode("p", { class: "text-xs text-gray-500 dark:text-gray-400" }, toDisplayString(__props.customer.upline.email), 1)
-                        ])
-                      ])
-                    ])) : createCommentVNode("", true),
-                    __props.customer.sponsor ? (openBlock(), createBlock("div", {
-                      key: 1,
-                      class: "space-y-2"
-                    }, [
-                      createVNode("p", { class: "text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase" }, "Sponsor"),
-                      createVNode("div", { class: "flex items-center gap-2" }, [
-                        createVNode(unref(_sfc_main$q), { class: "h-8 w-8" }, {
-                          default: withCtx(() => [
-                            createVNode(unref(_sfc_main$r), {
-                              src: `https://api.dicebear.com/7.x/initials/svg?seed=${__props.customer.sponsor.name}`
-                            }, null, 8, ["src"])
-                          ]),
-                          _: 1
-                        }),
-                        createVNode("div", null, [
-                          createVNode("p", { class: "text-sm font-medium" }, toDisplayString(__props.customer.sponsor.name), 1),
-                          createVNode("p", { class: "text-xs text-gray-500 dark:text-gray-400" }, toDisplayString(__props.customer.sponsor.email), 1)
-                        ])
-                      ])
-                    ])) : createCommentVNode("", true)
-                  ], 64)) : createCommentVNode("", true)
+                  ])
                 ]),
                 _: 1
               })
