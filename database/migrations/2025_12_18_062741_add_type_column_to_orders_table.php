@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('orders', 'type')) {
+            return;
+        }
+
         Schema::table('orders', function (Blueprint $table) {
             $table->enum('type', ['planA', 'planB'])->nullable()->after('customer_id');
         });

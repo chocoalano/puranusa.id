@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('products', 'b_retail')) {
+            return;
+        }
+
         Schema::table('products', function (Blueprint $table) {
             $table->decimal('b_retail', 15, 2)->nullable()->after('b_cashback')->comment('Bonus retail');
         });

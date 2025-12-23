@@ -59,15 +59,6 @@ const truncateName = (name: string, maxLength: number) => {
     return name.substring(0, maxLength) + '...';
 };
 
-// Truncate email for display
-const truncateEmail = (email: string, maxLength: number) => {
-    if (email.length <= maxLength) return email;
-    const atIndex = email.indexOf('@');
-    if (atIndex > maxLength - 3) {
-        return email.substring(0, maxLength - 3) + '...';
-    }
-    return email.substring(0, maxLength) + '...';
-};
 </script>
 
 <template>
@@ -94,10 +85,6 @@ const truncateEmail = (email: string, maxLength: number) => {
                         <div :class="['font-medium truncate', isRoot ? 'text-xs sm:text-base font-semibold' : 'text-[10px] sm:text-xs']">
                             <span class="sm:hidden">{{ truncateName(node.name, 10) }}</span>
                             <span class="hidden sm:inline">{{ node.name }}</span>
-                        </div>
-                        <div :class="['text-muted-foreground truncate', isRoot ? 'text-[10px] sm:text-xs' : 'text-[8px] sm:text-[10px]']">
-                            <span class="sm:hidden">{{ truncateEmail(node.email, 12) }}</span>
-                            <span class="hidden sm:inline">{{ node.email }}</span>
                         </div>
                         <div v-if="node.package_name" :class="['font-medium truncate', isRoot ? 'text-[9px] sm:text-xs text-primary' : 'text-[7px] sm:text-[10px] text-primary']">
                             <span class="sm:hidden">{{ truncateName(node.package_name, 8) }}</span>

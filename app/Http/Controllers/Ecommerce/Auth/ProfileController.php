@@ -26,79 +26,21 @@ class ProfileController extends Controller
         // Fresh query from database to avoid stale/cached data
         $customer = Customer::find(Auth::guard('client')->id());
 
+        // Optimized: Load only essential relationships, limit results
         $customer->load([
             'package',
-            'networkPosition.upline',
-            'matrixPosition.sponsor',
+            'networkPosition.upline:id,name,email',
+            'matrixPosition.sponsor:id,name,email',
             'addresses' => fn ($q) => $q->orderBy('is_default', 'desc')->orderBy('created_at', 'desc'),
-            'bonuses' => fn ($q) => $q->latest()->limit(5),
-            'bonusMatchings' => fn ($q) => $q->with('fromMember:id,name,email')->latest()->limit(50),
-            'bonusPairings' => fn ($q) => $q->latest()->limit(50),
-            'bonusSponsors' => fn ($q) => $q->with('fromMember:id,name,email')->latest()->limit(50),
-            'bonusCashbacks' => fn ($q) => $q->latest()->limit(50),
-            'bonusRewards' => fn ($q) => $q->latest()->limit(50),
-            'bonusRetails' => fn ($q) => $q->with('fromMember:id,name,email')->latest()->limit(50),
-            'bonusLifetimeCashRewards' => fn ($q) => $q->latest()->limit(50),
         ]);
 
-        // Load recent orders with error handling
-        try {
-            $orders = $customer->orders()
-                ->with(['items.product.media'])
-                ->latest('placed_at')
-                ->limit(10)
-                ->get()
-                ->map(function ($order) use ($customer) {
-                    // Check if order is completed and has items that haven't been reviewed
-                    $hasUnreviewedItems = false;
-                    $items = [];
-
-                    if (strtoupper($order->status) === 'COMPLETED') {
-                        $items = $order->items->map(function ($item) use ($customer) {
-                            $hasReview = \App\Models\ProductReview::where('order_item_id', $item->id)
-                                ->where('customer_id', $customer->id)
-                                ->exists();
-
-                            $imageUrl = null;
-                            if ($item->product && $item->product->primaryImage) {
-                                $imageUrl = '/storage/'.$item->product->primaryImage->url;
-                            }
-
-                            return [
-                                'id' => $item->id,
-                                'product_id' => $item->product_id,
-                                'product_name' => $item->name,
-                                'product_image' => $imageUrl,
-                                'has_review' => $hasReview,
-                            ];
-                        })->toArray();
-
-                        $hasUnreviewedItems = collect($items)->contains('has_review', false);
-                    }
-
-                    return [
-                        'id' => $order->id,
-                        'order_no' => $order->order_no,
-                        'status' => $order->status,
-                        'subtotal_amount' => $order->subtotal_amount,
-                        'grand_total' => $order->grand_total,
-                        'placed_at' => $order->placed_at,
-                        'paid_at' => $order->paid_at,
-                        'items' => $items,
-                        'has_unreviewed_items' => $hasUnreviewedItems,
-                    ];
-                });
-        } catch (\Exception $e) {
-            \Log::error('Failed to load orders in profile', [
-                'customer_id' => $customer->id,
-                'error' => $e->getMessage(),
-            ]);
-            $orders = collect();
-        }
+        // Load recent orders with optimized query
+        $orders = $this->getRecentOrders($customer);
 
         // Load recent wallet transactions
-        $walletTransactions = $customer->walletTransactions()
-            ->latest()
+        $walletTransactions = DB::table('customer_wallet_transactions')
+            ->where('customer_id', $customer->id)
+            ->orderByDesc('created_at')
             ->limit(10)
             ->get()
             ->map(fn ($transaction) => [
@@ -111,151 +53,24 @@ class ProfileController extends Controller
                 'created_at' => $transaction->created_at,
             ]);
 
-        // Get all members where current customer is the sponsor (based on sponsor_id)
-        // Logic based on upline_id and omzet:
-        // - Aktif: sponsor_id = [current] AND upline_id IS NOT NULL AND omzet > 0
-        // - Pasif: sponsor_id = [current] AND upline_id IS NULL AND omzet > 0
-        // - Prospek: sponsor_id = [current] AND upline_id IS NULL AND omzet = 0
+        // Get sponsored members with optimized queries
+        [$activeMembers, $passiveMembers, $prospectMembers] = $this->getSponsoredMembers($customer);
 
-        try {
-            // Active Members: sudah ditempatkan (upline_id not null) dan sudah ada omzet
-            $activeMembers = Customer::where('sponsor_id', $customer->id)
-                ->whereNotNull('upline_id')
-                ->where('omzet', '>', 0)
-                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition', 'package'])
-                ->limit(50)
-                ->get()
-                ->map(fn ($member) => [
-                    'id' => $member->id,
-                    'name' => $member->name,
-                    'email' => $member->email,
-                    'phone' => $member->phone,
-                    'package_name' => $member->package?->name ?? $member->get_package_name(),
-                    'total_left' => $member->total_left ?? 0,
-                    'total_right' => $member->total_right ?? 0,
-                    'position' => $member->networkPosition?->position,
-                    'level' => $member->networkPosition?->level,
-                    'has_placement' => $member->networkPosition !== null,
-                    'has_purchase' => $member->orders->isNotEmpty(),
-                    'omzet' => $member->omzet,
-                    'status' => 3,
-                    'status_label' => 'Aktif',
-                    'joined_at' => $member->created_at,
-                ])
-                ->values();
+        // Build binary tree structure with limited depth
+        $binaryTree = $this->buildBinaryTree($customer);
 
-            // Passive Members: belum ditempatkan (upline_id null) tapi sudah ada omzet
-            $passiveMembers = Customer::where('sponsor_id', $customer->id)
-                ->whereNull('upline_id')
-                ->where('omzet', '>', 0)
-                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition', 'package'])
-                ->limit(50)
-                ->get()
-                ->map(fn ($member) => [
-                    'id' => $member->id,
-                    'name' => $member->name,
-                    'email' => $member->email,
-                    'phone' => $member->phone,
-                    'package_name' => $member->package?->name ?? $member->get_package_name(),
-                    'total_left' => $member->total_left ?? 0,
-                    'total_right' => $member->total_right ?? 0,
-                    'position' => $member->networkPosition?->position,
-                    'level' => $member->networkPosition?->level,
-                    'has_placement' => $member->networkPosition !== null,
-                    'has_purchase' => $member->orders->isNotEmpty(),
-                    'omzet' => $member->omzet,
-                    'status' => 2,
-                    'status_label' => 'Pasif',
-                    'joined_at' => $member->created_at,
-                ])
-                ->values();
+        // Use stored values instead of recursive calculation
+        $networkStats = [
+            'left_count' => $customer->total_left ?? 0,
+            'right_count' => $customer->total_right ?? 0,
+            'total_downlines' => ($customer->total_left ?? 0) + ($customer->total_right ?? 0),
+        ];
 
-            // Prospect Members: belum ditempatkan (upline_id null) dan belum ada omzet
-            $prospectMembers = Customer::where('sponsor_id', $customer->id)
-                ->whereNull('upline_id')
-                ->where('omzet', '=', 0)
-                ->with(['orders' => fn ($q) => $q->limit(1), 'networkPosition', 'package'])
-                ->limit(50)
-                ->get()
-                ->map(fn ($member) => [
-                    'id' => $member->id,
-                    'name' => $member->name,
-                    'email' => $member->email,
-                    'phone' => $member->phone,
-                    'package_name' => $member->package?->name ?? $member->get_package_name(),
-                    'total_left' => $member->total_left ?? 0,
-                    'total_right' => $member->total_right ?? 0,
-                    'position' => $member->networkPosition?->position,
-                    'level' => $member->networkPosition?->level,
-                    'has_placement' => $member->networkPosition !== null,
-                    'has_purchase' => $member->orders->isNotEmpty(),
-                    'omzet' => $member->omzet,
-                    'status' => 1,
-                    'status_label' => 'Prospek',
-                    'joined_at' => $member->created_at,
-                ])
-                ->values();
-        } catch (\Exception $e) {
-            \Log::error('Failed to load network members in profile', [
-                'customer_id' => $customer->id,
-                'error' => $e->getMessage(),
-            ]);
-            $activeMembers = collect();
-            $passiveMembers = collect();
-            $prospectMembers = collect();
-        }
+        // Optimized bonus stats using raw queries
+        $bonusStats = $this->getBonusStats($customer->id);
 
-        // Build binary tree structure with error handling
-        try {
-            $binaryTree = $this->buildBinaryTree($customer);
-        } catch (\Exception $e) {
-            \Log::error('Failed to build binary tree in profile', [
-                'customer_id' => $customer->id,
-                'error' => $e->getMessage(),
-            ]);
-            $binaryTree = [
-                'tree' => null,
-                'totalDownlines' => 0,
-                'totalLeft' => 0,
-                'totalRight' => 0,
-            ];
-        }
-
-        // Calculate network stats with error handling
-        try {
-            $networkStats = [
-                'left_count' => $customer->countLeftNetwork(),
-                'right_count' => $customer->countRightNetwork(),
-                'total_downlines' => count($customer->getAllDownlines()),
-            ];
-        } catch (\Exception $e) {
-            \Log::error('Failed to calculate network stats in profile', [
-                'customer_id' => $customer->id,
-                'error' => $e->getMessage(),
-            ]);
-            $networkStats = [
-                'left_count' => 0,
-                'right_count' => 0,
-                'total_downlines' => 0,
-            ];
-        }
-
-        // Calculate bonus stats with error handling
-        try {
-            $bonusStats = [
-                'total_released' => $customer->getTotalReleasedBonus(),
-                'total_pending' => $customer->getTotalPendingBonus(),
-            ];
-        } catch (\Exception $e) {
-            \Log::error('Failed to calculate bonus stats in profile', [
-                'customer_id' => $customer->id,
-                'error' => $e->getMessage(),
-            ]);
-            $bonusStats = [
-                'total_released' => 0,
-                'total_pending' => 0,
-            ];
-        }
+        // Load bonus data with optimized queries
+        $bonusData = $this->getBonusData($customer->id);
 
         return Inertia::render('ecommerce/profile/Index', [
             'customer' => [
@@ -267,7 +82,7 @@ class ProfileController extends Controller
                 'alamat' => $customer->alamat,
                 'email' => $customer->email,
                 'phone' => $customer->phone,
-                'status' => $customer->status, // Use status directly from database
+                'status' => $customer->status,
                 'ref_code' => $customer->ref_code,
                 'ewallet_id' => $customer->ewallet_id,
                 'ewallet_saldo' => $customer->ewallet_saldo,
@@ -289,26 +104,308 @@ class ProfileController extends Controller
             ],
             'orders' => $orders,
             'walletTransactions' => $walletTransactions,
-            'activeMembers' => $activeMembers, // Status 3: Member aktif yang sudah ditempatkan
-            'passiveMembers' => $passiveMembers, // Status 2: Member pasif
-            'prospectMembers' => $prospectMembers, // Status 1: Member prospek - siap untuk placement
+            'activeMembers' => $activeMembers,
+            'passiveMembers' => $passiveMembers,
+            'prospectMembers' => $prospectMembers,
             'binaryTree' => $binaryTree['tree'],
             'totalDownlines' => $binaryTree['totalDownlines'],
             'totalLeft' => $binaryTree['totalLeft'],
             'totalRight' => $binaryTree['totalRight'],
-            'bonusSponsors' => $customer->bonusSponsors->map(fn ($bonus) => [
+            'bonusSponsors' => $bonusData['sponsors'],
+            'bonusMatchings' => $bonusData['matchings'],
+            'bonusPairings' => $bonusData['pairings'],
+            'bonusCashbacks' => $bonusData['cashbacks'],
+            'bonusRewards' => $bonusData['rewards'],
+            'bonusRetails' => $bonusData['retails'],
+            'bonusLifetimeCashRewards' => $bonusData['lifetimeCashRewards'],
+            'addresses' => $customer->addresses,
+        ]);
+    }
+
+    /**
+     * Get recent orders with optimized query
+     */
+    private function getRecentOrders(Customer $customer): \Illuminate\Support\Collection
+    {
+        try {
+            $orders = DB::table('orders')
+                ->where('customer_id', $customer->id)
+                ->orderByDesc('placed_at')
+                ->limit(10)
+                ->get();
+
+            $orderIds = $orders->pluck('id')->toArray();
+
+            // Get order items with product info
+            $orderItems = collect();
+            $existingReviews = [];
+
+            if (! empty($orderIds)) {
+                $orderItems = DB::table('order_items')
+                    ->leftJoin('products', 'order_items.product_id', '=', 'products.id')
+                    ->leftJoin('product_media', function ($join) {
+                        $join->on('products.id', '=', 'product_media.product_id')
+                            ->where('product_media.is_primary', '=', 1);
+                    })
+                    ->whereIn('order_items.order_id', $orderIds)
+                    ->select('order_items.*', 'product_media.url as image_url')
+                    ->get()
+                    ->groupBy('order_id');
+
+                // Get existing reviews for completed orders
+                $completedOrderIds = $orders->where('status', 'COMPLETED')->pluck('id')->toArray();
+                if (! empty($completedOrderIds)) {
+                    $existingReviews = DB::table('product_reviews')
+                        ->where('customer_id', $customer->id)
+                        ->whereIn('order_item_id', function ($query) use ($completedOrderIds) {
+                            $query->select('id')
+                                ->from('order_items')
+                                ->whereIn('order_id', $completedOrderIds);
+                        })
+                        ->pluck('order_item_id')
+                        ->flip()
+                        ->toArray();
+                }
+            }
+
+            return $orders->map(function ($order) use ($orderItems, $existingReviews) {
+                $items = [];
+                $hasUnreviewedItems = false;
+
+                if (strtoupper($order->status) === 'COMPLETED' && isset($orderItems[$order->id])) {
+                    $items = $orderItems[$order->id]->map(function ($item) use ($existingReviews, &$hasUnreviewedItems) {
+                        $hasReview = isset($existingReviews[$item->id]);
+                        if (! $hasReview) {
+                            $hasUnreviewedItems = true;
+                        }
+
+                        return [
+                            'id' => $item->id,
+                            'product_id' => $item->product_id,
+                            'product_name' => $item->name,
+                            'product_image' => $item->image_url ? '/storage/'.$item->image_url : null,
+                            'has_review' => $hasReview,
+                        ];
+                    })->toArray();
+                }
+
+                return [
+                    'id' => $order->id,
+                    'order_no' => $order->order_no,
+                    'status' => $order->status,
+                    'subtotal_amount' => $order->subtotal_amount,
+                    'grand_total' => $order->grand_total,
+                    'placed_at' => $order->placed_at,
+                    'paid_at' => $order->paid_at,
+                    'items' => $items,
+                    'has_unreviewed_items' => $hasUnreviewedItems,
+                ];
+            });
+        } catch (\Exception $e) {
+            \Log::error('Failed to load orders in profile', [
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return collect();
+        }
+    }
+
+    /**
+     * Get sponsored members with optimized queries
+     */
+    private function getSponsoredMembers(Customer $customer): array
+    {
+        try {
+            // Single query to get all sponsored members
+            $members = DB::table('customers')
+                ->leftJoin('customer_networks', 'customers.id', '=', 'customer_networks.member_id')
+                ->leftJoin('customer_package', 'customers.package_id', '=', 'customer_package.id')
+                ->where('customers.sponsor_id', $customer->id)
+                ->select(
+                    'customers.id',
+                    'customers.name',
+                    'customers.email',
+                    'customers.phone',
+                    'customers.package_id',
+                    'customers.total_left',
+                    'customers.total_right',
+                    'customers.omzet',
+                    'customers.upline_id',
+                    'customers.created_at',
+                    'customer_networks.position',
+                    'customer_networks.level',
+                    'customer_package.name as package_name'
+                )
+                ->limit(150)
+                ->get();
+
+            $activeMembers = collect();
+            $passiveMembers = collect();
+            $prospectMembers = collect();
+
+            foreach ($members as $member) {
+                $data = [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'email' => $member->email,
+                    'phone' => $member->phone,
+                    'package_name' => $member->package_name ?? $this->getPackageName($member->package_id),
+                    'total_left' => $member->total_left ?? 0,
+                    'total_right' => $member->total_right ?? 0,
+                    'position' => $member->position,
+                    'level' => $member->level,
+                    'has_placement' => $member->position !== null,
+                    'has_purchase' => $member->omzet > 0,
+                    'omzet' => $member->omzet,
+                    'joined_at' => $member->created_at,
+                ];
+
+                if ($member->upline_id !== null && $member->omzet > 0) {
+                    $data['status'] = 3;
+                    $data['status_label'] = 'Aktif';
+                    $activeMembers->push($data);
+                } elseif ($member->upline_id === null && $member->omzet > 0) {
+                    $data['status'] = 2;
+                    $data['status_label'] = 'Pasif';
+                    $passiveMembers->push($data);
+                } else {
+                    $data['status'] = 1;
+                    $data['status_label'] = 'Prospek';
+                    $prospectMembers->push($data);
+                }
+            }
+
+            return [$activeMembers, $passiveMembers, $prospectMembers];
+        } catch (\Exception $e) {
+            \Log::error('Failed to load network members in profile', [
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [collect(), collect(), collect()];
+        }
+    }
+
+    /**
+     * Get package name helper
+     */
+    private function getPackageName(?int $packageId): string
+    {
+        return match ($packageId) {
+            1 => 'ZENNER Plus',
+            2 => 'ZENNER Prime',
+            3 => 'ZENNER Ultra',
+            default => 'Tidak ada paket',
+        };
+    }
+
+    /**
+     * Get bonus stats with optimized queries
+     */
+    private function getBonusStats(int $customerId): array
+    {
+        try {
+            $released = DB::table('customer_bonuses')
+                ->where('member_id', $customerId)
+                ->where('status', 1)
+                ->sum('tax_netto');
+
+            $released += DB::table('customer_bonus_matchings')
+                ->where('member_id', $customerId)
+                ->where('status', 1)
+                ->sum('amount');
+
+            $released += DB::table('customer_bonus_pairings')
+                ->where('member_id', $customerId)
+                ->where('status', 1)
+                ->sum('amount');
+
+            $released += DB::table('customer_bonus_sponsors')
+                ->where('member_id', $customerId)
+                ->where('status', 1)
+                ->sum('amount');
+
+            $pending = DB::table('customer_bonuses')
+                ->where('member_id', $customerId)
+                ->where('status', 0)
+                ->sum('tax_netto');
+
+            $pending += DB::table('customer_bonus_matchings')
+                ->where('member_id', $customerId)
+                ->where('status', 0)
+                ->sum('amount');
+
+            $pending += DB::table('customer_bonus_pairings')
+                ->where('member_id', $customerId)
+                ->where('status', 0)
+                ->sum('amount');
+
+            $pending += DB::table('customer_bonus_sponsors')
+                ->where('member_id', $customerId)
+                ->where('status', 0)
+                ->sum('amount');
+
+            return [
+                'total_released' => (float) $released,
+                'total_pending' => (float) $pending,
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Failed to calculate bonus stats in profile', [
+                'customer_id' => $customerId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'total_released' => 0,
+                'total_pending' => 0,
+            ];
+        }
+    }
+
+    /**
+     * Get bonus data with optimized queries
+     */
+    private function getBonusData(int $customerId): array
+    {
+        // Sponsors
+        $sponsors = DB::table('customer_bonus_sponsors')
+            ->leftJoin('customers', 'customer_bonus_sponsors.from_member_id', '=', 'customers.id')
+            ->where('customer_bonus_sponsors.member_id', $customerId)
+            ->orderByDesc('customer_bonus_sponsors.created_at')
+            ->limit(50)
+            ->select(
+                'customer_bonus_sponsors.*',
+                'customers.name as from_member_name',
+                'customers.email as from_member_email'
+            )
+            ->get()
+            ->map(fn ($bonus) => [
                 'id' => $bonus->id,
                 'from_member_id' => $bonus->from_member_id,
                 'amount' => $bonus->amount,
                 'status' => $bonus->status,
                 'description' => $bonus->description,
                 'created_at' => $bonus->created_at,
-                'from_member' => $bonus->fromMember ? [
-                    'name' => $bonus->fromMember->name,
-                    'email' => $bonus->fromMember->email,
+                'from_member' => $bonus->from_member_name ? [
+                    'name' => $bonus->from_member_name,
+                    'email' => $bonus->from_member_email,
                 ] : null,
-            ]),
-            'bonusMatchings' => $customer->bonusMatchings->map(fn ($bonus) => [
+            ]);
+
+        // Matchings
+        $matchings = DB::table('customer_bonus_matchings')
+            ->leftJoin('customers', 'customer_bonus_matchings.from_member_id', '=', 'customers.id')
+            ->where('customer_bonus_matchings.member_id', $customerId)
+            ->orderByDesc('customer_bonus_matchings.created_at')
+            ->limit(50)
+            ->select(
+                'customer_bonus_matchings.*',
+                'customers.name as from_member_name',
+                'customers.email as from_member_email'
+            )
+            ->get()
+            ->map(fn ($bonus) => [
                 'id' => $bonus->id,
                 'from_member_id' => $bonus->from_member_id,
                 'level' => $bonus->level,
@@ -316,36 +413,70 @@ class ProfileController extends Controller
                 'status' => $bonus->status,
                 'description' => $bonus->description,
                 'created_at' => $bonus->created_at,
-                'from_member' => $bonus->fromMember ? [
-                    'name' => $bonus->fromMember->name,
-                    'email' => $bonus->fromMember->email,
+                'from_member' => $bonus->from_member_name ? [
+                    'name' => $bonus->from_member_name,
+                    'email' => $bonus->from_member_email,
                 ] : null,
-            ]),
-            'bonusPairings' => $customer->bonusPairings->map(fn ($bonus) => [
+            ]);
+
+        // Pairings
+        $pairings = DB::table('customer_bonus_pairings')
+            ->where('member_id', $customerId)
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn ($bonus) => [
                 'id' => $bonus->id,
                 'pair' => $bonus->pair,
                 'amount' => $bonus->amount,
                 'status' => $bonus->status,
                 'description' => $bonus->description,
                 'created_at' => $bonus->created_at,
-            ]),
-            'bonusCashbacks' => $customer->bonusCashbacks->map(fn ($bonus) => [
+            ]);
+
+        // Cashbacks
+        $cashbacks = DB::table('customer_bonus_cashbacks')
+            ->where('member_id', $customerId)
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn ($bonus) => [
                 'id' => $bonus->id,
                 'order_id' => $bonus->order_id,
                 'amount' => $bonus->amount,
                 'status' => $bonus->status,
                 'description' => $bonus->description,
                 'created_at' => $bonus->created_at,
-            ]),
-            'bonusRewards' => $customer->bonusRewards->map(fn ($bonus) => [
+            ]);
+
+        // Rewards
+        $rewards = DB::table('customer_bonus_rewards')
+            ->where('member_id', $customerId)
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn ($bonus) => [
                 'id' => $bonus->id,
                 'reward_type' => $bonus->reward_type,
                 'amount' => $bonus->amount,
                 'status' => $bonus->status,
                 'description' => $bonus->description,
                 'created_at' => $bonus->created_at,
-            ]),
-            'bonusRetails' => $customer->bonusRetails->map(fn ($bonus) => [
+            ]);
+
+        // Retails
+        $retails = DB::table('customer_bonus_retails')
+            ->leftJoin('customers', 'customer_bonus_retails.from_member_id', '=', 'customers.id')
+            ->where('customer_bonus_retails.member_id', $customerId)
+            ->orderByDesc('customer_bonus_retails.created_at')
+            ->limit(50)
+            ->select(
+                'customer_bonus_retails.*',
+                'customers.name as from_member_name',
+                'customers.email as from_member_email'
+            )
+            ->get()
+            ->map(fn ($bonus) => [
                 'id' => $bonus->id,
                 'from_member_id' => $bonus->from_member_id,
                 'amount' => $bonus->amount,
@@ -353,12 +484,19 @@ class ProfileController extends Controller
                 'status' => $bonus->status,
                 'description' => $bonus->description,
                 'created_at' => $bonus->created_at,
-                'from_member' => $bonus->fromMember ? [
-                    'name' => $bonus->fromMember->name,
-                    'email' => $bonus->fromMember->email,
+                'from_member' => $bonus->from_member_name ? [
+                    'name' => $bonus->from_member_name,
+                    'email' => $bonus->from_member_email,
                 ] : null,
-            ]),
-            'bonusLifetimeCashRewards' => $customer->bonusLifetimeCashRewards->map(fn ($bonus) => [
+            ]);
+
+        // Lifetime Cash Rewards
+        $lifetimeCashRewards = DB::table('customer_bonus_lifetime_cash_rewards')
+            ->where('member_id', $customerId)
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn ($bonus) => [
                 'id' => $bonus->id,
                 'reward_name' => $bonus->reward_name,
                 'reward' => $bonus->reward,
@@ -367,9 +505,17 @@ class ProfileController extends Controller
                 'status' => $bonus->status,
                 'description' => $bonus->description,
                 'created_at' => $bonus->created_at,
-            ]),
-            'addresses' => $customer->addresses,
-        ]);
+            ]);
+
+        return [
+            'sponsors' => $sponsors,
+            'matchings' => $matchings,
+            'pairings' => $pairings,
+            'cashbacks' => $cashbacks,
+            'rewards' => $rewards,
+            'retails' => $retails,
+            'lifetimeCashRewards' => $lifetimeCashRewards,
+        ];
     }
 
     /**
@@ -487,8 +633,8 @@ class ProfileController extends Controller
             // $sp = DB::select('CALL sp_registration(?)', [$memberId]);
             $row = DB::select('CALL sp_registration(?)', [$memberId])[0] ?? null;
 
-            abort_if(!$row, 500, 'SP tidak mengembalikan output');
-            abort_if((int)$row->success !== 1, 422, "{$row->code} - {$row->message}");
+            abort_if(! $row, 500, 'SP tidak mengembalikan output');
+            abort_if((int) $row->success !== 1, 422, "{$row->code} - {$row->message}");
 
             DB::commit();
 
@@ -504,25 +650,29 @@ class ProfileController extends Controller
 
     /**
      * Build binary tree structure for visualization.
+     * Optimized version: preload all potential tree members in one query
      */
-    private function buildBinaryTree($customer, int $maxDepth = 15): array
+    private function buildBinaryTree($customer, int $maxDepth = 5): array
     {
-        // Check if customer has at least one child (foot_left OR foot_right)
-        // Also show tree if customer itself is the root even without children
+        // Use stored totals from database instead of recursive calculation
+        $totalLeft = $customer->total_left ?? 0;
+        $totalRight = $customer->total_right ?? 0;
+        $totalDownlines = $totalLeft + $totalRight;
+
+        // If no children, return simple root node
         if (! $customer->foot_left && ! $customer->foot_right) {
-            // Still return the root node so user can see their position and add children
             return [
                 'tree' => [
                     'id' => $customer->id,
                     'member_id' => $customer->id,
                     'name' => $customer->name,
                     'email' => $customer->email,
-                    'package_name' => $customer->package?->name ?? $customer->get_package_name(),
-                    'total_left' => $customer->total_left ?? 0,
-                    'total_right' => $customer->total_right ?? 0,
+                    'package_name' => $customer->package?->name ?? $this->getPackageName($customer->package_id),
+                    'total_left' => $totalLeft,
+                    'total_right' => $totalRight,
                     'position' => null,
                     'level' => 1,
-                    'status' => true, // Root is always active
+                    'status' => true,
                     'left' => null,
                     'right' => null,
                 ],
@@ -532,13 +682,11 @@ class ProfileController extends Controller
             ];
         }
 
-        // Calculate totals by traversing the tree
-        $totalLeft = $this->countTreeNodes($customer->foot_left, $maxDepth);
-        $totalRight = $this->countTreeNodes($customer->foot_right, $maxDepth);
-        $totalDownlines = $totalLeft + $totalRight;
+        // Preload all tree members in a single query using BFS approach
+        $membersMap = $this->preloadTreeMembers($customer->id, $maxDepth);
 
-        // Build tree structure recursively
-        $tree = $this->buildTreeNode($customer, 1, $maxDepth);
+        // Build tree structure using preloaded data
+        $tree = $this->buildTreeNodeOptimized($customer, 1, $maxDepth, $membersMap);
 
         return [
             'tree' => $tree,
@@ -549,81 +697,165 @@ class ProfileController extends Controller
     }
 
     /**
-     * Count total nodes in a subtree.
+     * Preload all tree members in a single query using BFS
      */
-    private function countTreeNodes(?int $customerId, int $maxDepth, int $currentLevel = 1): int
+    private function preloadTreeMembers(int $rootId, int $maxDepth): array
     {
-        if (! $customerId || $currentLevel > $maxDepth) {
-            return 0;
+        // Get all potential tree members in one query
+        // Start with root and expand level by level
+        $allIds = [$rootId];
+        $currentIds = [$rootId];
+
+        for ($level = 1; $level <= $maxDepth && ! empty($currentIds); $level++) {
+            $children = DB::table('customers')
+                ->whereIn('id', $currentIds)
+                ->whereNotNull('foot_left')
+                ->orWhereNotNull('foot_right')
+                ->whereIn('id', $currentIds)
+                ->select('foot_left', 'foot_right')
+                ->get();
+
+            $nextIds = [];
+            foreach ($children as $child) {
+                if ($child->foot_left) {
+                    $nextIds[] = $child->foot_left;
+                }
+                if ($child->foot_right) {
+                    $nextIds[] = $child->foot_right;
+                }
+            }
+
+            $allIds = array_merge($allIds, $nextIds);
+            $currentIds = $nextIds;
         }
 
-        $customer = Customer::find($customerId);
-        if (! $customer) {
-            return 0;
-        }
+        // Fetch all members at once with package data
+        $members = DB::table('customers')
+            ->leftJoin('customer_package', 'customers.package_id', '=', 'customer_package.id')
+            ->whereIn('customers.id', array_unique($allIds))
+            ->select(
+                'customers.id',
+                'customers.name',
+                'customers.email',
+                'customers.package_id',
+                'customers.upline_id',
+                'customers.foot_left',
+                'customers.foot_right',
+                'customers.total_left',
+                'customers.total_right',
+                'customer_package.name as package_name'
+            )
+            ->get()
+            ->keyBy('id');
 
-        $count = 1; // Count current node
-        $count += $this->countTreeNodes($customer->foot_left, $maxDepth, $currentLevel + 1);
-        $count += $this->countTreeNodes($customer->foot_right, $maxDepth, $currentLevel + 1);
-
-        return $count;
+        return $members->toArray();
     }
 
     /**
-     * Recursively build tree node using foot_left and foot_right.
+     * Build tree node using preloaded data (no additional queries)
      */
-    private function buildTreeNode($customer, int $currentLevel, int $maxDepth): ?array
+    private function buildTreeNodeOptimized($customer, int $currentLevel, int $maxDepth, array $membersMap): ?array
     {
-        if ($currentLevel > $maxDepth || ! $customer) {
+        if ($currentLevel > $maxDepth) {
+            return null;
+        }
+
+        // Get customer data from map or use passed object
+        $customerData = is_object($customer) && isset($customer->id)
+            ? ($membersMap[$customer->id] ?? null)
+            : ($membersMap[$customer] ?? null);
+
+        if (! $customerData) {
+            // If customer is the passed object, use it directly
+            if (is_object($customer)) {
+                $customerData = (object) [
+                    'id' => $customer->id,
+                    'name' => $customer->name,
+                    'email' => $customer->email,
+                    'package_name' => $customer->package?->name ?? $this->getPackageName($customer->package_id),
+                    'total_left' => $customer->total_left ?? 0,
+                    'total_right' => $customer->total_right ?? 0,
+                    'upline_id' => $customer->upline_id,
+                    'foot_left' => $customer->foot_left,
+                    'foot_right' => $customer->foot_right,
+                ];
+            } else {
+                return null;
+            }
+        }
+
+        $leftChild = null;
+        $rightChild = null;
+
+        // Build children from preloaded data
+        if ($customerData->foot_left && isset($membersMap[$customerData->foot_left])) {
+            $leftChild = $this->buildTreeNodeFromData($membersMap[$customerData->foot_left], $currentLevel + 1, $maxDepth, $membersMap, 'left');
+        }
+
+        if ($customerData->foot_right && isset($membersMap[$customerData->foot_right])) {
+            $rightChild = $this->buildTreeNodeFromData($membersMap[$customerData->foot_right], $currentLevel + 1, $maxDepth, $membersMap, 'right');
+        }
+
+        // Determine position
+        $position = null;
+        if ($currentLevel > 1 && $customerData->upline_id) {
+            $upline = $membersMap[$customerData->upline_id] ?? null;
+            if ($upline) {
+                if ($upline->foot_left == $customerData->id) {
+                    $position = 'left';
+                } elseif ($upline->foot_right == $customerData->id) {
+                    $position = 'right';
+                }
+            }
+        }
+
+        return [
+            'id' => $customerData->id,
+            'member_id' => $customerData->id,
+            'name' => $customerData->name,
+            'email' => $customerData->email,
+            'package_name' => $customerData->package_name ?? $this->getPackageName($customerData->package_id ?? null),
+            'total_left' => $customerData->total_left ?? 0,
+            'total_right' => $customerData->total_right ?? 0,
+            'position' => $position,
+            'level' => $currentLevel,
+            'status' => $customerData->upline_id !== null || $currentLevel === 1,
+            'left' => $leftChild,
+            'right' => $rightChild,
+        ];
+    }
+
+    /**
+     * Build tree node from preloaded data object
+     */
+    private function buildTreeNodeFromData(object $member, int $currentLevel, int $maxDepth, array $membersMap, string $position): ?array
+    {
+        if ($currentLevel > $maxDepth) {
             return null;
         }
 
         $leftChild = null;
         $rightChild = null;
 
-        // Build left child (foot_left)
-        if ($customer->foot_left) {
-            $leftCustomer = Customer::with('package')->find($customer->foot_left);
-            if ($leftCustomer) {
-                $leftChild = $this->buildTreeNode($leftCustomer, $currentLevel + 1, $maxDepth);
-            }
+        if ($member->foot_left && isset($membersMap[$member->foot_left])) {
+            $leftChild = $this->buildTreeNodeFromData($membersMap[$member->foot_left], $currentLevel + 1, $maxDepth, $membersMap, 'left');
         }
 
-        // Build right child (foot_right)
-        if ($customer->foot_right) {
-            $rightCustomer = Customer::with('package')->find($customer->foot_right);
-            if ($rightCustomer) {
-                $rightChild = $this->buildTreeNode($rightCustomer, $currentLevel + 1, $maxDepth);
-            }
-        }
-
-        // Determine position based on relationship with parent
-        $position = null;
-        if ($currentLevel > 1) {
-            // Try to determine position by checking upline
-            if ($customer->upline_id) {
-                $upline = Customer::find($customer->upline_id);
-                if ($upline) {
-                    if ($upline->foot_left == $customer->id) {
-                        $position = 'left';
-                    } elseif ($upline->foot_right == $customer->id) {
-                        $position = 'right';
-                    }
-                }
-            }
+        if ($member->foot_right && isset($membersMap[$member->foot_right])) {
+            $rightChild = $this->buildTreeNodeFromData($membersMap[$member->foot_right], $currentLevel + 1, $maxDepth, $membersMap, 'right');
         }
 
         return [
-            'id' => $customer->id,
-            'member_id' => $customer->id,
-            'name' => $customer->name,
-            'email' => $customer->email,
-            'package_name' => $customer->package?->name ?? $customer->get_package_name(),
-            'total_left' => $customer->total_left ?? 0,
-            'total_right' => $customer->total_right ?? 0,
+            'id' => $member->id,
+            'member_id' => $member->id,
+            'name' => $member->name,
+            'email' => $member->email,
+            'package_name' => $member->package_name ?? $this->getPackageName($member->package_id ?? null),
+            'total_left' => $member->total_left ?? 0,
+            'total_right' => $member->total_right ?? 0,
             'position' => $position,
             'level' => $currentLevel,
-            'status' => $customer->upline_id !== null, // true if placed in tree
+            'status' => $member->upline_id !== null,
             'left' => $leftChild,
             'right' => $rightChild,
         ];

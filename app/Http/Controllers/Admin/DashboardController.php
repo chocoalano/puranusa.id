@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Manage\CustomerNetwork;
 use App\Models\Manage\Customer;
 use App\Models\Order;
-use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -14,42 +13,68 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Basic statistics
-        $totalRevenue = Order::whereNotNull('paid_at')->sum('grand_total');
-        $totalOrders = Order::count();
-        $totalCustomers = Customer::count();
-        $totalProducts = Product::where('is_active', true)->count();
+        // Cache stats for 5 minutes to reduce database load
+        $stats = Cache::remember('admin_dashboard_stats', 300, function () {
+            return $this->getStats();
+        });
+
+        return Inertia::render('Admin/Dashboard', [
+            'stats' => $stats,
+        ]);
+    }
+
+    private function getStats(): array
+    {
+        // Combine multiple order statistics into single query
+        $orderStats = DB::table('orders')
+            ->selectRaw('COUNT(*) as total_orders')
+            ->selectRaw('SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_orders')
+            ->selectRaw('SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed_orders')
+            ->selectRaw('COALESCE(SUM(CASE WHEN paid_at IS NOT NULL THEN grand_total ELSE 0 END), 0) as total_revenue')
+            ->selectRaw('COALESCE(SUM(CASE WHEN paid_at IS NOT NULL THEN bv_amount ELSE 0 END), 0) as total_bv')
+            ->selectRaw('COALESCE(SUM(CASE WHEN paid_at IS NOT NULL THEN COALESCE(sponsor_amount, 0) + COALESCE(match_amount, 0) + COALESCE(pairing_amount, 0) + COALESCE(cashback_amount, 0) ELSE 0 END), 0) as total_bonuses')
+            ->first();
+
+        $totalOrders = (int) ($orderStats->total_orders ?? 0);
+        $pendingOrders = (int) ($orderStats->pending_orders ?? 0);
+        $completedOrders = (int) ($orderStats->completed_orders ?? 0);
+        $totalRevenue = (float) ($orderStats->total_revenue ?? 0);
+        $totalBV = (float) ($orderStats->total_bv ?? 0);
+        $totalBonuses = (float) ($orderStats->total_bonuses ?? 0);
+
+        // Basic counts using raw queries for speed
+        $totalCustomers = DB::table('customers')->count();
+        $totalProducts = DB::table('products')->where('is_active', true)->count();
 
         // MLM Statistics
-        $totalBV = Order::whereNotNull('paid_at')->sum('bv_amount');
-        $totalBonuses = Order::whereNotNull('paid_at')
-            ->sum(DB::raw('sponsor_amount + match_amount + pairing_amount + cashback_amount'));
-        $totalNetworkMembers = CustomerNetwork::distinct('member_id')->count();
+        $totalNetworkMembers = DB::table('customer_networks')->distinct()->count('member_id');
 
-        // Order statistics
-        $pendingOrders = Order::where('status', 'pending')->count();
-        $completedOrders = Order::where('status', 'completed')->count();
-        $activeCustomers = Customer::whereHas('orders', function ($q) {
-            $q->whereNotNull('paid_at');
-        })->count();
+        // Active customers
+        $activeCustomers = DB::table('orders')
+            ->whereNotNull('paid_at')
+            ->distinct()
+            ->count('customer_id');
 
         // Recent orders with customer info
-        $recentOrders = Order::with('customer')
-            ->orderBy('created_at', 'desc')
+        $recentOrders = DB::table('orders')
+            ->leftJoin('customers', 'orders.customer_id', '=', 'customers.id')
+            ->select('orders.order_no', 'customers.name as customer_name', 'orders.grand_total', 'orders.status', 'orders.created_at')
+            ->orderBy('orders.created_at', 'desc')
             ->limit(5)
             ->get()
             ->map(function ($order) {
                 return [
                     'order_no' => $order->order_no,
-                    'customer_name' => $order->customer?->name ?? 'Unknown',
+                    'customer_name' => $order->customer_name ?? 'Unknown',
                     'grand_total' => (float) $order->grand_total,
                     'status' => $order->status,
-                    'created_at' => $order->created_at->toISOString(),
+                    'created_at' => $order->created_at,
                 ];
             });
 
         // Top products by revenue
-        $topProducts = Order::join('order_items', 'orders.id', '=', 'order_items.order_id')
+        $topProducts = DB::table('orders')
+            ->join('order_items', 'orders.id', '=', 'order_items.order_id')
             ->whereNotNull('orders.paid_at')
             ->select(
                 'order_items.name',
@@ -69,7 +94,8 @@ class DashboardController extends Controller
             });
 
         // Monthly revenue for last 6 months
-        $monthlyRevenue = Order::whereNotNull('paid_at')
+        $monthlyRevenue = DB::table('orders')
+            ->whereNotNull('paid_at')
             ->where('paid_at', '>=', now()->subMonths(6))
             ->select(
                 DB::raw("DATE_FORMAT(paid_at, '%Y-%m') as month"),
@@ -88,10 +114,8 @@ class DashboardController extends Controller
             });
 
         // Order status distribution for pie chart
-        $orderStatusDistribution = Order::select(
-            'status',
-            DB::raw('COUNT(*) as count')
-        )
+        $orderStatusDistribution = DB::table('orders')
+            ->select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
             ->get()
             ->map(function ($item) {
@@ -102,7 +126,8 @@ class DashboardController extends Controller
             });
 
         // Daily sales for last 7 days
-        $dailySales = Order::whereNotNull('paid_at')
+        $dailySales = DB::table('orders')
+            ->whereNotNull('paid_at')
             ->where('paid_at', '>=', now()->subDays(7))
             ->select(
                 DB::raw('DATE(paid_at) as date'),
@@ -120,24 +145,22 @@ class DashboardController extends Controller
                 ];
             });
 
-        return Inertia::render('Admin/Dashboard', [
-            'stats' => [
-                'totalRevenue' => $totalRevenue,
-                'totalOrders' => $totalOrders,
-                'totalCustomers' => $totalCustomers,
-                'totalProducts' => $totalProducts,
-                'totalBV' => $totalBV,
-                'totalBonuses' => $totalBonuses,
-                'totalNetworkMembers' => $totalNetworkMembers,
-                'pendingOrders' => $pendingOrders,
-                'completedOrders' => $completedOrders,
-                'activeCustomers' => $activeCustomers,
-                'recentOrders' => $recentOrders,
-                'topProducts' => $topProducts,
-                'monthlyRevenue' => $monthlyRevenue,
-                'orderStatusDistribution' => $orderStatusDistribution,
-                'dailySales' => $dailySales,
-            ],
-        ]);
+        return [
+            'totalRevenue' => $totalRevenue,
+            'totalOrders' => $totalOrders,
+            'totalCustomers' => $totalCustomers,
+            'totalProducts' => $totalProducts,
+            'totalBV' => $totalBV,
+            'totalBonuses' => $totalBonuses,
+            'totalNetworkMembers' => $totalNetworkMembers,
+            'pendingOrders' => $pendingOrders,
+            'completedOrders' => $completedOrders,
+            'activeCustomers' => $activeCustomers,
+            'recentOrders' => $recentOrders,
+            'topProducts' => $topProducts,
+            'monthlyRevenue' => $monthlyRevenue,
+            'orderStatusDistribution' => $orderStatusDistribution,
+            'dailySales' => $dailySales,
+        ];
     }
 }

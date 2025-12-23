@@ -9,11 +9,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('customers', function (Blueprint $table) {
-            // Tambah kolom baru
-            $table->string('nik', 32)->nullable()->after('id');          // NIK biasanya 16, tapi dibuat agak longgar
-            $table->enum('gender', ['male', 'female', 'L', 'P'])->nullable()->after('nik');      // bisa "male/female" atau "L/P", terserah sistem kamu
-            $table->text('alamat')->nullable()->after('gender');
-            $table->string('username', 100)->nullable()->unique()->after('name');
+            // Tambah kolom baru jika belum ada
+            if (! Schema::hasColumn('customers', 'nik')) {
+                $table->string('nik', 32)->nullable()->after('id');
+            }
+            if (! Schema::hasColumn('customers', 'gender')) {
+                $table->enum('gender', ['male', 'female', 'L', 'P'])->nullable()->after('nik');
+            }
+            if (! Schema::hasColumn('customers', 'alamat')) {
+                $table->text('alamat')->nullable()->after('gender');
+            }
+            if (! Schema::hasColumn('customers', 'username')) {
+                $table->string('username', 100)->nullable()->unique()->after('name');
+            }
         });
     }
 
