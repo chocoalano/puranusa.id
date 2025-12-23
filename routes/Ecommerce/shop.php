@@ -50,6 +50,7 @@ Route::middleware(['client.auth'])->group(function () {
     Route::patch('/client/profile/password', [ProfileController::class, 'updatePassword'])->name('client.profile.password');
     Route::delete('/client/profile', [ProfileController::class, 'destroy'])->name('client.profile.destroy');
     Route::post('/client/profile/place-member', [ProfileController::class, 'placeMember'])->name('client.profile.place-member');
+    Route::get('/client/profile/member-tree/{memberId}', [ProfileController::class, 'getMemberTree'])->name('client.profile.member-tree');
 
     // Address Management Routes
     Route::post('/client/profile/addresses', [ProfileController::class, 'storeAddress'])->name('client.profile.addresses.store');

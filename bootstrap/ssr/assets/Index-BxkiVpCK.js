@@ -8665,7 +8665,9 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   props: {
     activeMembers: {},
     passiveMembers: {},
-    prospectMembers: {}
+    prospectMembers: {},
+    hasLeft: { type: Boolean },
+    hasRight: { type: Boolean }
   },
   setup(__props) {
     const showPlacementDialog = ref(false);
@@ -9231,7 +9233,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                               }),
                                               _: 2
                                             }, _parent7, _scopeId6));
-                                            if (__props.activeMembers.length < 2) {
+                                            if (!__props.hasLeft || !__props.hasRight) {
                                               _push7(ssrRenderComponent(unref(_sfc_main$u), {
                                                 size: "sm",
                                                 variant: "default",
@@ -9301,7 +9303,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                                     ]),
                                                     _: 1
                                                   }),
-                                                  __props.activeMembers.length < 2 ? (openBlock(), createBlock(unref(_sfc_main$u), {
+                                                  !__props.hasLeft || !__props.hasRight ? (openBlock(), createBlock(unref(_sfc_main$u), {
                                                     key: 0,
                                                     size: "sm",
                                                     variant: "default",
@@ -9369,7 +9371,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                                   ]),
                                                   _: 1
                                                 }),
-                                                __props.activeMembers.length < 2 ? (openBlock(), createBlock(unref(_sfc_main$u), {
+                                                !__props.hasLeft || !__props.hasRight ? (openBlock(), createBlock(unref(_sfc_main$u), {
                                                   key: 0,
                                                   size: "sm",
                                                   variant: "default",
@@ -9456,7 +9458,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                                 ]),
                                                 _: 1
                                               }),
-                                              __props.activeMembers.length < 2 ? (openBlock(), createBlock(unref(_sfc_main$u), {
+                                              !__props.hasLeft || !__props.hasRight ? (openBlock(), createBlock(unref(_sfc_main$u), {
                                                 key: 0,
                                                 size: "sm",
                                                 variant: "default",
@@ -9928,7 +9930,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                               ]),
                                               _: 1
                                             }),
-                                            __props.activeMembers.length < 2 ? (openBlock(), createBlock(unref(_sfc_main$u), {
+                                            !__props.hasLeft || !__props.hasRight ? (openBlock(), createBlock(unref(_sfc_main$u), {
                                               key: 0,
                                               size: "sm",
                                               variant: "default",
@@ -10215,7 +10217,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                             ]),
                                             _: 1
                                           }),
-                                          __props.activeMembers.length < 2 ? (openBlock(), createBlock(unref(_sfc_main$u), {
+                                          !__props.hasLeft || !__props.hasRight ? (openBlock(), createBlock(unref(_sfc_main$u), {
                                             key: 0,
                                             size: "sm",
                                             variant: "default",
@@ -10524,7 +10526,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                           ]),
                                           _: 1
                                         }),
-                                        __props.activeMembers.length < 2 ? (openBlock(), createBlock(unref(_sfc_main$u), {
+                                        !__props.hasLeft || !__props.hasRight ? (openBlock(), createBlock(unref(_sfc_main$u), {
                                           key: 0,
                                           size: "sm",
                                           variant: "default",
@@ -10696,17 +10698,17 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  _push3(`<div class="grid grid-cols-2 gap-4 py-4"${_scopeId2}><button type="button" class="${ssrRenderClass([
+                  _push3(`<div class="grid grid-cols-2 gap-4 py-4"${_scopeId2}><button type="button"${ssrIncludeBooleanAttr(__props.hasLeft) ? " disabled" : ""} class="${ssrRenderClass([
                     "flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all",
-                    selectedPosition.value === "left" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+                    __props.hasLeft ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed" : selectedPosition.value === "left" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
                   ])}"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(GitBranch), { class: "w-8 h-8 mb-2 rotate-90" }, null, _parent3, _scopeId2));
-                  _push3(`<span class="font-semibold"${_scopeId2}>Posisi Kiri</span><span class="text-xs text-muted-foreground mt-1"${_scopeId2}>Left Position</span></button><button type="button" class="${ssrRenderClass([
+                  _push3(`<span class="font-semibold"${_scopeId2}>Posisi Kiri</span><span class="text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.hasLeft ? "Sudah Terisi" : "Left Position")}</span></button><button type="button"${ssrIncludeBooleanAttr(__props.hasRight) ? " disabled" : ""} class="${ssrRenderClass([
                     "flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all",
-                    selectedPosition.value === "right" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+                    __props.hasRight ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed" : selectedPosition.value === "right" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
                   ])}"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(GitBranch), { class: "w-8 h-8 mb-2 -rotate-90" }, null, _parent3, _scopeId2));
-                  _push3(`<span class="font-semibold"${_scopeId2}>Posisi Kanan</span><span class="text-xs text-muted-foreground mt-1"${_scopeId2}>Right Position</span></button></div>`);
+                  _push3(`<span class="font-semibold"${_scopeId2}>Posisi Kanan</span><span class="text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.hasRight ? "Sudah Terisi" : "Right Position")}</span></button></div>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$M), null, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
@@ -10791,28 +10793,30 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                     createVNode("div", { class: "grid grid-cols-2 gap-4 py-4" }, [
                       createVNode("button", {
                         type: "button",
+                        disabled: __props.hasLeft,
                         class: [
                           "flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all",
-                          selectedPosition.value === "left" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+                          __props.hasLeft ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed" : selectedPosition.value === "left" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
                         ],
-                        onClick: ($event) => selectedPosition.value = "left"
+                        onClick: ($event) => !__props.hasLeft && (selectedPosition.value = "left")
                       }, [
                         createVNode(unref(GitBranch), { class: "w-8 h-8 mb-2 rotate-90" }),
                         createVNode("span", { class: "font-semibold" }, "Posisi Kiri"),
-                        createVNode("span", { class: "text-xs text-muted-foreground mt-1" }, "Left Position")
-                      ], 10, ["onClick"]),
+                        createVNode("span", { class: "text-xs text-muted-foreground mt-1" }, toDisplayString(__props.hasLeft ? "Sudah Terisi" : "Left Position"), 1)
+                      ], 10, ["disabled", "onClick"]),
                       createVNode("button", {
                         type: "button",
+                        disabled: __props.hasRight,
                         class: [
                           "flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all",
-                          selectedPosition.value === "right" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+                          __props.hasRight ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed" : selectedPosition.value === "right" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
                         ],
-                        onClick: ($event) => selectedPosition.value = "right"
+                        onClick: ($event) => !__props.hasRight && (selectedPosition.value = "right")
                       }, [
                         createVNode(unref(GitBranch), { class: "w-8 h-8 mb-2 -rotate-90" }),
                         createVNode("span", { class: "font-semibold" }, "Posisi Kanan"),
-                        createVNode("span", { class: "text-xs text-muted-foreground mt-1" }, "Right Position")
-                      ], 10, ["onClick"])
+                        createVNode("span", { class: "text-xs text-muted-foreground mt-1" }, toDisplayString(__props.hasRight ? "Sudah Terisi" : "Right Position"), 1)
+                      ], 10, ["disabled", "onClick"])
                     ]),
                     createVNode(unref(_sfc_main$M), null, {
                       default: withCtx(() => [
@@ -10869,28 +10873,30 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                   createVNode("div", { class: "grid grid-cols-2 gap-4 py-4" }, [
                     createVNode("button", {
                       type: "button",
+                      disabled: __props.hasLeft,
                       class: [
                         "flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all",
-                        selectedPosition.value === "left" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+                        __props.hasLeft ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed" : selectedPosition.value === "left" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
                       ],
-                      onClick: ($event) => selectedPosition.value = "left"
+                      onClick: ($event) => !__props.hasLeft && (selectedPosition.value = "left")
                     }, [
                       createVNode(unref(GitBranch), { class: "w-8 h-8 mb-2 rotate-90" }),
                       createVNode("span", { class: "font-semibold" }, "Posisi Kiri"),
-                      createVNode("span", { class: "text-xs text-muted-foreground mt-1" }, "Left Position")
-                    ], 10, ["onClick"]),
+                      createVNode("span", { class: "text-xs text-muted-foreground mt-1" }, toDisplayString(__props.hasLeft ? "Sudah Terisi" : "Left Position"), 1)
+                    ], 10, ["disabled", "onClick"]),
                     createVNode("button", {
                       type: "button",
+                      disabled: __props.hasRight,
                       class: [
                         "flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all",
-                        selectedPosition.value === "right" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
+                        __props.hasRight ? "border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed" : selectedPosition.value === "right" ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300"
                       ],
-                      onClick: ($event) => selectedPosition.value = "right"
+                      onClick: ($event) => !__props.hasRight && (selectedPosition.value = "right")
                     }, [
                       createVNode(unref(GitBranch), { class: "w-8 h-8 mb-2 -rotate-90" }),
                       createVNode("span", { class: "font-semibold" }, "Posisi Kanan"),
-                      createVNode("span", { class: "text-xs text-muted-foreground mt-1" }, "Right Position")
-                    ], 10, ["onClick"])
+                      createVNode("span", { class: "text-xs text-muted-foreground mt-1" }, toDisplayString(__props.hasRight ? "Sudah Terisi" : "Right Position"), 1)
+                    ], 10, ["disabled", "onClick"])
                   ]),
                   createVNode(unref(_sfc_main$M), null, {
                     default: withCtx(() => [
@@ -10939,9 +10945,10 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __ssrInlineRender: true,
   props: {
     binaryTree: {},
-    onOpenPlacement: { type: Function }
+    onOpenPlacement: {},
+    isDialog: { type: Boolean, default: false }
   },
-  emits: ["openPlacement"],
+  emits: ["openPlacement", "memberClick"],
   setup(__props, { expose: __expose, emit: __emit }) {
     const props = __props;
     const emit = __emit;
@@ -11190,6 +11197,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             const data = obj.part?.data;
             if (data?.isPlaceholder && data?.parentId && data?.placeholderPosition) {
               emit("openPlacement", data.parentId, data.placeholderPosition);
+            } else if (!data?.isPlaceholder && data?.key && !props.isDialog) {
+              emit("memberClick", data.key);
             }
           }
         }
@@ -11254,7 +11263,10 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       _push(`<div${ssrRenderAttrs(mergeProps({
         ref_key: "diagramDiv",
         ref: diagramDiv,
-        class: "w-full h-[500px] sm:h-[600px] border rounded-lg bg-slate-50"
+        class: [
+          "w-full border rounded-lg bg-slate-50",
+          __props.isDialog ? "h-[350px] sm:h-[400px]" : "h-[500px] sm:h-[600px]"
+        ]
       }, _attrs))}></div>`);
     };
   }
@@ -11277,10 +11289,20 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     const goJSTreeRef = ref(null);
+    const dialogGoJSTreeRef = ref(null);
     const showPlacementDialog = ref(false);
     const selectedUplineId = ref(null);
     const selectedPosition = ref(null);
     const selectedMember = ref(null);
+    const showMemberTreeDialog = ref(false);
+    const memberTreeLoading = ref(false);
+    const selectedMemberForTree = ref(null);
+    const memberTree = ref(null);
+    const memberTreeStats = ref({
+      totalDownlines: 0,
+      totalLeft: 0,
+      totalRight: 0
+    });
     const placementForm = useForm({
       member_id: 0,
       position: ""
@@ -11324,6 +11346,50 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         month: "short",
         year: "numeric"
       });
+    };
+    const openMemberTreeDialog = async (memberId) => {
+      memberTreeLoading.value = true;
+      showMemberTreeDialog.value = true;
+      memberTree.value = null;
+      try {
+        const response = await axios.get(`/client/profile/member-tree/${memberId}`);
+        if (response.data.success) {
+          selectedMemberForTree.value = response.data.data.member;
+          memberTree.value = response.data.data.tree;
+          memberTreeStats.value = {
+            totalDownlines: response.data.data.totalDownlines,
+            totalLeft: response.data.data.totalLeft,
+            totalRight: response.data.data.totalRight
+          };
+        } else {
+          toast.error("Gagal memuat data jaringan member");
+          showMemberTreeDialog.value = false;
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Gagal memuat data jaringan member");
+        showMemberTreeDialog.value = false;
+      } finally {
+        memberTreeLoading.value = false;
+      }
+    };
+    const closeMemberTreeDialog = () => {
+      showMemberTreeDialog.value = false;
+      selectedMemberForTree.value = null;
+      memberTree.value = null;
+      memberTreeStats.value = {
+        totalDownlines: 0,
+        totalLeft: 0,
+        totalRight: 0
+      };
+    };
+    const handleDialogZoomIn = () => {
+      dialogGoJSTreeRef.value?.zoomIn();
+    };
+    const handleDialogZoomOut = () => {
+      dialogGoJSTreeRef.value?.zoomOut();
+    };
+    const handleDialogResetZoom = () => {
+      dialogGoJSTreeRef.value?.resetZoom();
     };
     const handleZoomIn = () => {
       goJSTreeRef.value?.zoomIn();
@@ -11705,14 +11771,15 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                       ref_key: "goJSTreeRef",
                       ref: goJSTreeRef,
                       "binary-tree": __props.binaryTree,
-                      onOpenPlacement: openPlacementDialog
+                      onOpenPlacement: openPlacementDialog,
+                      onMemberClick: openMemberTreeDialog
                     }, null, _parent3, _scopeId2));
                   } else {
                     _push3(`<div class="h-[400px] flex items-center justify-center text-muted-foreground"${_scopeId2}><div class="text-center"${_scopeId2}>`);
                     _push3(ssrRenderComponent(unref(Users), { class: "w-12 h-12 mx-auto mb-4 opacity-20" }, null, _parent3, _scopeId2));
                     _push3(`<p${_scopeId2}>Belum ada jaringan binary tree</p></div></div>`);
                   }
-                  _push3(`<div class="mt-4 sm:mt-6 p-2 sm:p-4 rounded-lg bg-muted/50"${_scopeId2}><div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left"${_scopeId2}><p class="text-[10px] sm:text-sm text-muted-foreground"${_scopeId2}> 💡 <span class="hidden sm:inline"${_scopeId2}>Klik node &quot;+&quot; untuk menambahkan member ke posisi tersebut</span><span class="sm:hidden"${_scopeId2}>Klik &quot;+&quot; untuk tambah member</span></p><p class="text-[10px] sm:text-sm text-muted-foreground"${_scopeId2}><span class="hidden sm:inline"${_scopeId2}>Scroll/drag untuk navigasi • Mouse wheel untuk zoom</span><span class="sm:hidden"${_scopeId2}>Drag &amp; Pinch untuk navigasi</span></p></div></div>`);
+                  _push3(`<div class="mt-4 sm:mt-6 p-2 sm:p-4 rounded-lg bg-muted/50"${_scopeId2}><div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left"${_scopeId2}><p class="text-[10px] sm:text-sm text-muted-foreground"${_scopeId2}> 💡 <span class="hidden sm:inline"${_scopeId2}>Klik member untuk melihat jaringannya • Klik &quot;+&quot; untuk menambah member</span><span class="sm:hidden"${_scopeId2}>Klik member untuk lihat jaringan</span></p><p class="text-[10px] sm:text-sm text-muted-foreground"${_scopeId2}><span class="hidden sm:inline"${_scopeId2}>Scroll/drag untuk navigasi • Mouse wheel untuk zoom</span><span class="sm:hidden"${_scopeId2}>Drag &amp; Pinch untuk navigasi</span></p></div></div>`);
                 } else {
                   return [
                     __props.binaryTree ? (openBlock(), createBlock(_sfc_main$4, {
@@ -11720,7 +11787,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                       ref_key: "goJSTreeRef",
                       ref: goJSTreeRef,
                       "binary-tree": __props.binaryTree,
-                      onOpenPlacement: openPlacementDialog
+                      onOpenPlacement: openPlacementDialog,
+                      onMemberClick: openMemberTreeDialog
                     }, null, 8, ["binary-tree"])) : (openBlock(), createBlock("div", {
                       key: 1,
                       class: "h-[400px] flex items-center justify-center text-muted-foreground"
@@ -11734,8 +11802,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                       createVNode("div", { class: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left" }, [
                         createVNode("p", { class: "text-[10px] sm:text-sm text-muted-foreground" }, [
                           createTextVNode(" 💡 "),
-                          createVNode("span", { class: "hidden sm:inline" }, 'Klik node "+" untuk menambahkan member ke posisi tersebut'),
-                          createVNode("span", { class: "sm:hidden" }, 'Klik "+" untuk tambah member')
+                          createVNode("span", { class: "hidden sm:inline" }, 'Klik member untuk melihat jaringannya • Klik "+" untuk menambah member'),
+                          createVNode("span", { class: "sm:hidden" }, "Klik member untuk lihat jaringan")
                         ]),
                         createVNode("p", { class: "text-[10px] sm:text-sm text-muted-foreground" }, [
                           createVNode("span", { class: "hidden sm:inline" }, "Scroll/drag untuk navigasi • Mouse wheel untuk zoom"),
@@ -11814,7 +11882,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     ref_key: "goJSTreeRef",
                     ref: goJSTreeRef,
                     "binary-tree": __props.binaryTree,
-                    onOpenPlacement: openPlacementDialog
+                    onOpenPlacement: openPlacementDialog,
+                    onMemberClick: openMemberTreeDialog
                   }, null, 8, ["binary-tree"])) : (openBlock(), createBlock("div", {
                     key: 1,
                     class: "h-[400px] flex items-center justify-center text-muted-foreground"
@@ -11828,8 +11897,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     createVNode("div", { class: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left" }, [
                       createVNode("p", { class: "text-[10px] sm:text-sm text-muted-foreground" }, [
                         createTextVNode(" 💡 "),
-                        createVNode("span", { class: "hidden sm:inline" }, 'Klik node "+" untuk menambahkan member ke posisi tersebut'),
-                        createVNode("span", { class: "sm:hidden" }, 'Klik "+" untuk tambah member')
+                        createVNode("span", { class: "hidden sm:inline" }, 'Klik member untuk melihat jaringannya • Klik "+" untuk menambah member'),
+                        createVNode("span", { class: "sm:hidden" }, "Klik member untuk lihat jaringan")
                       ]),
                       createVNode("p", { class: "text-[10px] sm:text-sm text-muted-foreground" }, [
                         createVNode("span", { class: "hidden sm:inline" }, "Scroll/drag untuk navigasi • Mouse wheel untuk zoom"),
@@ -12291,6 +12360,418 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }, 8, ["disabled"])
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ];
+          }
+        }),
+        _: 1
+      }, _parent));
+      _push(ssrRenderComponent(unref(_sfc_main$y), {
+        open: showMemberTreeDialog.value,
+        "onUpdate:open": closeMemberTreeDialog
+      }, {
+        default: withCtx((_, _push2, _parent2, _scopeId) => {
+          if (_push2) {
+            _push2(ssrRenderComponent(unref(_sfc_main$z), { class: "w-[95vw] max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6" }, {
+              default: withCtx((_2, _push3, _parent3, _scopeId2) => {
+                if (_push3) {
+                  _push3(ssrRenderComponent(unref(_sfc_main$A), { class: "space-y-1 sm:space-y-2" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(ssrRenderComponent(unref(_sfc_main$B), { class: "text-base sm:text-lg flex items-center gap-2" }, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              _push5(ssrRenderComponent(unref(Users), { class: "h-5 w-5 text-primary" }, null, _parent5, _scopeId4));
+                              _push5(` Jaringan ${ssrInterpolate(selectedMemberForTree.value?.name || "Member")}`);
+                            } else {
+                              return [
+                                createVNode(unref(Users), { class: "h-5 w-5 text-primary" }),
+                                createTextVNode(" Jaringan " + toDisplayString(selectedMemberForTree.value?.name || "Member"), 1)
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                        _push4(ssrRenderComponent(unref(_sfc_main$C), { class: "text-xs sm:text-sm" }, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              if (selectedMemberForTree.value) {
+                                _push5(`<span${_scopeId4}>${ssrInterpolate(selectedMemberForTree.value.email)}</span>`);
+                              } else {
+                                _push5(`<!---->`);
+                              }
+                            } else {
+                              return [
+                                selectedMemberForTree.value ? (openBlock(), createBlock("span", { key: 0 }, toDisplayString(selectedMemberForTree.value.email), 1)) : createCommentVNode("", true)
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                      } else {
+                        return [
+                          createVNode(unref(_sfc_main$B), { class: "text-base sm:text-lg flex items-center gap-2" }, {
+                            default: withCtx(() => [
+                              createVNode(unref(Users), { class: "h-5 w-5 text-primary" }),
+                              createTextVNode(" Jaringan " + toDisplayString(selectedMemberForTree.value?.name || "Member"), 1)
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(_sfc_main$C), { class: "text-xs sm:text-sm" }, {
+                            default: withCtx(() => [
+                              selectedMemberForTree.value ? (openBlock(), createBlock("span", { key: 0 }, toDisplayString(selectedMemberForTree.value.email), 1)) : createCommentVNode("", true)
+                            ]),
+                            _: 1
+                          })
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  if (memberTreeLoading.value) {
+                    _push3(`<div class="flex-1 flex items-center justify-center py-12"${_scopeId2}><div class="text-center"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(Loader2), { class: "w-8 h-8 mx-auto mb-4 animate-spin text-primary" }, null, _parent3, _scopeId2));
+                    _push3(`<p class="text-sm text-muted-foreground"${_scopeId2}>Memuat data jaringan...</p></div></div>`);
+                  } else if (memberTree.value) {
+                    _push3(`<div class="flex-1 overflow-hidden flex flex-col"${_scopeId2}><div class="grid grid-cols-3 gap-2 mb-4"${_scopeId2}><div class="p-2 sm:p-3 rounded-lg bg-muted/50 text-center"${_scopeId2}><div class="text-sm sm:text-lg font-bold"${_scopeId2}>${ssrInterpolate(memberTreeStats.value.totalDownlines)}</div><div class="text-[10px] sm:text-xs text-muted-foreground"${_scopeId2}>Total</div></div><div class="p-2 sm:p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-center"${_scopeId2}><div class="text-sm sm:text-lg font-bold text-blue-600"${_scopeId2}>${ssrInterpolate(memberTreeStats.value.totalLeft)}</div><div class="text-[10px] sm:text-xs text-muted-foreground"${_scopeId2}>Kiri</div></div><div class="p-2 sm:p-3 rounded-lg bg-green-50 dark:bg-green-950/30 text-center"${_scopeId2}><div class="text-sm sm:text-lg font-bold text-green-600"${_scopeId2}>${ssrInterpolate(memberTreeStats.value.totalRight)}</div><div class="text-[10px] sm:text-xs text-muted-foreground"${_scopeId2}>Kanan</div></div></div><div class="flex items-center justify-end gap-1 sm:gap-2 mb-2"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(_sfc_main$u), {
+                      variant: "outline",
+                      size: "icon",
+                      class: "h-7 w-7 sm:h-8 sm:w-8",
+                      onClick: handleDialogZoomOut
+                    }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(ssrRenderComponent(unref(ZoomOut), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" }, null, _parent4, _scopeId3));
+                        } else {
+                          return [
+                            createVNode(unref(ZoomOut), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" })
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(ssrRenderComponent(unref(_sfc_main$u), {
+                      variant: "outline",
+                      size: "icon",
+                      class: "h-7 w-7 sm:h-8 sm:w-8",
+                      onClick: handleDialogZoomIn
+                    }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(ssrRenderComponent(unref(ZoomIn), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" }, null, _parent4, _scopeId3));
+                        } else {
+                          return [
+                            createVNode(unref(ZoomIn), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" })
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(ssrRenderComponent(unref(_sfc_main$u), {
+                      variant: "ghost",
+                      size: "icon",
+                      class: "h-7 w-7 sm:h-8 sm:w-8",
+                      onClick: handleDialogResetZoom,
+                      title: "Fit to Screen"
+                    }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(ssrRenderComponent(unref(RotateCcw), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" }, null, _parent4, _scopeId3));
+                        } else {
+                          return [
+                            createVNode(unref(RotateCcw), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" })
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(`</div><div class="flex-1 min-h-0 border rounded-lg overflow-hidden"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(_sfc_main$4, {
+                      ref_key: "dialogGoJSTreeRef",
+                      ref: dialogGoJSTreeRef,
+                      "binary-tree": memberTree.value,
+                      "is-dialog": true
+                    }, null, _parent3, _scopeId2));
+                    _push3(`</div></div>`);
+                  } else {
+                    _push3(`<div class="flex-1 flex items-center justify-center py-12"${_scopeId2}><div class="text-center text-muted-foreground"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(Users), { class: "w-12 h-12 mx-auto mb-4 opacity-20" }, null, _parent3, _scopeId2));
+                    _push3(`<p${_scopeId2}>Tidak ada data jaringan</p></div></div>`);
+                  }
+                  _push3(ssrRenderComponent(unref(_sfc_main$M), { class: "mt-4" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(ssrRenderComponent(unref(_sfc_main$u), {
+                          variant: "outline",
+                          onClick: closeMemberTreeDialog,
+                          class: "w-full sm:w-auto"
+                        }, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              _push5(` Tutup `);
+                            } else {
+                              return [
+                                createTextVNode(" Tutup ")
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                      } else {
+                        return [
+                          createVNode(unref(_sfc_main$u), {
+                            variant: "outline",
+                            onClick: closeMemberTreeDialog,
+                            class: "w-full sm:w-auto"
+                          }, {
+                            default: withCtx(() => [
+                              createTextVNode(" Tutup ")
+                            ]),
+                            _: 1
+                          })
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                } else {
+                  return [
+                    createVNode(unref(_sfc_main$A), { class: "space-y-1 sm:space-y-2" }, {
+                      default: withCtx(() => [
+                        createVNode(unref(_sfc_main$B), { class: "text-base sm:text-lg flex items-center gap-2" }, {
+                          default: withCtx(() => [
+                            createVNode(unref(Users), { class: "h-5 w-5 text-primary" }),
+                            createTextVNode(" Jaringan " + toDisplayString(selectedMemberForTree.value?.name || "Member"), 1)
+                          ]),
+                          _: 1
+                        }),
+                        createVNode(unref(_sfc_main$C), { class: "text-xs sm:text-sm" }, {
+                          default: withCtx(() => [
+                            selectedMemberForTree.value ? (openBlock(), createBlock("span", { key: 0 }, toDisplayString(selectedMemberForTree.value.email), 1)) : createCommentVNode("", true)
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    }),
+                    memberTreeLoading.value ? (openBlock(), createBlock("div", {
+                      key: 0,
+                      class: "flex-1 flex items-center justify-center py-12"
+                    }, [
+                      createVNode("div", { class: "text-center" }, [
+                        createVNode(unref(Loader2), { class: "w-8 h-8 mx-auto mb-4 animate-spin text-primary" }),
+                        createVNode("p", { class: "text-sm text-muted-foreground" }, "Memuat data jaringan...")
+                      ])
+                    ])) : memberTree.value ? (openBlock(), createBlock("div", {
+                      key: 1,
+                      class: "flex-1 overflow-hidden flex flex-col"
+                    }, [
+                      createVNode("div", { class: "grid grid-cols-3 gap-2 mb-4" }, [
+                        createVNode("div", { class: "p-2 sm:p-3 rounded-lg bg-muted/50 text-center" }, [
+                          createVNode("div", { class: "text-sm sm:text-lg font-bold" }, toDisplayString(memberTreeStats.value.totalDownlines), 1),
+                          createVNode("div", { class: "text-[10px] sm:text-xs text-muted-foreground" }, "Total")
+                        ]),
+                        createVNode("div", { class: "p-2 sm:p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-center" }, [
+                          createVNode("div", { class: "text-sm sm:text-lg font-bold text-blue-600" }, toDisplayString(memberTreeStats.value.totalLeft), 1),
+                          createVNode("div", { class: "text-[10px] sm:text-xs text-muted-foreground" }, "Kiri")
+                        ]),
+                        createVNode("div", { class: "p-2 sm:p-3 rounded-lg bg-green-50 dark:bg-green-950/30 text-center" }, [
+                          createVNode("div", { class: "text-sm sm:text-lg font-bold text-green-600" }, toDisplayString(memberTreeStats.value.totalRight), 1),
+                          createVNode("div", { class: "text-[10px] sm:text-xs text-muted-foreground" }, "Kanan")
+                        ])
+                      ]),
+                      createVNode("div", { class: "flex items-center justify-end gap-1 sm:gap-2 mb-2" }, [
+                        createVNode(unref(_sfc_main$u), {
+                          variant: "outline",
+                          size: "icon",
+                          class: "h-7 w-7 sm:h-8 sm:w-8",
+                          onClick: handleDialogZoomOut
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(unref(ZoomOut), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" })
+                          ]),
+                          _: 1
+                        }),
+                        createVNode(unref(_sfc_main$u), {
+                          variant: "outline",
+                          size: "icon",
+                          class: "h-7 w-7 sm:h-8 sm:w-8",
+                          onClick: handleDialogZoomIn
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(unref(ZoomIn), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" })
+                          ]),
+                          _: 1
+                        }),
+                        createVNode(unref(_sfc_main$u), {
+                          variant: "ghost",
+                          size: "icon",
+                          class: "h-7 w-7 sm:h-8 sm:w-8",
+                          onClick: handleDialogResetZoom,
+                          title: "Fit to Screen"
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(unref(RotateCcw), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" })
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      createVNode("div", { class: "flex-1 min-h-0 border rounded-lg overflow-hidden" }, [
+                        createVNode(_sfc_main$4, {
+                          ref_key: "dialogGoJSTreeRef",
+                          ref: dialogGoJSTreeRef,
+                          "binary-tree": memberTree.value,
+                          "is-dialog": true
+                        }, null, 8, ["binary-tree"])
+                      ])
+                    ])) : (openBlock(), createBlock("div", {
+                      key: 2,
+                      class: "flex-1 flex items-center justify-center py-12"
+                    }, [
+                      createVNode("div", { class: "text-center text-muted-foreground" }, [
+                        createVNode(unref(Users), { class: "w-12 h-12 mx-auto mb-4 opacity-20" }),
+                        createVNode("p", null, "Tidak ada data jaringan")
+                      ])
+                    ])),
+                    createVNode(unref(_sfc_main$M), { class: "mt-4" }, {
+                      default: withCtx(() => [
+                        createVNode(unref(_sfc_main$u), {
+                          variant: "outline",
+                          onClick: closeMemberTreeDialog,
+                          class: "w-full sm:w-auto"
+                        }, {
+                          default: withCtx(() => [
+                            createTextVNode(" Tutup ")
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    })
+                  ];
+                }
+              }),
+              _: 1
+            }, _parent2, _scopeId));
+          } else {
+            return [
+              createVNode(unref(_sfc_main$z), { class: "w-[95vw] max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6" }, {
+                default: withCtx(() => [
+                  createVNode(unref(_sfc_main$A), { class: "space-y-1 sm:space-y-2" }, {
+                    default: withCtx(() => [
+                      createVNode(unref(_sfc_main$B), { class: "text-base sm:text-lg flex items-center gap-2" }, {
+                        default: withCtx(() => [
+                          createVNode(unref(Users), { class: "h-5 w-5 text-primary" }),
+                          createTextVNode(" Jaringan " + toDisplayString(selectedMemberForTree.value?.name || "Member"), 1)
+                        ]),
+                        _: 1
+                      }),
+                      createVNode(unref(_sfc_main$C), { class: "text-xs sm:text-sm" }, {
+                        default: withCtx(() => [
+                          selectedMemberForTree.value ? (openBlock(), createBlock("span", { key: 0 }, toDisplayString(selectedMemberForTree.value.email), 1)) : createCommentVNode("", true)
+                        ]),
+                        _: 1
+                      })
+                    ]),
+                    _: 1
+                  }),
+                  memberTreeLoading.value ? (openBlock(), createBlock("div", {
+                    key: 0,
+                    class: "flex-1 flex items-center justify-center py-12"
+                  }, [
+                    createVNode("div", { class: "text-center" }, [
+                      createVNode(unref(Loader2), { class: "w-8 h-8 mx-auto mb-4 animate-spin text-primary" }),
+                      createVNode("p", { class: "text-sm text-muted-foreground" }, "Memuat data jaringan...")
+                    ])
+                  ])) : memberTree.value ? (openBlock(), createBlock("div", {
+                    key: 1,
+                    class: "flex-1 overflow-hidden flex flex-col"
+                  }, [
+                    createVNode("div", { class: "grid grid-cols-3 gap-2 mb-4" }, [
+                      createVNode("div", { class: "p-2 sm:p-3 rounded-lg bg-muted/50 text-center" }, [
+                        createVNode("div", { class: "text-sm sm:text-lg font-bold" }, toDisplayString(memberTreeStats.value.totalDownlines), 1),
+                        createVNode("div", { class: "text-[10px] sm:text-xs text-muted-foreground" }, "Total")
+                      ]),
+                      createVNode("div", { class: "p-2 sm:p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-center" }, [
+                        createVNode("div", { class: "text-sm sm:text-lg font-bold text-blue-600" }, toDisplayString(memberTreeStats.value.totalLeft), 1),
+                        createVNode("div", { class: "text-[10px] sm:text-xs text-muted-foreground" }, "Kiri")
+                      ]),
+                      createVNode("div", { class: "p-2 sm:p-3 rounded-lg bg-green-50 dark:bg-green-950/30 text-center" }, [
+                        createVNode("div", { class: "text-sm sm:text-lg font-bold text-green-600" }, toDisplayString(memberTreeStats.value.totalRight), 1),
+                        createVNode("div", { class: "text-[10px] sm:text-xs text-muted-foreground" }, "Kanan")
+                      ])
+                    ]),
+                    createVNode("div", { class: "flex items-center justify-end gap-1 sm:gap-2 mb-2" }, [
+                      createVNode(unref(_sfc_main$u), {
+                        variant: "outline",
+                        size: "icon",
+                        class: "h-7 w-7 sm:h-8 sm:w-8",
+                        onClick: handleDialogZoomOut
+                      }, {
+                        default: withCtx(() => [
+                          createVNode(unref(ZoomOut), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" })
+                        ]),
+                        _: 1
+                      }),
+                      createVNode(unref(_sfc_main$u), {
+                        variant: "outline",
+                        size: "icon",
+                        class: "h-7 w-7 sm:h-8 sm:w-8",
+                        onClick: handleDialogZoomIn
+                      }, {
+                        default: withCtx(() => [
+                          createVNode(unref(ZoomIn), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" })
+                        ]),
+                        _: 1
+                      }),
+                      createVNode(unref(_sfc_main$u), {
+                        variant: "ghost",
+                        size: "icon",
+                        class: "h-7 w-7 sm:h-8 sm:w-8",
+                        onClick: handleDialogResetZoom,
+                        title: "Fit to Screen"
+                      }, {
+                        default: withCtx(() => [
+                          createVNode(unref(RotateCcw), { class: "h-3.5 w-3.5 sm:h-4 sm:w-4" })
+                        ]),
+                        _: 1
+                      })
+                    ]),
+                    createVNode("div", { class: "flex-1 min-h-0 border rounded-lg overflow-hidden" }, [
+                      createVNode(_sfc_main$4, {
+                        ref_key: "dialogGoJSTreeRef",
+                        ref: dialogGoJSTreeRef,
+                        "binary-tree": memberTree.value,
+                        "is-dialog": true
+                      }, null, 8, ["binary-tree"])
+                    ])
+                  ])) : (openBlock(), createBlock("div", {
+                    key: 2,
+                    class: "flex-1 flex items-center justify-center py-12"
+                  }, [
+                    createVNode("div", { class: "text-center text-muted-foreground" }, [
+                      createVNode(unref(Users), { class: "w-12 h-12 mx-auto mb-4 opacity-20" }),
+                      createVNode("p", null, "Tidak ada data jaringan")
+                    ])
+                  ])),
+                  createVNode(unref(_sfc_main$M), { class: "mt-4" }, {
+                    default: withCtx(() => [
+                      createVNode(unref(_sfc_main$u), {
+                        variant: "outline",
+                        onClick: closeMemberTreeDialog,
+                        class: "w-full sm:w-auto"
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode(" Tutup ")
+                        ]),
+                        _: 1
+                      })
                     ]),
                     _: 1
                   })
@@ -16360,15 +16841,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _push4(ssrRenderComponent(_sfc_main$5, {
                             "active-members": __props.activeMembers,
                             "passive-members": __props.passiveMembers,
-                            "prospect-members": __props.prospectMembers
+                            "prospect-members": __props.prospectMembers,
+                            "has-left": !!__props.binaryTree?.left,
+                            "has-right": !!__props.binaryTree?.right
                           }, null, _parent4, _scopeId3));
                         } else {
                           return [
                             createVNode(_sfc_main$5, {
                               "active-members": __props.activeMembers,
                               "passive-members": __props.passiveMembers,
-                              "prospect-members": __props.prospectMembers
-                            }, null, 8, ["active-members", "passive-members", "prospect-members"])
+                              "prospect-members": __props.prospectMembers,
+                              "has-left": !!__props.binaryTree?.left,
+                              "has-right": !!__props.binaryTree?.right
+                            }, null, 8, ["active-members", "passive-members", "prospect-members", "has-left", "has-right"])
                           ];
                         }
                       }),
@@ -16631,8 +17116,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           createVNode(_sfc_main$5, {
                             "active-members": __props.activeMembers,
                             "passive-members": __props.passiveMembers,
-                            "prospect-members": __props.prospectMembers
-                          }, null, 8, ["active-members", "passive-members", "prospect-members"])
+                            "prospect-members": __props.prospectMembers,
+                            "has-left": !!__props.binaryTree?.left,
+                            "has-right": !!__props.binaryTree?.right
+                          }, null, 8, ["active-members", "passive-members", "prospect-members", "has-left", "has-right"])
                         ]),
                         _: 1
                       })) : createCommentVNode("", true),
@@ -16876,8 +17363,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 createVNode(_sfc_main$5, {
                                   "active-members": __props.activeMembers,
                                   "passive-members": __props.passiveMembers,
-                                  "prospect-members": __props.prospectMembers
-                                }, null, 8, ["active-members", "passive-members", "prospect-members"])
+                                  "prospect-members": __props.prospectMembers,
+                                  "has-left": !!__props.binaryTree?.left,
+                                  "has-right": !!__props.binaryTree?.right
+                                }, null, 8, ["active-members", "passive-members", "prospect-members", "has-left", "has-right"])
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),

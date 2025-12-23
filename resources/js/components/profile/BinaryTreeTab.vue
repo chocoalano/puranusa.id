@@ -10,11 +10,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Users, TrendingUp, UserPlus, ZoomIn, ZoomOut, RotateCcw } from 'lucide-vue-next';
+import { Users, TrendingUp, UserPlus, ZoomIn, ZoomOut, RotateCcw, Loader2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import GoJSBinaryTree from './GoJSBinaryTree.vue';
+import axios from 'axios';
 
 interface TreeNode {
     id: number;
@@ -51,11 +52,23 @@ interface Props {
 defineProps<Props>();
 
 const goJSTreeRef = ref<InstanceType<typeof GoJSBinaryTree> | null>(null);
+const dialogGoJSTreeRef = ref<InstanceType<typeof GoJSBinaryTree> | null>(null);
 
 const showPlacementDialog = ref(false);
 const selectedUplineId = ref<number | null>(null);
 const selectedPosition = ref<'left' | 'right' | null>(null);
 const selectedMember = ref<PassiveMember | null>(null);
+
+// Member tree dialog state
+const showMemberTreeDialog = ref(false);
+const memberTreeLoading = ref(false);
+const selectedMemberForTree = ref<{ id: number; name: string; email: string } | null>(null);
+const memberTree = ref<TreeNode | null>(null);
+const memberTreeStats = ref({
+    totalDownlines: 0,
+    totalLeft: 0,
+    totalRight: 0,
+});
 
 const placementForm = useForm({
     member_id: 0,
@@ -107,6 +120,57 @@ const formatDate = (dateString: string) => {
         month: 'short',
         year: 'numeric',
     });
+};
+
+// Member tree dialog functions
+const openMemberTreeDialog = async (memberId: number) => {
+    memberTreeLoading.value = true;
+    showMemberTreeDialog.value = true;
+    memberTree.value = null;
+
+    try {
+        const response = await axios.get(`/client/profile/member-tree/${memberId}`);
+        if (response.data.success) {
+            selectedMemberForTree.value = response.data.data.member;
+            memberTree.value = response.data.data.tree;
+            memberTreeStats.value = {
+                totalDownlines: response.data.data.totalDownlines,
+                totalLeft: response.data.data.totalLeft,
+                totalRight: response.data.data.totalRight,
+            };
+        } else {
+            toast.error('Gagal memuat data jaringan member');
+            showMemberTreeDialog.value = false;
+        }
+    } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Gagal memuat data jaringan member');
+        showMemberTreeDialog.value = false;
+    } finally {
+        memberTreeLoading.value = false;
+    }
+};
+
+const closeMemberTreeDialog = () => {
+    showMemberTreeDialog.value = false;
+    selectedMemberForTree.value = null;
+    memberTree.value = null;
+    memberTreeStats.value = {
+        totalDownlines: 0,
+        totalLeft: 0,
+        totalRight: 0,
+    };
+};
+
+const handleDialogZoomIn = () => {
+    dialogGoJSTreeRef.value?.zoomIn();
+};
+
+const handleDialogZoomOut = () => {
+    dialogGoJSTreeRef.value?.zoomOut();
+};
+
+const handleDialogResetZoom = () => {
+    dialogGoJSTreeRef.value?.resetZoom();
 };
 
 const handleZoomIn = () => {
@@ -206,6 +270,7 @@ const handleResetZoom = () => {
                     ref="goJSTreeRef"
                     :binary-tree="binaryTree"
                     @open-placement="openPlacementDialog"
+                    @member-click="openMemberTreeDialog"
                 />
                 <div v-else class="h-[400px] flex items-center justify-center text-muted-foreground">
                     <div class="text-center">
@@ -218,8 +283,8 @@ const handleResetZoom = () => {
                 <div class="mt-4 sm:mt-6 p-2 sm:p-4 rounded-lg bg-muted/50">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left">
                         <p class="text-[10px] sm:text-sm text-muted-foreground">
-                            💡 <span class="hidden sm:inline">Klik node "+" untuk menambahkan member ke posisi tersebut</span>
-                            <span class="sm:hidden">Klik "+" untuk tambah member</span>
+                            💡 <span class="hidden sm:inline">Klik member untuk melihat jaringannya • Klik "+" untuk menambah member</span>
+                            <span class="sm:hidden">Klik member untuk lihat jaringan</span>
                         </p>
                         <p class="text-[10px] sm:text-sm text-muted-foreground">
                             <span class="hidden sm:inline">Scroll/drag untuk navigasi • Mouse wheel untuk zoom</span>
@@ -303,6 +368,102 @@ const handleResetZoom = () => {
                     class="w-full sm:w-auto"
                 >
                     {{ placementForm.processing ? 'Memproses...' : 'Tempatkan' }}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    <!-- Member Tree Dialog -->
+    <Dialog :open="showMemberTreeDialog" @update:open="closeMemberTreeDialog">
+        <DialogContent class="w-[95vw] max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
+            <DialogHeader class="space-y-1 sm:space-y-2">
+                <DialogTitle class="text-base sm:text-lg flex items-center gap-2">
+                    <Users class="h-5 w-5 text-primary" />
+                    Jaringan {{ selectedMemberForTree?.name || 'Member' }}
+                </DialogTitle>
+                <DialogDescription class="text-xs sm:text-sm">
+                    <span v-if="selectedMemberForTree">
+                        {{ selectedMemberForTree.email }}
+                    </span>
+                </DialogDescription>
+            </DialogHeader>
+
+            <!-- Loading State -->
+            <div v-if="memberTreeLoading" class="flex-1 flex items-center justify-center py-12">
+                <div class="text-center">
+                    <Loader2 class="w-8 h-8 mx-auto mb-4 animate-spin text-primary" />
+                    <p class="text-sm text-muted-foreground">Memuat data jaringan...</p>
+                </div>
+            </div>
+
+            <!-- Tree Stats & Visualization -->
+            <div v-else-if="memberTree" class="flex-1 overflow-hidden flex flex-col">
+                <!-- Stats -->
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <div class="p-2 sm:p-3 rounded-lg bg-muted/50 text-center">
+                        <div class="text-sm sm:text-lg font-bold">{{ memberTreeStats.totalDownlines }}</div>
+                        <div class="text-[10px] sm:text-xs text-muted-foreground">Total</div>
+                    </div>
+                    <div class="p-2 sm:p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-center">
+                        <div class="text-sm sm:text-lg font-bold text-blue-600">{{ memberTreeStats.totalLeft }}</div>
+                        <div class="text-[10px] sm:text-xs text-muted-foreground">Kiri</div>
+                    </div>
+                    <div class="p-2 sm:p-3 rounded-lg bg-green-50 dark:bg-green-950/30 text-center">
+                        <div class="text-sm sm:text-lg font-bold text-green-600">{{ memberTreeStats.totalRight }}</div>
+                        <div class="text-[10px] sm:text-xs text-muted-foreground">Kanan</div>
+                    </div>
+                </div>
+
+                <!-- Zoom Controls -->
+                <div class="flex items-center justify-end gap-1 sm:gap-2 mb-2">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        class="h-7 w-7 sm:h-8 sm:w-8"
+                        @click="handleDialogZoomOut"
+                    >
+                        <ZoomOut class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        class="h-7 w-7 sm:h-8 sm:w-8"
+                        @click="handleDialogZoomIn"
+                    >
+                        <ZoomIn class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        class="h-7 w-7 sm:h-8 sm:w-8"
+                        @click="handleDialogResetZoom"
+                        title="Fit to Screen"
+                    >
+                        <RotateCcw class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    </Button>
+                </div>
+
+                <!-- Tree Visualization -->
+                <div class="flex-1 min-h-0 border rounded-lg overflow-hidden">
+                    <GoJSBinaryTree
+                        ref="dialogGoJSTreeRef"
+                        :binary-tree="memberTree"
+                        :is-dialog="true"
+                    />
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="flex-1 flex items-center justify-center py-12">
+                <div class="text-center text-muted-foreground">
+                    <Users class="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p>Tidak ada data jaringan</p>
+                </div>
+            </div>
+
+            <DialogFooter class="mt-4">
+                <Button variant="outline" @click="closeMemberTreeDialog" class="w-full sm:w-auto">
+                    Tutup
                 </Button>
             </DialogFooter>
         </DialogContent>

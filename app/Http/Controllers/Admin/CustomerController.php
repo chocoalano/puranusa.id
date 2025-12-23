@@ -24,7 +24,7 @@ class CustomerController extends Controller
     public function index(Request $request): Response
     {
         $query = Customer::query()
-            ->with(['networkPosition', 'matrixPosition']);
+            ->with(['networkPosition', 'matrixPosition', 'sponsor:id,name', 'upline:id,name']);
 
         // Search
         if ($search = $request->get('search')) {
@@ -68,6 +68,7 @@ class CustomerController extends Controller
             ->through(function ($customer) {
                 return [
                     'id' => $customer->id,
+                    'username' => $customer->username,
                     'name' => $customer->name,
                     'email' => $customer->email,
                     'phone' => $customer->phone,
@@ -76,7 +77,9 @@ class CustomerController extends Controller
                     'email_verified_at' => $customer->email_verified_at?->format('Y-m-d H:i:s'),
                     'created_at' => $customer->created_at->format('Y-m-d H:i:s'),
                     'sponsor_id' => $customer->matrixPosition?->sponsor_id,
+                    'sponsor_name' => $customer->sponsor?->name,
                     'upline_id' => $customer->networkPosition?->upline_id,
+                    'upline_name' => $customer->upline?->name,
                     'position' => $customer->networkPosition?->position,
                     'status' => $customer->status,
                 ];
@@ -452,6 +455,9 @@ class CustomerController extends Controller
                 'customer_id' => $customer->id,
                 'customer_name' => $customer->name,
             ]);
+
+            // Regenerate session to prevent CSRF issues
+            session()->regenerate();
 
             return redirect('/beranda')->with('success', "Login sebagai {$customer->name}");
         } catch (\Exception $e) {

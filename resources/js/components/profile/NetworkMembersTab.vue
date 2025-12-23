@@ -36,6 +36,8 @@ defineProps<{
     activeMembers: NetworkMember[];
     passiveMembers: NetworkMember[];
     prospectMembers: NetworkMember[];
+    hasLeft: boolean;
+    hasRight: boolean;
 }>();
 
 const showPlacementDialog = ref(false);
@@ -237,7 +239,7 @@ const getPositionBadge = (position: string | null): {
                                         Sudah Belanja
                                     </Badge>
                                     <Button
-                                        v-if="activeMembers.length < 2"
+                                        v-if="!hasLeft || !hasRight"
                                         size="sm"
                                         variant="default"
                                         class="mt-2"
@@ -323,32 +325,42 @@ const getPositionBadge = (position: string | null): {
             <div class="grid grid-cols-2 gap-4 py-4">
                 <button
                     type="button"
+                    :disabled="hasLeft"
                     :class="[
                         'flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all',
-                        selectedPosition === 'left'
-                            ? 'border-primary bg-primary/10'
-                            : 'border-gray-200 hover:border-gray-300',
+                        hasLeft
+                            ? 'border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed'
+                            : selectedPosition === 'left'
+                                ? 'border-primary bg-primary/10'
+                                : 'border-gray-200 hover:border-gray-300',
                     ]"
-                    @click="selectedPosition = 'left'"
+                    @click="!hasLeft && (selectedPosition = 'left')"
                 >
                     <GitBranch class="w-8 h-8 mb-2 rotate-90" />
                     <span class="font-semibold">Posisi Kiri</span>
-                    <span class="text-xs text-muted-foreground mt-1">Left Position</span>
+                    <span class="text-xs text-muted-foreground mt-1">
+                        {{ hasLeft ? 'Sudah Terisi' : 'Left Position' }}
+                    </span>
                 </button>
 
                 <button
                     type="button"
+                    :disabled="hasRight"
                     :class="[
                         'flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all',
-                        selectedPosition === 'right'
-                            ? 'border-primary bg-primary/10'
-                            : 'border-gray-200 hover:border-gray-300',
+                        hasRight
+                            ? 'border-gray-200 bg-gray-100 opacity-50 cursor-not-allowed'
+                            : selectedPosition === 'right'
+                                ? 'border-primary bg-primary/10'
+                                : 'border-gray-200 hover:border-gray-300',
                     ]"
-                    @click="selectedPosition = 'right'"
+                    @click="!hasRight && (selectedPosition = 'right')"
                 >
                     <GitBranch class="w-8 h-8 mb-2 -rotate-90" />
                     <span class="font-semibold">Posisi Kanan</span>
-                    <span class="text-xs text-muted-foreground mt-1">Right Position</span>
+                    <span class="text-xs text-muted-foreground mt-1">
+                        {{ hasRight ? 'Sudah Terisi' : 'Right Position' }}
+                    </span>
                 </button>
             </div>
 

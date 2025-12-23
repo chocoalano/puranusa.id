@@ -7,6 +7,7 @@ use App\Http\Requests\Ecommerce\UpdatePasswordRequest;
 use App\Http\Requests\Ecommerce\UpdateProfileRequest;
 use App\Models\Manage\Customer;
 use App\Models\Order;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -660,6 +661,38 @@ class ProfileController extends Controller
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Get member's binary tree data for modal display.
+     */
+    public function getMemberTree(int $memberId): JsonResponse
+    {
+        $member = Customer::with('package')->find($memberId);
+
+        if (! $member) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Member tidak ditemukan',
+            ], 404);
+        }
+
+        $binaryTree = $this->buildBinaryTree($member);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'member' => [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'email' => $member->email,
+                ],
+                'tree' => $binaryTree['tree'],
+                'totalDownlines' => $binaryTree['totalDownlines'],
+                'totalLeft' => $binaryTree['totalLeft'],
+                'totalRight' => $binaryTree['totalRight'],
+            ],
+        ]);
     }
 
     /**

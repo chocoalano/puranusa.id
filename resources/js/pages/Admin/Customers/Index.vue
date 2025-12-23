@@ -100,23 +100,31 @@ const handleInject = () => {
     });
 };
 
-// Login as customer form
-const loginForm = useForm({});
-
 // Login as customer action
 const loginAsCustomer = (id: number, name: string) => {
-    loginForm.post(loginAsCustomerAction.url(id), {
+    router.post(loginAsCustomerAction.url(id), {}, {
         onSuccess: () => {
             toast.success(`Login sebagai ${name}`);
         },
-        onError: () => {
+        onError: (errors) => {
+            // Handle 419 CSRF token mismatch - reload the page to get fresh token
+            if (errors.message?.includes('419') || errors.message?.includes('expired')) {
+                toast.error('Sesi expired, mencoba ulang...');
+                window.location.reload();
+                return;
+            }
             toast.error('Gagal login sebagai customer');
+        },
+        onFinish: () => {
+            // If the request fails with 419, Inertia may not trigger onError
+            // The page will be reloaded by Inertia automatically
         },
     });
 };
 
 interface Customer {
     id: number;
+    username: string | null;
     name: string;
     email: string;
     phone: string | null;
@@ -125,7 +133,9 @@ interface Customer {
     email_verified_at: string | null;
     created_at: string;
     sponsor_id: number | null;
+    sponsor_name: string | null;
     upline_id: number | null;
+    upline_name: string | null;
     position: string | null;
     status: number; // 1 = Aktif, 2 = Pasif, 3 = Prospek
 }
@@ -226,6 +236,22 @@ const columns: ColumnDef<Customer>[] = [
         },
     },
     {
+        accessorKey: 'username',
+        header: () =>
+            h(
+                Button,
+                {
+                    variant: 'ghost',
+                    onClick: () => handleSort('username'),
+                },
+                () => ['Username', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+            ),
+        cell: ({ row }) => {
+            const username = row.getValue('username') as string | null;
+            return h('div', { class: 'font-mono text-sm' }, username || '-');
+        },
+    },
+    {
         accessorKey: 'ewallet_id',
         header: () =>
             h(
@@ -275,6 +301,22 @@ const columns: ColumnDef<Customer>[] = [
                 { class: 'text-right font-medium' },
                 'Rp ' + new Intl.NumberFormat('id-ID').format(saldo)
             );
+        },
+    },
+    {
+        accessorKey: 'sponsor_name',
+        header: 'Sponsor',
+        cell: ({ row }) => {
+            const sponsorName = row.getValue('sponsor_name') as string | null;
+            return h('div', { class: 'text-sm' }, sponsorName || '-');
+        },
+    },
+    {
+        accessorKey: 'upline_name',
+        header: 'Upline',
+        cell: ({ row }) => {
+            const uplineName = row.getValue('upline_name') as string | null;
+            return h('div', { class: 'text-sm' }, uplineName || '-');
         },
     },
     {

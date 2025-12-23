@@ -20,11 +20,16 @@ interface TreeNode {
 interface Props {
     binaryTree: TreeNode | null;
     onOpenPlacement?: (uplineId: number, position: 'left' | 'right') => void;
+    isDialog?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    isDialog: false,
+});
+
 const emit = defineEmits<{
     openPlacement: [uplineId: number, position: 'left' | 'right'];
+    memberClick: [memberId: number];
 }>();
 
 const diagramDiv = ref<HTMLDivElement | null>(null);
@@ -290,6 +295,9 @@ const initDiagram = () => {
                 const data = obj.part?.data;
                 if (data?.isPlaceholder && data?.parentId && data?.placeholderPosition) {
                     emit('openPlacement', data.parentId, data.placeholderPosition);
+                } else if (!data?.isPlaceholder && data?.key && !props.isDialog) {
+                    // Emit member click event for non-placeholder nodes (only in main tree, not dialog)
+                    emit('memberClick', data.key);
                 }
             },
         }
@@ -366,5 +374,8 @@ defineExpose({
 </script>
 
 <template>
-    <div ref="diagramDiv" class="w-full h-[500px] sm:h-[600px] border rounded-lg bg-slate-50"></div>
+    <div ref="diagramDiv" :class="[
+        'w-full border rounded-lg bg-slate-50',
+        isDialog ? 'h-[350px] sm:h-[400px]' : 'h-[500px] sm:h-[600px]'
+    ]"></div>
 </template>

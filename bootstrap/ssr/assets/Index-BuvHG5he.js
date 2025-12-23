@@ -79,14 +79,20 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
       });
     };
-    const loginForm = useForm({});
     const loginAsCustomer$1 = (id, name) => {
-      loginForm.post(loginAsCustomer.url(id), {
+      router.post(loginAsCustomer.url(id), {}, {
         onSuccess: () => {
           toast.success(`Login sebagai ${name}`);
         },
-        onError: () => {
+        onError: (errors) => {
+          if (errors.message?.includes("419") || errors.message?.includes("expired")) {
+            toast.error("Sesi expired, mencoba ulang...");
+            window.location.reload();
+            return;
+          }
           toast.error("Gagal login sebagai customer");
+        },
+        onFinish: () => {
         }
       });
     };
@@ -155,6 +161,21 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
       },
       {
+        accessorKey: "username",
+        header: () => h(
+          _sfc_main$2,
+          {
+            variant: "ghost",
+            onClick: () => handleSort("username")
+          },
+          () => ["Username", h(ArrowUpDown, { class: "ml-2 h-4 w-4" })]
+        ),
+        cell: ({ row }) => {
+          const username = row.getValue("username");
+          return h("div", { class: "font-mono text-sm" }, username || "-");
+        }
+      },
+      {
         accessorKey: "ewallet_id",
         header: () => h(
           _sfc_main$2,
@@ -201,6 +222,22 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             { class: "text-right font-medium" },
             "Rp " + new Intl.NumberFormat("id-ID").format(saldo)
           );
+        }
+      },
+      {
+        accessorKey: "sponsor_name",
+        header: "Sponsor",
+        cell: ({ row }) => {
+          const sponsorName = row.getValue("sponsor_name");
+          return h("div", { class: "text-sm" }, sponsorName || "-");
+        }
+      },
+      {
+        accessorKey: "upline_name",
+        header: "Upline",
+        cell: ({ row }) => {
+          const uplineName = row.getValue("upline_name");
+          return h("div", { class: "text-sm" }, uplineName || "-");
         }
       },
       {

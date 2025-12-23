@@ -904,18 +904,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                       }),
                                       _: 1
                                     }, _parent6, _scopeId5));
-                                    _push6(ssrRenderComponent(unref(_sfc_main$e), { value: 1 }, {
-                                      default: withCtx((_6, _push7, _parent7, _scopeId6) => {
-                                        if (_push7) {
-                                          _push7(`Aktif`);
-                                        } else {
-                                          return [
-                                            createTextVNode("Aktif")
-                                          ];
-                                        }
-                                      }),
-                                      _: 1
-                                    }, _parent6, _scopeId5));
                                   } else {
                                     return [
                                       createVNode(unref(_sfc_main$e), { value: 3 }, {
@@ -927,12 +915,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                       createVNode(unref(_sfc_main$e), { value: 2 }, {
                                         default: withCtx(() => [
                                           createTextVNode("Pasif")
-                                        ]),
-                                        _: 1
-                                      }),
-                                      createVNode(unref(_sfc_main$e), { value: 1 }, {
-                                        default: withCtx(() => [
-                                          createTextVNode("Aktif")
                                         ]),
                                         _: 1
                                       })
@@ -964,12 +946,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                         createTextVNode("Pasif")
                                       ]),
                                       _: 1
-                                    }),
-                                    createVNode(unref(_sfc_main$e), { value: 1 }, {
-                                      default: withCtx(() => [
-                                        createTextVNode("Aktif")
-                                      ]),
-                                      _: 1
                                     })
                                   ]),
                                   _: 1
@@ -979,7 +955,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(`<p class="text-xs text-muted-foreground"${_scopeId3}><strong${_scopeId3}>Prospek:</strong> Calon member, belum masuk jaringan MLM<br${_scopeId3}><strong${_scopeId3}>Pasif:</strong> Sudah terdaftar tapi belum aktif bertransaksi<br${_scopeId3}><strong${_scopeId3}>Aktif:</strong> Member aktif dengan akses penuh ke sistem </p>`);
+                        _push4(`<p class="text-xs text-muted-foreground"${_scopeId3}><strong${_scopeId3}>Prospek:</strong> Calon member, belum masuk jaringan MLM<br${_scopeId3}><strong${_scopeId3}>Pasif:</strong> Sudah terdaftar tapi belum aktif bertransaksi </p>`);
                         if (unref(form).errors.status) {
                           _push4(`<p class="text-sm text-destructive"${_scopeId3}>${ssrInterpolate(unref(form).errors.status)}</p>`);
                         } else {
@@ -1071,12 +1047,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                           createTextVNode("Pasif")
                                         ]),
                                         _: 1
-                                      }),
-                                      createVNode(unref(_sfc_main$e), { value: 1 }, {
-                                        default: withCtx(() => [
-                                          createTextVNode("Aktif")
-                                        ]),
-                                        _: 1
                                       })
                                     ]),
                                     _: 1
@@ -1089,10 +1059,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 createTextVNode(" Calon member, belum masuk jaringan MLM"),
                                 createVNode("br"),
                                 createVNode("strong", null, "Pasif:"),
-                                createTextVNode(" Sudah terdaftar tapi belum aktif bertransaksi"),
-                                createVNode("br"),
-                                createVNode("strong", null, "Aktif:"),
-                                createTextVNode(" Member aktif dengan akses penuh ke sistem ")
+                                createTextVNode(" Sudah terdaftar tapi belum aktif bertransaksi ")
                               ]),
                               unref(form).errors.status ? (openBlock(), createBlock("p", {
                                 key: 0,
@@ -1209,12 +1176,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                         createTextVNode("Pasif")
                                       ]),
                                       _: 1
-                                    }),
-                                    createVNode(unref(_sfc_main$e), { value: 1 }, {
-                                      default: withCtx(() => [
-                                        createTextVNode("Aktif")
-                                      ]),
-                                      _: 1
                                     })
                                   ]),
                                   _: 1
@@ -1227,10 +1188,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               createTextVNode(" Calon member, belum masuk jaringan MLM"),
                               createVNode("br"),
                               createVNode("strong", null, "Pasif:"),
-                              createTextVNode(" Sudah terdaftar tapi belum aktif bertransaksi"),
-                              createVNode("br"),
-                              createVNode("strong", null, "Aktif:"),
-                              createTextVNode(" Member aktif dengan akses penuh ke sistem ")
+                              createTextVNode(" Sudah terdaftar tapi belum aktif bertransaksi ")
                             ]),
                             unref(form).errors.status ? (openBlock(), createBlock("p", {
                               key: 0,
@@ -1624,12 +1582,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                           createTextVNode("Pasif")
                                         ]),
                                         _: 1
-                                      }),
-                                      createVNode(unref(_sfc_main$e), { value: 1 }, {
-                                        default: withCtx(() => [
-                                          createTextVNode("Aktif")
-                                        ]),
-                                        _: 1
                                       })
                                     ]),
                                     _: 1
@@ -1642,10 +1594,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 createTextVNode(" Calon member, belum masuk jaringan MLM"),
                                 createVNode("br"),
                                 createVNode("strong", null, "Pasif:"),
-                                createTextVNode(" Sudah terdaftar tapi belum aktif bertransaksi"),
-                                createVNode("br"),
-                                createVNode("strong", null, "Aktif:"),
-                                createTextVNode(" Member aktif dengan akses penuh ke sistem ")
+                                createTextVNode(" Sudah terdaftar tapi belum aktif bertransaksi ")
                               ]),
                               unref(form).errors.status ? (openBlock(), createBlock("p", {
                                 key: 0,

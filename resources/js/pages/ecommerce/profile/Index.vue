@@ -288,6 +288,8 @@ const activeTab = computed(() => {
                                         :active-members="activeMembers"
                                         :passive-members="passiveMembers"
                                         :prospect-members="prospectMembers"
+                                        :has-left="!!binaryTree?.left"
+                                        :has-right="!!binaryTree?.right"
                                     />
                                 </TabsContent>
 

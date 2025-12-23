@@ -339,13 +339,11 @@ const submit = () => {
                                     <SelectContent>
                                         <SelectItem :value="3">Prospek</SelectItem>
                                         <SelectItem :value="2">Pasif</SelectItem>
-                                        <SelectItem :value="1">Aktif</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <p class="text-xs text-muted-foreground">
                                     <strong>Prospek:</strong> Calon member, belum masuk jaringan MLM<br>
-                                    <strong>Pasif:</strong> Sudah terdaftar tapi belum aktif bertransaksi<br>
-                                    <strong>Aktif:</strong> Member aktif dengan akses penuh ke sistem
+                                    <strong>Pasif:</strong> Sudah terdaftar tapi belum aktif bertransaksi
                                 </p>
                                 <p v-if="form.errors.status" class="text-sm text-destructive">
                                     {{ form.errors.status }}
