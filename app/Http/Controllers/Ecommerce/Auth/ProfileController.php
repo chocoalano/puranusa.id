@@ -212,32 +212,44 @@ class ProfileController extends Controller
     }
 
     /**
-     * Get sponsored members with optimized queries
+     * Get all customers categorized by status (pure customer data, no network)
+     *
+     * Member categories:
+     * - Active (status = 3): Full active member
+     * - Passive (status = 2 with orders > 0): Has made purchases but not fully active
+     * - Prospect (status = 1): New member, not yet active
      */
     private function getSponsoredMembers(Customer $customer): array
     {
         try {
-            // Single query to get all sponsored members
+            // Query all customers (excluding current customer) with order count - NO NETWORK JOIN
             $members = DB::table('customers')
-                ->leftJoin('customer_networks', 'customers.id', '=', 'customer_networks.member_id')
                 ->leftJoin('customer_package', 'customers.package_id', '=', 'customer_package.id')
-                ->where('customers.sponsor_id', $customer->id)
+                ->leftJoinSub(
+                    DB::table('orders')
+                        ->select('customer_id', DB::raw('COUNT(*) as order_count'))
+                        ->groupBy('customer_id'),
+                    'order_counts',
+                    'customers.id',
+                    '=',
+                    'order_counts.customer_id'
+                )
+                ->where('customers.id', '!=', $customer->id)
+                ->whereIn('customers.status', [1, 2, 3])
                 ->select(
                     'customers.id',
                     'customers.name',
                     'customers.email',
                     'customers.phone',
                     'customers.package_id',
-                    'customers.total_left',
-                    'customers.total_right',
                     'customers.omzet',
-                    'customers.upline_id',
+                    'customers.status',
                     'customers.created_at',
-                    'customer_networks.position',
-                    'customer_networks.level',
-                    'customer_package.name as package_name'
+                    'customer_package.name as package_name',
+                    DB::raw('COALESCE(order_counts.order_count, 0) as order_count')
                 )
-                ->limit(150)
+                ->orderByDesc('customers.created_at')
+                ->limit(200)
                 ->get();
 
             $activeMembers = collect();
@@ -245,40 +257,42 @@ class ProfileController extends Controller
             $prospectMembers = collect();
 
             foreach ($members as $member) {
+                $memberStatus = (int) $member->status;
+                $hasOrders = (int) $member->order_count > 0;
+
                 $data = [
                     'id' => $member->id,
                     'name' => $member->name,
                     'email' => $member->email,
                     'phone' => $member->phone,
                     'package_name' => $member->package_name ?? $this->getPackageName($member->package_id),
-                    'total_left' => $member->total_left ?? 0,
-                    'total_right' => $member->total_right ?? 0,
-                    'position' => $member->position,
-                    'level' => $member->level,
-                    'has_placement' => $member->position !== null,
-                    'has_purchase' => $member->omzet > 0,
+                    'has_purchase' => $hasOrders,
                     'omzet' => $member->omzet,
                     'joined_at' => $member->created_at,
+                    'status' => $memberStatus,
                 ];
 
-                if ($member->upline_id !== null && $member->omzet > 0) {
-                    $data['status'] = 3;
+                // Active: status = 3
+                if ($memberStatus === 3) {
                     $data['status_label'] = 'Aktif';
                     $activeMembers->push($data);
-                } elseif ($member->upline_id === null && $member->omzet > 0) {
-                    $data['status'] = 2;
+                }
+                // Passive: status = 2 AND has transaction history > 0
+                elseif ($memberStatus === 2 && $hasOrders) {
                     $data['status_label'] = 'Pasif';
                     $passiveMembers->push($data);
-                } else {
-                    $data['status'] = 1;
+                }
+                // Prospect: status = 1
+                elseif ($memberStatus === 1) {
                     $data['status_label'] = 'Prospek';
                     $prospectMembers->push($data);
                 }
+                // Note: status = 2 without orders won't be shown in any category
             }
 
             return [$activeMembers, $passiveMembers, $prospectMembers];
         } catch (\Exception $e) {
-            \Log::error('Failed to load network members in profile', [
+            \Log::error('Failed to load members in profile', [
                 'customer_id' => $customer->id,
                 'error' => $e->getMessage(),
             ]);
