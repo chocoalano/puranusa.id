@@ -234,7 +234,7 @@ class ProfileController extends Controller
                     '=',
                     'order_counts.customer_id'
                 )
-                ->where('customers.id', '!=', $customer->id)
+                ->where('customers.sponsor_id', '=', $customer->id)
                 ->whereIn('customers.status', [1, 2, 3])
                 ->select(
                     'customers.id',
@@ -278,7 +278,7 @@ class ProfileController extends Controller
                     $activeMembers->push($data);
                 }
                 // Passive: status = 2 AND has transaction history > 0
-                elseif ($memberStatus === 2 && $hasOrders) {
+                elseif ($memberStatus === 2) {
                     $data['status_label'] = 'Pasif';
                     $passiveMembers->push($data);
                 }
