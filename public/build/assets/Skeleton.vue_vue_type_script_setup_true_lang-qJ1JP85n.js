@@ -1,0 +1,1 @@
+import{c as a}from"./index-DJk7aHkf.js";import{d as n,v as o,g as r,J as t,u as c}from"./vendor-0sCoMzHy.js";const u=n({__name:"Skeleton",props:{class:{}},setup(s){const e=s;return(l,m)=>(r(),o("div",{"data-slot":"skeleton",class:t(c(a)("animate-pulse rounded-md bg-primary/10",e.class))},null,2))}});export{u as _};
