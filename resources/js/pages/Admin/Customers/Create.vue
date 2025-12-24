@@ -337,7 +337,7 @@ const submit = () => {
                                         <SelectValue placeholder="Pilih status" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem :value="3">Prospek</SelectItem>
+                                        <SelectItem :value="1">Prospek</SelectItem>
                                         <SelectItem :value="2">Pasif</SelectItem>
                                     </SelectContent>
                                 </Select>
