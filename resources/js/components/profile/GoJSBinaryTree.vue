@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import * as go from 'gojs';
+
+// Dynamic import for GoJS - only load on client side
+let go: typeof import('gojs') | null = null;
 
 interface TreeNode {
     id: number;
@@ -27,7 +29,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const diagramDiv = ref<HTMLDivElement | null>(null);
-let myDiagram: go.Diagram | null = null;
+const isLoaded = ref(false);
+let myDiagram: any = null;
 
 // Convert tree structure to GoJS model data
 const convertTreeToModel = (node: TreeNode | null, parentKey: number | null = null): { nodes: any[]; links: any[] } => {
@@ -114,23 +117,24 @@ const convertTreeToModel = (node: TreeNode | null, parentKey: number | null = nu
 };
 
 const initDiagram = () => {
-    if (!diagramDiv.value) return;
+    if (!diagramDiv.value || !go) return;
 
-    const $ = go.GraphObject.make;
+    const goLib = go;
+    const $ = goLib.GraphObject.make;
 
-    myDiagram = $(go.Diagram, diagramDiv.value, {
+    myDiagram = $(goLib.Diagram, diagramDiv.value, {
         'undoManager.isEnabled': false,
         'animationManager.isEnabled': true,
-        initialAutoScale: go.AutoScale.Uniform,
-        contentAlignment: go.Spot.Top,
-        layout: $(go.TreeLayout, {
+        initialAutoScale: goLib.AutoScale.Uniform,
+        contentAlignment: goLib.Spot.Top,
+        layout: $(goLib.TreeLayout, {
             angle: 90,
             layerSpacing: 50,
             nodeSpacing: 20,
-            arrangement: go.TreeArrangement.Horizontal,
+            arrangement: goLib.TreeArrangement.Horizontal,
             // Sort children by order property to ensure left (0) before right (1)
-            sorting: go.TreeSorting.Ascending,
-            comparer: (a: go.TreeVertex, b: go.TreeVertex) => {
+            sorting: goLib.TreeSorting.Ascending,
+            comparer: (a: any, b: any) => {
                 const aOrder = a.node?.data?.order ?? 0;
                 const bOrder = b.node?.data?.order ?? 0;
                 return aOrder - bOrder;
@@ -140,9 +144,9 @@ const initDiagram = () => {
     });
 
     // Add click listener at diagram level - more reliable than node template click
-    myDiagram.addDiagramListener('ObjectSingleClicked', (e) => {
+    myDiagram.addDiagramListener('ObjectSingleClicked', (e: any) => {
         const part = e.subject.part;
-        if (part instanceof go.Node) {
+        if (part instanceof goLib.Node) {
             const data = part.data;
             if (data?.isPlaceholder && data?.parentId && data?.placeholderPosition) {
                 // Dispatch custom window event for placement
@@ -160,14 +164,14 @@ const initDiagram = () => {
 
     // Define the node template for regular members
     myDiagram.nodeTemplate = $(
-        go.Node,
+        goLib.Node,
         'Auto',
         {
             cursor: 'pointer',
             selectionAdorned: false,
         },
         $(
-            go.Shape,
+            goLib.Shape,
             'RoundedRectangle',
             {
                 fill: 'white',
@@ -175,136 +179,136 @@ const initDiagram = () => {
                 strokeWidth: 2,
                 parameter1: 8,
             },
-            new go.Binding('fill', '', (data) => {
+            new goLib.Binding('fill', '', (data) => {
                 if (data.isPlaceholder) return '#f8fafc';
                 return data.isActive ? '#ffffff' : '#fef3c7';
             }),
-            new go.Binding('stroke', '', (data) => {
+            new goLib.Binding('stroke', '', (data) => {
                 if (data.isPlaceholder) return '#cbd5e1';
                 if (data.position === 'left') return '#3b82f6';
                 if (data.position === 'right') return '#22c55e';
                 return '#6366f1';
             }),
-            new go.Binding('strokeWidth', '', (data) => {
+            new goLib.Binding('strokeWidth', '', (data) => {
                 return data.isPlaceholder ? 1 : 2;
             }),
-            new go.Binding('strokeDashArray', 'isPlaceholder', (isPlaceholder) => {
+            new goLib.Binding('strokeDashArray', 'isPlaceholder', (isPlaceholder) => {
                 return isPlaceholder ? [4, 4] : null;
             })
         ),
         $(
-            go.Panel,
+            goLib.Panel,
             'Vertical',
-            { margin: 8, defaultAlignment: go.Spot.Left },
+            { margin: 8, defaultAlignment: goLib.Spot.Left },
             // Name
             $(
-                go.TextBlock,
+                goLib.TextBlock,
                 {
                     font: 'bold 13px Inter, sans-serif',
                     stroke: '#1e293b',
-                    maxSize: new go.Size(140, NaN),
-                    wrap: go.Wrap.Fit,
+                    maxSize: new goLib.Size(140, NaN),
+                    wrap: goLib.Wrap.Fit,
                     textAlign: 'center',
-                    alignment: go.Spot.Center,
+                    alignment: goLib.Spot.Center,
                 },
-                new go.Binding('text', 'name'),
-                new go.Binding('stroke', 'isPlaceholder', (isPlaceholder) => {
+                new goLib.Binding('text', 'name'),
+                new goLib.Binding('stroke', 'isPlaceholder', (isPlaceholder) => {
                     return isPlaceholder ? '#64748b' : '#1e293b';
                 }),
-                new go.Binding('font', 'isPlaceholder', (isPlaceholder) => {
+                new goLib.Binding('font', 'isPlaceholder', (isPlaceholder) => {
                     return isPlaceholder ? '12px Inter, sans-serif' : 'bold 13px Inter, sans-serif';
                 })
             ),
             // Email (hidden for placeholders)
             $(
-                go.TextBlock,
+                goLib.TextBlock,
                 {
                     font: '11px Inter, sans-serif',
                     stroke: '#64748b',
-                    maxSize: new go.Size(140, NaN),
-                    wrap: go.Wrap.Fit,
-                    margin: new go.Margin(2, 0, 0, 0),
-                    alignment: go.Spot.Center,
+                    maxSize: new goLib.Size(140, NaN),
+                    wrap: goLib.Wrap.Fit,
+                    margin: new goLib.Margin(2, 0, 0, 0),
+                    alignment: goLib.Spot.Center,
                 },
-                new go.Binding('text', 'email'),
-                new go.Binding('visible', 'isPlaceholder', (isPlaceholder) => !isPlaceholder)
+                new goLib.Binding('text', 'email'),
+                new goLib.Binding('visible', 'isPlaceholder', (isPlaceholder) => !isPlaceholder)
             ),
             // Package badge
             $(
-                go.Panel,
+                goLib.Panel,
                 'Auto',
                 {
-                    margin: new go.Margin(4, 0, 0, 0),
-                    alignment: go.Spot.Center,
+                    margin: new goLib.Margin(4, 0, 0, 0),
+                    alignment: goLib.Spot.Center,
                 },
-                new go.Binding('visible', 'isPlaceholder', (isPlaceholder) => !isPlaceholder),
-                $(go.Shape, 'RoundedRectangle', {
+                new goLib.Binding('visible', 'isPlaceholder', (isPlaceholder) => !isPlaceholder),
+                $(goLib.Shape, 'RoundedRectangle', {
                     fill: '#eff6ff',
                     stroke: '#bfdbfe',
                     strokeWidth: 1,
                     parameter1: 4,
                 }),
                 $(
-                    go.TextBlock,
+                    goLib.TextBlock,
                     {
                         font: '10px Inter, sans-serif',
                         stroke: '#1d4ed8',
-                        margin: new go.Margin(2, 6, 2, 6),
+                        margin: new goLib.Margin(2, 6, 2, 6),
                     },
-                    new go.Binding('text', 'package')
+                    new goLib.Binding('text', 'package')
                 )
             ),
             // Network stats
             $(
-                go.Panel,
+                goLib.Panel,
                 'Horizontal',
                 {
-                    margin: new go.Margin(6, 0, 0, 0),
-                    alignment: go.Spot.Center,
+                    margin: new goLib.Margin(6, 0, 0, 0),
+                    alignment: goLib.Spot.Center,
                 },
-                new go.Binding('visible', 'isPlaceholder', (isPlaceholder) => !isPlaceholder),
+                new goLib.Binding('visible', 'isPlaceholder', (isPlaceholder) => !isPlaceholder),
                 // Left count
                 $(
-                    go.Panel,
+                    goLib.Panel,
                     'Horizontal',
-                    $(go.Shape, 'Circle', {
+                    $(goLib.Shape, 'Circle', {
                         width: 8,
                         height: 8,
                         fill: '#3b82f6',
                         stroke: null,
-                        margin: new go.Margin(0, 4, 0, 0),
+                        margin: new goLib.Margin(0, 4, 0, 0),
                     }),
                     $(
-                        go.TextBlock,
+                        goLib.TextBlock,
                         {
                             font: '10px Inter, sans-serif',
                             stroke: '#64748b',
                         },
-                        new go.Binding('text', 'totalLeft', (v) => `L: ${v}`)
+                        new goLib.Binding('text', 'totalLeft', (v) => `L: ${v}`)
                     )
                 ),
-                $(go.TextBlock, ' | ', {
+                $(goLib.TextBlock, ' | ', {
                     font: '10px Inter, sans-serif',
                     stroke: '#cbd5e1',
                 }),
                 // Right count
                 $(
-                    go.Panel,
+                    goLib.Panel,
                     'Horizontal',
-                    $(go.Shape, 'Circle', {
+                    $(goLib.Shape, 'Circle', {
                         width: 8,
                         height: 8,
                         fill: '#22c55e',
                         stroke: null,
-                        margin: new go.Margin(0, 4, 0, 0),
+                        margin: new goLib.Margin(0, 4, 0, 0),
                     }),
                     $(
-                        go.TextBlock,
+                        goLib.TextBlock,
                         {
                             font: '10px Inter, sans-serif',
                             stroke: '#64748b',
                         },
-                        new go.Binding('text', 'totalRight', (v) => `R: ${v}`)
+                        new goLib.Binding('text', 'totalRight', (v) => `R: ${v}`)
                     )
                 )
             )
@@ -313,13 +317,13 @@ const initDiagram = () => {
 
     // Link template
     myDiagram.linkTemplate = $(
-        go.Link,
+        goLib.Link,
         {
-            routing: go.Routing.Orthogonal,
+            routing: goLib.Routing.Orthogonal,
             corner: 10,
             selectable: false,
         },
-        $(go.Shape, {
+        $(goLib.Shape, {
             strokeWidth: 2,
             stroke: '#cbd5e1',
         })
@@ -329,13 +333,14 @@ const initDiagram = () => {
 };
 
 const updateDiagram = () => {
-    if (!myDiagram || !props.binaryTree) return;
+    if (!myDiagram || !props.binaryTree || !go) return;
 
+    const goLib = go;
     const { nodes, links } = convertTreeToModel(props.binaryTree);
 
     // Use startTransaction/commitTransaction to batch updates
     myDiagram.startTransaction('update');
-    myDiagram.model = new go.GraphLinksModel(nodes, links);
+    myDiagram.model = new goLib.GraphLinksModel(nodes, links);
     myDiagram.commitTransaction('update');
 
     // Zoom to fit after a small delay to ensure layout is complete
@@ -364,11 +369,16 @@ const resetZoom = () => {
     }
 };
 
-onMounted(() => {
-    // Small delay to ensure DOM is ready
-    setTimeout(() => {
-        initDiagram();
-    }, 0);
+onMounted(async () => {
+    // Dynamic import GoJS only on client side
+    if (typeof window !== 'undefined') {
+        go = await import('gojs');
+        isLoaded.value = true;
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+            initDiagram();
+        }, 0);
+    }
 });
 
 onUnmounted(() => {
@@ -392,7 +402,16 @@ defineExpose({
 </script>
 
 <template>
-    <div ref="diagramDiv" :class="[
+    <div v-if="!isLoaded" :class="[
+        'w-full border rounded-lg bg-slate-50 flex items-center justify-center',
+        isDialog ? 'h-[350px] sm:h-[400px]' : 'h-[500px] sm:h-[600px]'
+    ]">
+        <div class="text-center text-muted-foreground">
+            <div class="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p class="text-sm">Memuat diagram...</p>
+        </div>
+    </div>
+    <div v-else ref="diagramDiv" :class="[
         'w-full border rounded-lg bg-slate-50',
         isDialog ? 'h-[350px] sm:h-[400px]' : 'h-[500px] sm:h-[600px]'
     ]"></div>

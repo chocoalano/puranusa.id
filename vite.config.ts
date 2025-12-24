@@ -31,7 +31,7 @@ export default defineConfig({
 
     ssr: {
         // External these packages from SSR - they will be loaded client-side only
-        external: ['monaco-editor', 'monaco-editor-vue3'],
+        external: ['monaco-editor', 'monaco-editor-vue3', 'gojs'],
     },
 
     build: {
