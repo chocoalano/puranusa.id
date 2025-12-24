@@ -10946,13 +10946,10 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __ssrInlineRender: true,
   props: {
     binaryTree: {},
-    onOpenPlacement: {},
     isDialog: { type: Boolean, default: false }
   },
-  emits: ["openPlacement", "memberClick"],
-  setup(__props, { expose: __expose, emit: __emit }) {
+  setup(__props, { expose: __expose }) {
     const props = __props;
-    const emit = __emit;
     const diagramDiv = ref(null);
     let myDiagram = null;
     const convertTreeToModel = (node, parentKey = null) => {
@@ -11044,6 +11041,21 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           }
         }),
         maxSelectionCount: 1
+      });
+      myDiagram.addDiagramListener("ObjectSingleClicked", (e) => {
+        const part = e.subject.part;
+        if (part instanceof go.Node) {
+          const data = part.data;
+          if (data?.isPlaceholder && data?.parentId && data?.placeholderPosition) {
+            window.dispatchEvent(new CustomEvent("gojs-open-placement", {
+              detail: { uplineId: data.parentId, position: data.placeholderPosition }
+            }));
+          } else if (!data?.isPlaceholder && data?.key) {
+            window.dispatchEvent(new CustomEvent("gojs-member-click", {
+              detail: { memberId: data.key }
+            }));
+          }
+        }
       });
       myDiagram.nodeTemplate = $(
         go.Node,
@@ -11194,17 +11206,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               )
             )
           )
-        ),
-        {
-          click: (e, obj) => {
-            const data = obj.part?.data;
-            if (data?.isPlaceholder && data?.parentId && data?.placeholderPosition) {
-              emit("openPlacement", data.parentId, data.placeholderPosition);
-            } else if (!data?.isPlaceholder && data?.key && !props.isDialog) {
-              emit("memberClick", data.key);
-            }
-          }
-        }
+        )
       );
       myDiagram.linkTemplate = $(
         go.Link,
@@ -11223,8 +11225,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     const updateDiagram = () => {
       if (!myDiagram || !props.binaryTree) return;
       const { nodes, links } = convertTreeToModel(props.binaryTree);
+      myDiagram.startTransaction("update");
       myDiagram.model = new go.GraphLinksModel(nodes, links);
-      myDiagram.zoomToFit();
+      myDiagram.commitTransaction("update");
+      requestAnimationFrame(() => {
+        if (myDiagram) {
+          myDiagram.zoomToFit();
+        }
+      });
     };
     const zoomIn = () => {
       if (myDiagram) {
@@ -11241,18 +11249,16 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         myDiagram.zoomToFit();
       }
     };
-    watch(
-      () => props.binaryTree,
-      () => {
-        updateDiagram();
-      },
-      { deep: true }
-    );
     onMounted(() => {
-      initDiagram();
+      setTimeout(() => {
+        initDiagram();
+      }, 0);
     });
     onUnmounted(() => {
       if (myDiagram) {
+        myDiagram.removeDiagramListener("ObjectSingleClicked", () => {
+        });
+        myDiagram.clear();
         myDiagram.div = null;
         myDiagram = null;
       }
@@ -11676,6 +11682,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       totalLeft: props.totalLeft,
       totalRight: props.totalRight
     });
+    const treeKeyCounter = ref(0);
+    const treeKey = computed(() => `tree-${treeKeyCounter.value}`);
     const placementForm = useForm({
       member_id: 0,
       upline_id: null,
@@ -11736,7 +11744,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     const openMemberTreeDialog = async (memberId) => {
       memberTreeLoading.value = true;
       isViewingMemberTree.value = true;
-      memberTree.value = null;
       try {
         const response = await axios.get(getMemberTree(memberId).url);
         if (response.data.success) {
@@ -11747,6 +11754,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             totalLeft: response.data.data.totalLeft,
             totalRight: response.data.data.totalRight
           };
+          treeKeyCounter.value++;
         } else {
           toast.error("Gagal memuat data jaringan member");
           backToDefaultTree();
@@ -11777,6 +11785,20 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     const handleResetZoom = () => {
       goJSTreeRef.value?.resetZoom();
     };
+    const handleGojsMemberClick = (event) => {
+      openMemberTreeDialog(event.detail.memberId);
+    };
+    const handleGojsOpenPlacement = (event) => {
+      openPlacementDialog(event.detail.uplineId, event.detail.position);
+    };
+    onMounted(() => {
+      window.addEventListener("gojs-member-click", handleGojsMemberClick);
+      window.addEventListener("gojs-open-placement", handleGojsOpenPlacement);
+    });
+    onUnmounted(() => {
+      window.removeEventListener("gojs-member-click", handleGojsMemberClick);
+      window.removeEventListener("gojs-open-placement", handleGojsOpenPlacement);
+    });
     return (_ctx, _push, _parent, _attrs) => {
       _push(`<!--[--><div class="space-y-4 sm:space-y-6"><div class="grid grid-cols-3 gap-2 sm:gap-4">`);
       _push(ssrRenderComponent(unref(_sfc_main$o), { class: "p-0" }, {
@@ -12239,52 +12261,56 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$p), { class: "p-2 sm:p-6 pt-0" }, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
+                  _push3(`<div class="relative"${_scopeId2}>`);
                   if (memberTreeLoading.value) {
-                    _push3(`<div class="h-[400px] flex items-center justify-center"${_scopeId2}><div class="text-center"${_scopeId2}>`);
+                    _push3(`<div class="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg"${_scopeId2}><div class="text-center"${_scopeId2}>`);
                     _push3(ssrRenderComponent(unref(Loader2), { class: "w-8 h-8 mx-auto mb-4 animate-spin text-primary" }, null, _parent3, _scopeId2));
                     _push3(`<p class="text-sm text-muted-foreground"${_scopeId2}>Memuat data jaringan...</p></div></div>`);
-                  } else if (currentTree.value) {
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  if (currentTree.value) {
                     _push3(ssrRenderComponent(_sfc_main$4, {
+                      key: treeKey.value,
                       ref_key: "goJSTreeRef",
                       ref: goJSTreeRef,
                       "binary-tree": currentTree.value,
-                      "is-dialog": isViewingMemberTree.value,
-                      onOpenPlacement: openPlacementDialog,
-                      onMemberClick: openMemberTreeDialog
+                      "is-dialog": isViewingMemberTree.value
                     }, null, _parent3, _scopeId2));
                   } else {
                     _push3(`<div class="h-[400px] flex items-center justify-center text-muted-foreground"${_scopeId2}><div class="text-center"${_scopeId2}>`);
                     _push3(ssrRenderComponent(unref(Users), { class: "w-12 h-12 mx-auto mb-4 opacity-20" }, null, _parent3, _scopeId2));
                     _push3(`<p${_scopeId2}>Belum ada jaringan binary tree</p></div></div>`);
                   }
-                  _push3(`<div class="mt-4 sm:mt-6 p-2 sm:p-4 rounded-lg bg-muted/50"${_scopeId2}><div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left"${_scopeId2}><p class="text-[10px] sm:text-sm text-muted-foreground"${_scopeId2}> 💡 <span class="hidden sm:inline"${_scopeId2}>Klik member untuk melihat jaringannya • Klik &quot;+&quot; untuk menambah member</span><span class="sm:hidden"${_scopeId2}>Klik member untuk lihat jaringan</span></p><p class="text-[10px] sm:text-sm text-muted-foreground"${_scopeId2}><span class="hidden sm:inline"${_scopeId2}>Scroll/drag untuk navigasi • Mouse wheel untuk zoom</span><span class="sm:hidden"${_scopeId2}>Drag &amp; Pinch untuk navigasi</span></p></div></div>`);
+                  _push3(`</div><div class="mt-4 sm:mt-6 p-2 sm:p-4 rounded-lg bg-muted/50"${_scopeId2}><div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left"${_scopeId2}><p class="text-[10px] sm:text-sm text-muted-foreground"${_scopeId2}> 💡 <span class="hidden sm:inline"${_scopeId2}>Klik member untuk melihat jaringannya • Klik &quot;+&quot; untuk menambah member</span><span class="sm:hidden"${_scopeId2}>Klik member untuk lihat jaringan</span></p><p class="text-[10px] sm:text-sm text-muted-foreground"${_scopeId2}><span class="hidden sm:inline"${_scopeId2}>Scroll/drag untuk navigasi • Mouse wheel untuk zoom</span><span class="sm:hidden"${_scopeId2}>Drag &amp; Pinch untuk navigasi</span></p></div></div>`);
                 } else {
                   return [
-                    memberTreeLoading.value ? (openBlock(), createBlock("div", {
-                      key: 0,
-                      class: "h-[400px] flex items-center justify-center"
-                    }, [
-                      createVNode("div", { class: "text-center" }, [
-                        createVNode(unref(Loader2), { class: "w-8 h-8 mx-auto mb-4 animate-spin text-primary" }),
-                        createVNode("p", { class: "text-sm text-muted-foreground" }, "Memuat data jaringan...")
-                      ])
-                    ])) : currentTree.value ? (openBlock(), createBlock(_sfc_main$4, {
-                      key: 1,
-                      ref_key: "goJSTreeRef",
-                      ref: goJSTreeRef,
-                      "binary-tree": currentTree.value,
-                      "is-dialog": isViewingMemberTree.value,
-                      onOpenPlacement: openPlacementDialog,
-                      onMemberClick: openMemberTreeDialog
-                    }, null, 8, ["binary-tree", "is-dialog"])) : (openBlock(), createBlock("div", {
-                      key: 2,
-                      class: "h-[400px] flex items-center justify-center text-muted-foreground"
-                    }, [
-                      createVNode("div", { class: "text-center" }, [
-                        createVNode(unref(Users), { class: "w-12 h-12 mx-auto mb-4 opacity-20" }),
-                        createVNode("p", null, "Belum ada jaringan binary tree")
-                      ])
-                    ])),
+                    createVNode("div", { class: "relative" }, [
+                      memberTreeLoading.value ? (openBlock(), createBlock("div", {
+                        key: 0,
+                        class: "absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg"
+                      }, [
+                        createVNode("div", { class: "text-center" }, [
+                          createVNode(unref(Loader2), { class: "w-8 h-8 mx-auto mb-4 animate-spin text-primary" }),
+                          createVNode("p", { class: "text-sm text-muted-foreground" }, "Memuat data jaringan...")
+                        ])
+                      ])) : createCommentVNode("", true),
+                      currentTree.value ? (openBlock(), createBlock(_sfc_main$4, {
+                        key: treeKey.value,
+                        ref_key: "goJSTreeRef",
+                        ref: goJSTreeRef,
+                        "binary-tree": currentTree.value,
+                        "is-dialog": isViewingMemberTree.value
+                      }, null, 8, ["binary-tree", "is-dialog"])) : (openBlock(), createBlock("div", {
+                        key: 2,
+                        class: "h-[400px] flex items-center justify-center text-muted-foreground"
+                      }, [
+                        createVNode("div", { class: "text-center" }, [
+                          createVNode(unref(Users), { class: "w-12 h-12 mx-auto mb-4 opacity-20" }),
+                          createVNode("p", null, "Belum ada jaringan binary tree")
+                        ])
+                      ]))
+                    ]),
                     createVNode("div", { class: "mt-4 sm:mt-6 p-2 sm:p-4 rounded-lg bg-muted/50" }, [
                       createVNode("div", { class: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left" }, [
                         createVNode("p", { class: "text-[10px] sm:text-sm text-muted-foreground" }, [
@@ -12399,31 +12425,32 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$p), { class: "p-2 sm:p-6 pt-0" }, {
                 default: withCtx(() => [
-                  memberTreeLoading.value ? (openBlock(), createBlock("div", {
-                    key: 0,
-                    class: "h-[400px] flex items-center justify-center"
-                  }, [
-                    createVNode("div", { class: "text-center" }, [
-                      createVNode(unref(Loader2), { class: "w-8 h-8 mx-auto mb-4 animate-spin text-primary" }),
-                      createVNode("p", { class: "text-sm text-muted-foreground" }, "Memuat data jaringan...")
-                    ])
-                  ])) : currentTree.value ? (openBlock(), createBlock(_sfc_main$4, {
-                    key: 1,
-                    ref_key: "goJSTreeRef",
-                    ref: goJSTreeRef,
-                    "binary-tree": currentTree.value,
-                    "is-dialog": isViewingMemberTree.value,
-                    onOpenPlacement: openPlacementDialog,
-                    onMemberClick: openMemberTreeDialog
-                  }, null, 8, ["binary-tree", "is-dialog"])) : (openBlock(), createBlock("div", {
-                    key: 2,
-                    class: "h-[400px] flex items-center justify-center text-muted-foreground"
-                  }, [
-                    createVNode("div", { class: "text-center" }, [
-                      createVNode(unref(Users), { class: "w-12 h-12 mx-auto mb-4 opacity-20" }),
-                      createVNode("p", null, "Belum ada jaringan binary tree")
-                    ])
-                  ])),
+                  createVNode("div", { class: "relative" }, [
+                    memberTreeLoading.value ? (openBlock(), createBlock("div", {
+                      key: 0,
+                      class: "absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg"
+                    }, [
+                      createVNode("div", { class: "text-center" }, [
+                        createVNode(unref(Loader2), { class: "w-8 h-8 mx-auto mb-4 animate-spin text-primary" }),
+                        createVNode("p", { class: "text-sm text-muted-foreground" }, "Memuat data jaringan...")
+                      ])
+                    ])) : createCommentVNode("", true),
+                    currentTree.value ? (openBlock(), createBlock(_sfc_main$4, {
+                      key: treeKey.value,
+                      ref_key: "goJSTreeRef",
+                      ref: goJSTreeRef,
+                      "binary-tree": currentTree.value,
+                      "is-dialog": isViewingMemberTree.value
+                    }, null, 8, ["binary-tree", "is-dialog"])) : (openBlock(), createBlock("div", {
+                      key: 2,
+                      class: "h-[400px] flex items-center justify-center text-muted-foreground"
+                    }, [
+                      createVNode("div", { class: "text-center" }, [
+                        createVNode(unref(Users), { class: "w-12 h-12 mx-auto mb-4 opacity-20" }),
+                        createVNode("p", null, "Belum ada jaringan binary tree")
+                      ])
+                    ]))
+                  ]),
                   createVNode("div", { class: "mt-4 sm:mt-6 p-2 sm:p-4 rounded-lg bg-muted/50" }, [
                     createVNode("div", { class: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-center sm:text-left" }, [
                       createVNode("p", { class: "text-[10px] sm:text-sm text-muted-foreground" }, [

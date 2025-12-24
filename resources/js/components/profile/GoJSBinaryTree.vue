@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import * as go from 'gojs';
 
 interface TreeNode {
@@ -19,18 +19,12 @@ interface TreeNode {
 
 interface Props {
     binaryTree: TreeNode | null;
-    onOpenPlacement?: (uplineId: number, position: 'left' | 'right') => void;
     isDialog?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
     isDialog: false,
 });
-
-const emit = defineEmits<{
-    openPlacement: [uplineId: number, position: 'left' | 'right'];
-    memberClick: [memberId: number];
-}>();
 
 const diagramDiv = ref<HTMLDivElement | null>(null);
 let myDiagram: go.Diagram | null = null;
@@ -143,6 +137,25 @@ const initDiagram = () => {
             },
         }),
         maxSelectionCount: 1,
+    });
+
+    // Add click listener at diagram level - more reliable than node template click
+    myDiagram.addDiagramListener('ObjectSingleClicked', (e) => {
+        const part = e.subject.part;
+        if (part instanceof go.Node) {
+            const data = part.data;
+            if (data?.isPlaceholder && data?.parentId && data?.placeholderPosition) {
+                // Dispatch custom window event for placement
+                window.dispatchEvent(new CustomEvent('gojs-open-placement', {
+                    detail: { uplineId: data.parentId, position: data.placeholderPosition }
+                }));
+            } else if (!data?.isPlaceholder && data?.key) {
+                // Dispatch custom window event for member click
+                window.dispatchEvent(new CustomEvent('gojs-member-click', {
+                    detail: { memberId: data.key }
+                }));
+            }
+        }
     });
 
     // Define the node template for regular members
@@ -295,18 +308,7 @@ const initDiagram = () => {
                     )
                 )
             )
-        ),
-        {
-            click: (e, obj) => {
-                const data = obj.part?.data;
-                if (data?.isPlaceholder && data?.parentId && data?.placeholderPosition) {
-                    emit('openPlacement', data.parentId, data.placeholderPosition);
-                } else if (!data?.isPlaceholder && data?.key && !props.isDialog) {
-                    // Emit member click event for non-placeholder nodes (only in main tree, not dialog)
-                    emit('memberClick', data.key);
-                }
-            },
-        }
+        )
     );
 
     // Link template
@@ -331,8 +333,17 @@ const updateDiagram = () => {
 
     const { nodes, links } = convertTreeToModel(props.binaryTree);
 
+    // Use startTransaction/commitTransaction to batch updates
+    myDiagram.startTransaction('update');
     myDiagram.model = new go.GraphLinksModel(nodes, links);
-    myDiagram.zoomToFit();
+    myDiagram.commitTransaction('update');
+
+    // Zoom to fit after a small delay to ensure layout is complete
+    requestAnimationFrame(() => {
+        if (myDiagram) {
+            myDiagram.zoomToFit();
+        }
+    });
 };
 
 const zoomIn = () => {
@@ -353,20 +364,21 @@ const resetZoom = () => {
     }
 };
 
-watch(
-    () => props.binaryTree,
-    () => {
-        updateDiagram();
-    },
-    { deep: true }
-);
-
 onMounted(() => {
-    initDiagram();
+    // Small delay to ensure DOM is ready
+    setTimeout(() => {
+        initDiagram();
+    }, 0);
 });
 
 onUnmounted(() => {
+    // Thorough cleanup of GoJS diagram
     if (myDiagram) {
+        // Remove all listeners
+        myDiagram.removeDiagramListener('ObjectSingleClicked', () => {});
+        // Clear the diagram
+        myDiagram.clear();
+        // Disconnect from DOM
         myDiagram.div = null;
         myDiagram = null;
     }

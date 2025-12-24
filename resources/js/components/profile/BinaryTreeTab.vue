@@ -11,7 +11,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Users, TrendingUp, UserPlus, ZoomIn, ZoomOut, RotateCcw, Loader2, ArrowLeft } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import GoJSBinaryTree from './GoJSBinaryTree.vue';
@@ -77,6 +77,9 @@ const currentStats = computed(() => isViewingMemberTree.value ? memberTreeStats.
     totalLeft: props.totalLeft,
     totalRight: props.totalRight,
 });
+// Counter-based key to force GoJSBinaryTree remount - always increments
+const treeKeyCounter = ref(0);
+const treeKey = computed(() => `tree-${treeKeyCounter.value}`);
 
 const placementForm = useForm({
     member_id: 0,
@@ -147,7 +150,6 @@ const formatDate = (dateString: string) => {
 const openMemberTreeDialog = async (memberId: number) => {
     memberTreeLoading.value = true;
     isViewingMemberTree.value = true;
-    memberTree.value = null;
 
     try {
         const response = await axios.get(getMemberTree(memberId).url);
@@ -159,6 +161,8 @@ const openMemberTreeDialog = async (memberId: number) => {
                 totalLeft: response.data.data.totalLeft,
                 totalRight: response.data.data.totalRight,
             };
+            // Increment key counter to force component remount
+            treeKeyCounter.value++;
         } else {
             toast.error('Gagal memuat data jaringan member');
             backToDefaultTree();
@@ -193,6 +197,25 @@ const handleZoomOut = () => {
 const handleResetZoom = () => {
     goJSTreeRef.value?.resetZoom();
 };
+
+// Window event handlers for GoJS clicks (bypasses Vue reactivity issues)
+const handleGojsMemberClick = (event: CustomEvent) => {
+    openMemberTreeDialog(event.detail.memberId);
+};
+
+const handleGojsOpenPlacement = (event: CustomEvent) => {
+    openPlacementDialog(event.detail.uplineId, event.detail.position);
+};
+
+onMounted(() => {
+    window.addEventListener('gojs-member-click', handleGojsMemberClick as EventListener);
+    window.addEventListener('gojs-open-placement', handleGojsOpenPlacement as EventListener);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('gojs-member-click', handleGojsMemberClick as EventListener);
+    window.removeEventListener('gojs-open-placement', handleGojsOpenPlacement as EventListener);
+});
 </script>
 
 <template>
@@ -308,29 +331,34 @@ const handleResetZoom = () => {
                 </div>
             </CardHeader>
             <CardContent class="p-2 sm:p-6 pt-0">
-                <!-- Loading State -->
-                <div v-if="memberTreeLoading" class="h-[400px] flex items-center justify-center">
-                    <div class="text-center">
-                        <Loader2 class="w-8 h-8 mx-auto mb-4 animate-spin text-primary" />
-                        <p class="text-sm text-muted-foreground">Memuat data jaringan...</p>
+                <!-- Tree Container with Loading Overlay -->
+                <div class="relative">
+                    <!-- Loading Overlay -->
+                    <div
+                        v-if="memberTreeLoading"
+                        class="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg"
+                    >
+                        <div class="text-center">
+                            <Loader2 class="w-8 h-8 mx-auto mb-4 animate-spin text-primary" />
+                            <p class="text-sm text-muted-foreground">Memuat data jaringan...</p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Tree Visualization -->
-                <GoJSBinaryTree
-                    v-else-if="currentTree"
-                    ref="goJSTreeRef"
-                    :binary-tree="currentTree"
-                    :is-dialog="isViewingMemberTree"
-                    @open-placement="openPlacementDialog"
-                    @member-click="openMemberTreeDialog"
-                />
+                    <!-- Tree Visualization -->
+                    <GoJSBinaryTree
+                        v-if="currentTree"
+                        :key="treeKey"
+                        ref="goJSTreeRef"
+                        :binary-tree="currentTree"
+                        :is-dialog="isViewingMemberTree"
+                    />
 
-                <!-- Empty State -->
-                <div v-else class="h-[400px] flex items-center justify-center text-muted-foreground">
-                    <div class="text-center">
-                        <Users class="w-12 h-12 mx-auto mb-4 opacity-20" />
-                        <p>Belum ada jaringan binary tree</p>
+                    <!-- Empty State -->
+                    <div v-else class="h-[400px] flex items-center justify-center text-muted-foreground">
+                        <div class="text-center">
+                            <Users class="w-12 h-12 mx-auto mb-4 opacity-20" />
+                            <p>Belum ada jaringan binary tree</p>
+                        </div>
                     </div>
                 </div>
 
