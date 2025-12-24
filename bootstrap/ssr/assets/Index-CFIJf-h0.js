@@ -3,7 +3,7 @@ import { ssrRenderComponent, ssrInterpolate, ssrRenderList, ssrRenderClass, ssrR
 import { _ as _sfc_main$Y, a as _sfc_main$Z, b as _sfc_main$_, c as _sfc_main$$ } from "./TabsTrigger-Bvg0QZyC.js";
 import { b as _sfc_main$T, c as _sfc_main$U, _ as _sfc_main$10 } from "./Ecommerce-CcXwhgpk.js";
 import { router, useForm, usePage, Link, Head } from "@inertiajs/vue3";
-import { CheckCircle, AlertCircle, Check, Copy, Share2, MapPin, Plus, Pencil, Trash2, Home, Building2, Trophy, Calendar, UserCircle, User, CreditCard, Mail, Phone, Loader2, Package, Truck, Wallet, CheckCircle2, Star, RefreshCw, PackageCheck, ArrowDownLeft, ArrowUpRight, Lock, Eye, EyeOff, ShieldCheck, Clock, UserPlus, GitBranch, Users, TrendingUp, ArrowLeft, ZoomOut, ZoomIn, RotateCcw, Handshake, DollarSign, Percent, ShoppingCart, Gift, Network } from "lucide-vue-next";
+import { CheckCircle, AlertCircle, Check, Copy, Share2, MapPin, Plus, Pencil, Trash2, Home, Building2, Trophy, Calendar, UserCircle, User, CreditCard, Mail, Phone, Loader2, Package, Truck, Wallet, CheckCircle2, Star, RefreshCw, PackageCheck, ArrowDownLeft, ArrowUpRight, Lock, Eye, EyeOff, ShieldCheck, Clock, UserPlus, GitBranch, Users, TrendingUp, ArrowLeft, Search, ZoomOut, ZoomIn, RotateCcw, Handshake, DollarSign, Percent, ShoppingCart, Gift, Network } from "lucide-vue-next";
 import { _ as _sfc_main$q, a as _sfc_main$r, b as _sfc_main$s } from "./AvatarImage-DWFQMckn.js";
 import { _ as _sfc_main$t } from "./index-BpQimeTM.js";
 import { _ as _sfc_main$o, c as _sfc_main$p, a as _sfc_main$v, b as _sfc_main$w, d as _sfc_main$N } from "./CardTitle-sqUG0LTw.js";
@@ -11512,6 +11512,43 @@ getMemberTreeForm.head = (args, options) => ({
   method: "get"
 });
 getMemberTree.form = getMemberTreeForm;
+const searchMemberInTree = (options) => ({
+  url: searchMemberInTree.url(options),
+  method: "get"
+});
+searchMemberInTree.definition = {
+  methods: ["get", "head"],
+  url: "/client/profile/search-member"
+};
+searchMemberInTree.url = (options) => {
+  return searchMemberInTree.definition.url + queryParams(options);
+};
+searchMemberInTree.get = (options) => ({
+  url: searchMemberInTree.url(options),
+  method: "get"
+});
+searchMemberInTree.head = (options) => ({
+  url: searchMemberInTree.url(options),
+  method: "head"
+});
+const searchMemberInTreeForm = (options) => ({
+  action: searchMemberInTree.url(options),
+  method: "get"
+});
+searchMemberInTreeForm.get = (options) => ({
+  action: searchMemberInTree.url(options),
+  method: "get"
+});
+searchMemberInTreeForm.head = (options) => ({
+  action: searchMemberInTree.url({
+    [options?.mergeQuery ? "mergeQuery" : "query"]: {
+      _method: "HEAD",
+      ...options?.query ?? options?.mergeQuery ?? {}
+    }
+  }),
+  method: "get"
+});
+searchMemberInTree.form = searchMemberInTreeForm;
 const storeAddress = (options) => ({
   url: storeAddress.url(options),
   method: "post"
@@ -11681,6 +11718,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     const selectedUplineId = ref(null);
     const selectedPosition = ref(null);
     const selectedMember = ref(null);
+    const memberSearchQuery = ref("");
+    const treeSearchQuery = ref("");
+    const treeSearchResults = ref([]);
+    const treeSearchLoading = ref(false);
+    const showTreeSearchResults = ref(false);
     const isViewingMemberTree = ref(false);
     const memberTreeLoading = ref(false);
     const selectedMemberForTree = ref(null);
@@ -11698,6 +11740,18 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     });
     const treeKeyCounter = ref(0);
     const treeKey = computed(() => `tree-${treeKeyCounter.value}`);
+    const filteredPassiveMembers = computed(() => {
+      if (!memberSearchQuery.value.trim()) {
+        return props.passiveMembers;
+      }
+      const query = memberSearchQuery.value.toLowerCase().trim();
+      return props.passiveMembers.filter((member) => {
+        const nameMatch = member.name?.toLowerCase().includes(query);
+        const emailMatch = member.email?.toLowerCase().includes(query);
+        const phoneMatch = member.phone?.toLowerCase().includes(query);
+        return nameMatch || emailMatch || phoneMatch;
+      });
+    });
     const placementForm = useForm({
       member_id: 0,
       upline_id: null,
@@ -11707,6 +11761,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       selectedUplineId.value = uplineId;
       selectedPosition.value = position;
       selectedMember.value = null;
+      memberSearchQuery.value = "";
       showPlacementDialog.value = true;
     };
     const closePlacementDialog = () => {
@@ -11714,6 +11769,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       selectedUplineId.value = null;
       selectedPosition.value = null;
       selectedMember.value = null;
+      memberSearchQuery.value = "";
     };
     const selectMember = (member) => {
       selectedMember.value = member;
@@ -11789,6 +11845,51 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         totalLeft: 0,
         totalRight: 0
       };
+      treeSearchQuery.value = "";
+      treeSearchResults.value = [];
+      showTreeSearchResults.value = false;
+    };
+    let searchTimeout = null;
+    const handleTreeSearch = async () => {
+      const query = treeSearchQuery.value.trim();
+      if (query.length < 2) {
+        treeSearchResults.value = [];
+        showTreeSearchResults.value = false;
+        return;
+      }
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+      searchTimeout = setTimeout(async () => {
+        treeSearchLoading.value = true;
+        showTreeSearchResults.value = true;
+        try {
+          const response = await axios.get(searchMemberInTree({ query: { query } }).url);
+          if (response.data.success) {
+            treeSearchResults.value = response.data.data;
+          } else {
+            treeSearchResults.value = [];
+          }
+        } catch {
+          treeSearchResults.value = [];
+        } finally {
+          treeSearchLoading.value = false;
+        }
+      }, 300);
+    };
+    const selectTreeSearchResult = (member) => {
+      treeSearchQuery.value = "";
+      treeSearchResults.value = [];
+      showTreeSearchResults.value = false;
+      openMemberTreeDialog(member.id);
+    };
+    const handleTreeSearchBlur = () => {
+      setTimeout(() => {
+        closeTreeSearch();
+      }, 200);
+    };
+    const closeTreeSearch = () => {
+      showTreeSearchResults.value = false;
     };
     const handleZoomIn = () => {
       goJSTreeRef.value?.zoomIn();
@@ -12101,7 +12202,47 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  _push3(`</div></div><div class="flex items-center gap-1 sm:gap-2"${_scopeId2}>`);
+                  _push3(`</div></div><div class="flex items-center gap-1 sm:gap-2"${_scopeId2}><div class="relative"${_scopeId2}><div class="relative"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Search), { class: "absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" }, null, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$E), {
+                    modelValue: treeSearchQuery.value,
+                    "onUpdate:modelValue": ($event) => treeSearchQuery.value = $event,
+                    type: "text",
+                    placeholder: "Cari member...",
+                    class: "h-7 sm:h-8 w-28 sm:w-40 pl-8 text-xs sm:text-sm",
+                    onInput: handleTreeSearch,
+                    onBlur: handleTreeSearchBlur
+                  }, null, _parent3, _scopeId2));
+                  if (treeSearchLoading.value) {
+                    _push3(ssrRenderComponent(unref(Loader2), { class: "absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" }, null, _parent3, _scopeId2));
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`</div>`);
+                  if (showTreeSearchResults.value && (treeSearchResults.value.length > 0 || treeSearchQuery.value.length >= 2)) {
+                    _push3(`<div class="absolute top-full right-0 mt-1 w-64 sm:w-72 bg-background border rounded-lg shadow-lg z-20 max-h-64 overflow-y-auto"${_scopeId2}>`);
+                    if (treeSearchResults.value.length === 0) {
+                      _push3(`<div class="p-3 text-center text-sm text-muted-foreground"${_scopeId2}>`);
+                      _push3(ssrRenderComponent(unref(Search), { class: "w-5 h-5 mx-auto mb-2 opacity-20" }, null, _parent3, _scopeId2));
+                      _push3(`<p${_scopeId2}>Tidak ditemukan</p></div>`);
+                    } else {
+                      _push3(`<!---->`);
+                    }
+                    _push3(`<!--[-->`);
+                    ssrRenderList(treeSearchResults.value, (member) => {
+                      _push3(`<button type="button" class="w-full p-2.5 text-left hover:bg-muted/50 border-b last:border-b-0 transition-colors"${_scopeId2}><p class="text-sm font-medium truncate"${_scopeId2}>${ssrInterpolate(member.name)}</p><p class="text-xs text-muted-foreground truncate"${_scopeId2}>${ssrInterpolate(member.email)}</p>`);
+                      if (member.package_name) {
+                        _push3(`<p class="text-xs text-primary"${_scopeId2}>${ssrInterpolate(member.package_name)}</p>`);
+                      } else {
+                        _push3(`<!---->`);
+                      }
+                      _push3(`</button>`);
+                    });
+                    _push3(`<!--]--></div>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`</div>`);
                   if (isViewingMemberTree.value) {
                     _push3(ssrRenderComponent(unref(_sfc_main$u), {
                       variant: "outline",
@@ -12218,6 +12359,51 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                         ])
                       ]),
                       createVNode("div", { class: "flex items-center gap-1 sm:gap-2" }, [
+                        createVNode("div", { class: "relative" }, [
+                          createVNode("div", { class: "relative" }, [
+                            createVNode(unref(Search), { class: "absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" }),
+                            createVNode(unref(_sfc_main$E), {
+                              modelValue: treeSearchQuery.value,
+                              "onUpdate:modelValue": ($event) => treeSearchQuery.value = $event,
+                              type: "text",
+                              placeholder: "Cari member...",
+                              class: "h-7 sm:h-8 w-28 sm:w-40 pl-8 text-xs sm:text-sm",
+                              onInput: handleTreeSearch,
+                              onBlur: handleTreeSearchBlur
+                            }, null, 8, ["modelValue", "onUpdate:modelValue"]),
+                            treeSearchLoading.value ? (openBlock(), createBlock(unref(Loader2), {
+                              key: 0,
+                              class: "absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground"
+                            })) : createCommentVNode("", true)
+                          ]),
+                          showTreeSearchResults.value && (treeSearchResults.value.length > 0 || treeSearchQuery.value.length >= 2) ? (openBlock(), createBlock("div", {
+                            key: 0,
+                            class: "absolute top-full right-0 mt-1 w-64 sm:w-72 bg-background border rounded-lg shadow-lg z-20 max-h-64 overflow-y-auto"
+                          }, [
+                            treeSearchResults.value.length === 0 ? (openBlock(), createBlock("div", {
+                              key: 0,
+                              class: "p-3 text-center text-sm text-muted-foreground"
+                            }, [
+                              createVNode(unref(Search), { class: "w-5 h-5 mx-auto mb-2 opacity-20" }),
+                              createVNode("p", null, "Tidak ditemukan")
+                            ])) : createCommentVNode("", true),
+                            (openBlock(true), createBlock(Fragment, null, renderList(treeSearchResults.value, (member) => {
+                              return openBlock(), createBlock("button", {
+                                key: member.id,
+                                type: "button",
+                                class: "w-full p-2.5 text-left hover:bg-muted/50 border-b last:border-b-0 transition-colors",
+                                onMousedown: withModifiers(($event) => selectTreeSearchResult(member), ["prevent"])
+                              }, [
+                                createVNode("p", { class: "text-sm font-medium truncate" }, toDisplayString(member.name), 1),
+                                createVNode("p", { class: "text-xs text-muted-foreground truncate" }, toDisplayString(member.email), 1),
+                                member.package_name ? (openBlock(), createBlock("p", {
+                                  key: 0,
+                                  class: "text-xs text-primary"
+                                }, toDisplayString(member.package_name), 1)) : createCommentVNode("", true)
+                              ], 40, ["onMousedown"]);
+                            }), 128))
+                          ])) : createCommentVNode("", true)
+                        ]),
                         isViewingMemberTree.value ? (openBlock(), createBlock(unref(_sfc_main$u), {
                           key: 0,
                           variant: "outline",
@@ -12385,6 +12571,51 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                       ])
                     ]),
                     createVNode("div", { class: "flex items-center gap-1 sm:gap-2" }, [
+                      createVNode("div", { class: "relative" }, [
+                        createVNode("div", { class: "relative" }, [
+                          createVNode(unref(Search), { class: "absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" }),
+                          createVNode(unref(_sfc_main$E), {
+                            modelValue: treeSearchQuery.value,
+                            "onUpdate:modelValue": ($event) => treeSearchQuery.value = $event,
+                            type: "text",
+                            placeholder: "Cari member...",
+                            class: "h-7 sm:h-8 w-28 sm:w-40 pl-8 text-xs sm:text-sm",
+                            onInput: handleTreeSearch,
+                            onBlur: handleTreeSearchBlur
+                          }, null, 8, ["modelValue", "onUpdate:modelValue"]),
+                          treeSearchLoading.value ? (openBlock(), createBlock(unref(Loader2), {
+                            key: 0,
+                            class: "absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground"
+                          })) : createCommentVNode("", true)
+                        ]),
+                        showTreeSearchResults.value && (treeSearchResults.value.length > 0 || treeSearchQuery.value.length >= 2) ? (openBlock(), createBlock("div", {
+                          key: 0,
+                          class: "absolute top-full right-0 mt-1 w-64 sm:w-72 bg-background border rounded-lg shadow-lg z-20 max-h-64 overflow-y-auto"
+                        }, [
+                          treeSearchResults.value.length === 0 ? (openBlock(), createBlock("div", {
+                            key: 0,
+                            class: "p-3 text-center text-sm text-muted-foreground"
+                          }, [
+                            createVNode(unref(Search), { class: "w-5 h-5 mx-auto mb-2 opacity-20" }),
+                            createVNode("p", null, "Tidak ditemukan")
+                          ])) : createCommentVNode("", true),
+                          (openBlock(true), createBlock(Fragment, null, renderList(treeSearchResults.value, (member) => {
+                            return openBlock(), createBlock("button", {
+                              key: member.id,
+                              type: "button",
+                              class: "w-full p-2.5 text-left hover:bg-muted/50 border-b last:border-b-0 transition-colors",
+                              onMousedown: withModifiers(($event) => selectTreeSearchResult(member), ["prevent"])
+                            }, [
+                              createVNode("p", { class: "text-sm font-medium truncate" }, toDisplayString(member.name), 1),
+                              createVNode("p", { class: "text-xs text-muted-foreground truncate" }, toDisplayString(member.email), 1),
+                              member.package_name ? (openBlock(), createBlock("p", {
+                                key: 0,
+                                class: "text-xs text-primary"
+                              }, toDisplayString(member.package_name), 1)) : createCommentVNode("", true)
+                            ], 40, ["onMousedown"]);
+                          }), 128))
+                        ])) : createCommentVNode("", true)
+                      ]),
                       isViewingMemberTree.value ? (openBlock(), createBlock(unref(_sfc_main$u), {
                         key: 0,
                         variant: "outline",
@@ -12544,14 +12775,27 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  _push3(`<div class="flex-1 overflow-y-auto py-2 sm:py-4"${_scopeId2}>`);
-                  if (__props.passiveMembers.length === 0) {
+                  _push3(`<div class="flex-1 overflow-y-auto py-2 sm:py-4"${_scopeId2}><div class="relative mb-3 sm:mb-4"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Search), { class: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" }, null, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$E), {
+                    modelValue: memberSearchQuery.value,
+                    "onUpdate:modelValue": ($event) => memberSearchQuery.value = $event,
+                    type: "text",
+                    placeholder: "Cari nama, email, atau telepon...",
+                    class: "pl-9 text-sm"
+                  }, null, _parent3, _scopeId2));
+                  _push3(`</div>`);
+                  if (filteredPassiveMembers.value.length === 0 && memberSearchQuery.value) {
+                    _push3(`<div class="text-center py-8 sm:py-12 text-muted-foreground"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(Search), { class: "w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-20" }, null, _parent3, _scopeId2));
+                    _push3(`<p class="text-sm sm:text-base"${_scopeId2}>Tidak ditemukan member dengan &quot;${ssrInterpolate(memberSearchQuery.value)}&quot;</p><p class="text-xs sm:text-sm mt-1 sm:mt-2"${_scopeId2}>Coba kata kunci lain</p></div>`);
+                  } else if (__props.passiveMembers.length === 0) {
                     _push3(`<div class="text-center py-8 sm:py-12 text-muted-foreground"${_scopeId2}>`);
                     _push3(ssrRenderComponent(unref(UserPlus), { class: "w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-20" }, null, _parent3, _scopeId2));
                     _push3(`<p class="text-sm sm:text-base"${_scopeId2}>Tidak ada member pasif</p><p class="text-xs sm:text-sm mt-1 sm:mt-2"${_scopeId2}>Semua member sudah ditempatkan</p></div>`);
                   } else {
                     _push3(`<div class="space-y-2"${_scopeId2}><!--[-->`);
-                    ssrRenderList(__props.passiveMembers, (member) => {
+                    ssrRenderList(filteredPassiveMembers.value, (member) => {
                       _push3(`<button type="button" class="${ssrRenderClass([
                         "w-full p-3 sm:p-4 rounded-lg border-2 text-left transition-all",
                         selectedMember.value?.id === member.id ? "border-primary bg-primary/10" : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
@@ -12693,18 +12937,35 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                       _: 1
                     }),
                     createVNode("div", { class: "flex-1 overflow-y-auto py-2 sm:py-4" }, [
-                      __props.passiveMembers.length === 0 ? (openBlock(), createBlock("div", {
+                      createVNode("div", { class: "relative mb-3 sm:mb-4" }, [
+                        createVNode(unref(Search), { class: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" }),
+                        createVNode(unref(_sfc_main$E), {
+                          modelValue: memberSearchQuery.value,
+                          "onUpdate:modelValue": ($event) => memberSearchQuery.value = $event,
+                          type: "text",
+                          placeholder: "Cari nama, email, atau telepon...",
+                          class: "pl-9 text-sm"
+                        }, null, 8, ["modelValue", "onUpdate:modelValue"])
+                      ]),
+                      filteredPassiveMembers.value.length === 0 && memberSearchQuery.value ? (openBlock(), createBlock("div", {
                         key: 0,
+                        class: "text-center py-8 sm:py-12 text-muted-foreground"
+                      }, [
+                        createVNode(unref(Search), { class: "w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-20" }),
+                        createVNode("p", { class: "text-sm sm:text-base" }, 'Tidak ditemukan member dengan "' + toDisplayString(memberSearchQuery.value) + '"', 1),
+                        createVNode("p", { class: "text-xs sm:text-sm mt-1 sm:mt-2" }, "Coba kata kunci lain")
+                      ])) : __props.passiveMembers.length === 0 ? (openBlock(), createBlock("div", {
+                        key: 1,
                         class: "text-center py-8 sm:py-12 text-muted-foreground"
                       }, [
                         createVNode(unref(UserPlus), { class: "w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-20" }),
                         createVNode("p", { class: "text-sm sm:text-base" }, "Tidak ada member pasif"),
                         createVNode("p", { class: "text-xs sm:text-sm mt-1 sm:mt-2" }, "Semua member sudah ditempatkan")
                       ])) : (openBlock(), createBlock("div", {
-                        key: 1,
+                        key: 2,
                         class: "space-y-2"
                       }, [
-                        (openBlock(true), createBlock(Fragment, null, renderList(__props.passiveMembers, (member) => {
+                        (openBlock(true), createBlock(Fragment, null, renderList(filteredPassiveMembers.value, (member) => {
                           return openBlock(), createBlock("button", {
                             key: member.id,
                             type: "button",
@@ -12828,18 +13089,35 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     _: 1
                   }),
                   createVNode("div", { class: "flex-1 overflow-y-auto py-2 sm:py-4" }, [
-                    __props.passiveMembers.length === 0 ? (openBlock(), createBlock("div", {
+                    createVNode("div", { class: "relative mb-3 sm:mb-4" }, [
+                      createVNode(unref(Search), { class: "absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" }),
+                      createVNode(unref(_sfc_main$E), {
+                        modelValue: memberSearchQuery.value,
+                        "onUpdate:modelValue": ($event) => memberSearchQuery.value = $event,
+                        type: "text",
+                        placeholder: "Cari nama, email, atau telepon...",
+                        class: "pl-9 text-sm"
+                      }, null, 8, ["modelValue", "onUpdate:modelValue"])
+                    ]),
+                    filteredPassiveMembers.value.length === 0 && memberSearchQuery.value ? (openBlock(), createBlock("div", {
                       key: 0,
+                      class: "text-center py-8 sm:py-12 text-muted-foreground"
+                    }, [
+                      createVNode(unref(Search), { class: "w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-20" }),
+                      createVNode("p", { class: "text-sm sm:text-base" }, 'Tidak ditemukan member dengan "' + toDisplayString(memberSearchQuery.value) + '"', 1),
+                      createVNode("p", { class: "text-xs sm:text-sm mt-1 sm:mt-2" }, "Coba kata kunci lain")
+                    ])) : __props.passiveMembers.length === 0 ? (openBlock(), createBlock("div", {
+                      key: 1,
                       class: "text-center py-8 sm:py-12 text-muted-foreground"
                     }, [
                       createVNode(unref(UserPlus), { class: "w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-20" }),
                       createVNode("p", { class: "text-sm sm:text-base" }, "Tidak ada member pasif"),
                       createVNode("p", { class: "text-xs sm:text-sm mt-1 sm:mt-2" }, "Semua member sudah ditempatkan")
                     ])) : (openBlock(), createBlock("div", {
-                      key: 1,
+                      key: 2,
                       class: "space-y-2"
                     }, [
-                      (openBlock(true), createBlock(Fragment, null, renderList(__props.passiveMembers, (member) => {
+                      (openBlock(true), createBlock(Fragment, null, renderList(filteredPassiveMembers.value, (member) => {
                         return openBlock(), createBlock("button", {
                           key: member.id,
                           type: "button",

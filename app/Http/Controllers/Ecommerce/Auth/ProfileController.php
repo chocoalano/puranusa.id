@@ -666,6 +666,46 @@ class ProfileController extends Controller
     }
 
     /**
+     * Search member in current user's binary tree network.
+     */
+    public function searchMemberInTree(Request $request): JsonResponse
+    {
+        $customer = Auth::guard('client')->user();
+        $query = $request->input('query');
+
+        if (! $query || strlen($query) < 2) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Query minimal 2 karakter',
+            ], 422);
+        }
+
+        // Search members in the current user's downline network
+        $members = Customer::query()
+            ->where('upline_id', $customer->id)
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('email', 'like', "%{$query}%")
+                    ->orWhere('username', 'like', "%{$query}%");
+            })
+            ->limit(10)
+            ->get(['id', 'name', 'email', 'username', 'package_id']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $members->map(function ($member) {
+                return [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'email' => $member->email,
+                    'username' => $member->username,
+                    'package_name' => $this->getPackageName($member->package_id),
+                ];
+            }),
+        ]);
+    }
+
+    /**
      * Get member's binary tree data for modal display.
      */
     public function getMemberTree(int $memberId): JsonResponse

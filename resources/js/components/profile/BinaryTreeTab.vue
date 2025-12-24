@@ -2,6 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     Dialog,
     DialogContent,
@@ -10,13 +11,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Users, TrendingUp, UserPlus, ZoomIn, ZoomOut, RotateCcw, Loader2, ArrowLeft } from 'lucide-vue-next';
+import { Users, TrendingUp, UserPlus, ZoomIn, ZoomOut, RotateCcw, Loader2, ArrowLeft, Search } from 'lucide-vue-next';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 import GoJSBinaryTree from './GoJSBinaryTree.vue';
 import axios from 'axios';
-import { placeMember, getMemberTree } from '@/actions/App/Http/Controllers/Ecommerce/Auth/ProfileController';
+import { placeMember, getMemberTree, searchMemberInTree } from '@/actions/App/Http/Controllers/Ecommerce/Auth/ProfileController';
 
 interface TreeNode {
     id: number;
@@ -58,6 +59,13 @@ const showPlacementDialog = ref(false);
 const selectedUplineId = ref<number | null>(null);
 const selectedPosition = ref<'left' | 'right' | null>(null);
 const selectedMember = ref<PassiveMember | null>(null);
+const memberSearchQuery = ref('');
+
+// Tree search state
+const treeSearchQuery = ref('');
+const treeSearchResults = ref<{ id: number; name: string; email: string; username: string; package_name: string }[]>([]);
+const treeSearchLoading = ref(false);
+const showTreeSearchResults = ref(false);
 
 // Member tree state
 const isViewingMemberTree = ref(false);
@@ -81,6 +89,21 @@ const currentStats = computed(() => isViewingMemberTree.value ? memberTreeStats.
 const treeKeyCounter = ref(0);
 const treeKey = computed(() => `tree-${treeKeyCounter.value}`);
 
+// Filtered passive members based on search query
+const filteredPassiveMembers = computed(() => {
+    if (!memberSearchQuery.value.trim()) {
+        return props.passiveMembers;
+    }
+
+    const query = memberSearchQuery.value.toLowerCase().trim();
+    return props.passiveMembers.filter((member) => {
+        const nameMatch = member.name?.toLowerCase().includes(query);
+        const emailMatch = member.email?.toLowerCase().includes(query);
+        const phoneMatch = member.phone?.toLowerCase().includes(query);
+        return nameMatch || emailMatch || phoneMatch;
+    });
+});
+
 const placementForm = useForm({
     member_id: 0,
     upline_id: null as number | null,
@@ -91,6 +114,7 @@ const openPlacementDialog = (uplineId: number, position: 'left' | 'right') => {
     selectedUplineId.value = uplineId;
     selectedPosition.value = position;
     selectedMember.value = null;
+    memberSearchQuery.value = '';
     showPlacementDialog.value = true;
 };
 
@@ -99,6 +123,7 @@ const closePlacementDialog = () => {
     selectedUplineId.value = null;
     selectedPosition.value = null;
     selectedMember.value = null;
+    memberSearchQuery.value = '';
 };
 
 const selectMember = (member: PassiveMember) => {
@@ -184,6 +209,63 @@ const backToDefaultTree = () => {
         totalLeft: 0,
         totalRight: 0,
     };
+    // Reset tree search when going back
+    treeSearchQuery.value = '';
+    treeSearchResults.value = [];
+    showTreeSearchResults.value = false;
+};
+
+// Tree search functions
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const handleTreeSearch = async () => {
+    const query = treeSearchQuery.value.trim();
+
+    if (query.length < 2) {
+        treeSearchResults.value = [];
+        showTreeSearchResults.value = false;
+        return;
+    }
+
+    // Debounce search
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+
+    searchTimeout = setTimeout(async () => {
+        treeSearchLoading.value = true;
+        showTreeSearchResults.value = true;
+
+        try {
+            const response = await axios.get(searchMemberInTree({ query: { query } }).url);
+            if (response.data.success) {
+                treeSearchResults.value = response.data.data;
+            } else {
+                treeSearchResults.value = [];
+            }
+        } catch {
+            treeSearchResults.value = [];
+        } finally {
+            treeSearchLoading.value = false;
+        }
+    }, 300);
+};
+
+const selectTreeSearchResult = (member: { id: number; name: string; email: string }) => {
+    treeSearchQuery.value = '';
+    treeSearchResults.value = [];
+    showTreeSearchResults.value = false;
+    openMemberTreeDialog(member.id);
+};
+
+const handleTreeSearchBlur = () => {
+    setTimeout(() => {
+        closeTreeSearch();
+    }, 200);
+};
+
+const closeTreeSearch = () => {
+    showTreeSearchResults.value = false;
 };
 
 const handleZoomIn = () => {
@@ -290,8 +372,44 @@ onUnmounted(() => {
                             </CardDescription>
                         </div>
                     </div>
-                    <!-- Zoom Controls -->
+                    <!-- Search and Zoom Controls -->
                     <div class="flex items-center gap-1 sm:gap-2">
+                        <!-- Search Member -->
+                        <div class="relative">
+                            <div class="relative">
+                                <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                                <Input
+                                    v-model="treeSearchQuery"
+                                    type="text"
+                                    placeholder="Cari member..."
+                                    class="h-7 sm:h-8 w-28 sm:w-40 pl-8 text-xs sm:text-sm"
+                                    @input="handleTreeSearch"
+                                    @blur="handleTreeSearchBlur"
+                                />
+                                <Loader2 v-if="treeSearchLoading" class="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                            </div>
+                            <!-- Search Results Dropdown -->
+                            <div
+                                v-if="showTreeSearchResults && (treeSearchResults.length > 0 || treeSearchQuery.length >= 2)"
+                                class="absolute top-full right-0 mt-1 w-64 sm:w-72 bg-background border rounded-lg shadow-lg z-20 max-h-64 overflow-y-auto"
+                            >
+                                <div v-if="treeSearchResults.length === 0" class="p-3 text-center text-sm text-muted-foreground">
+                                    <Search class="w-5 h-5 mx-auto mb-2 opacity-20" />
+                                    <p>Tidak ditemukan</p>
+                                </div>
+                                <button
+                                    v-for="member in treeSearchResults"
+                                    :key="member.id"
+                                    type="button"
+                                    class="w-full p-2.5 text-left hover:bg-muted/50 border-b last:border-b-0 transition-colors"
+                                    @mousedown.prevent="selectTreeSearchResult(member)"
+                                >
+                                    <p class="text-sm font-medium truncate">{{ member.name }}</p>
+                                    <p class="text-xs text-muted-foreground truncate">{{ member.email }}</p>
+                                    <p v-if="member.package_name" class="text-xs text-primary">{{ member.package_name }}</p>
+                                </button>
+                            </div>
+                        </div>
                         <Button
                             v-if="isViewingMemberTree"
                             variant="outline"
@@ -391,7 +509,24 @@ onUnmounted(() => {
             </DialogHeader>
 
             <div class="flex-1 overflow-y-auto py-2 sm:py-4">
-                <div v-if="passiveMembers.length === 0" class="text-center py-8 sm:py-12 text-muted-foreground">
+                <!-- Search Input -->
+                <div class="relative mb-3 sm:mb-4">
+                    <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        v-model="memberSearchQuery"
+                        type="text"
+                        placeholder="Cari nama, email, atau telepon..."
+                        class="pl-9 text-sm"
+                    />
+                </div>
+
+                <div v-if="filteredPassiveMembers.length === 0 && memberSearchQuery" class="text-center py-8 sm:py-12 text-muted-foreground">
+                    <Search class="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-20" />
+                    <p class="text-sm sm:text-base">Tidak ditemukan member dengan "{{ memberSearchQuery }}"</p>
+                    <p class="text-xs sm:text-sm mt-1 sm:mt-2">Coba kata kunci lain</p>
+                </div>
+
+                <div v-else-if="passiveMembers.length === 0" class="text-center py-8 sm:py-12 text-muted-foreground">
                     <UserPlus class="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-20" />
                     <p class="text-sm sm:text-base">Tidak ada member pasif</p>
                     <p class="text-xs sm:text-sm mt-1 sm:mt-2">Semua member sudah ditempatkan</p>
@@ -399,7 +534,7 @@ onUnmounted(() => {
 
                 <div v-else class="space-y-2">
                     <button
-                        v-for="member in passiveMembers"
+                        v-for="member in filteredPassiveMembers"
                         :key="member.id"
                         type="button"
                         :class="[
