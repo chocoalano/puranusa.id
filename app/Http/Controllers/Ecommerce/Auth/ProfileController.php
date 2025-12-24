@@ -595,10 +595,12 @@ class ProfileController extends Controller
     {
         $validated = $request->validate([
             'member_id' => ['required', 'integer', 'exists:customers,id'],
+            'upline_id' => ['required', 'integer', 'exists:customers,id'],
             'position' => ['required', 'string', 'in:left,right'],
         ]);
 
-        $currentCustomer = Auth::guard('client')->user();
+        $uplineId = $validated['upline_id'];
+        $currentCustomer = Customer::find($uplineId);
         $memberId = $validated['member_id'];
         $position = $validated['position'];
 
@@ -618,9 +620,9 @@ class ProfileController extends Controller
 
             // Verify member is sponsored by current customer (sponsor_id = current customer's id)
             // and has status = 2 (pasif) - ready to be placed
-            if ($member->sponsor_id !== $currentCustomer->id) {
-                throw new \Exception('Member bukan bagian dari jaringan sponsor Anda.');
-            }
+            // if ($member->sponsor_id !== $currentCustomer->id) {
+            //     throw new \Exception('Member bukan bagian dari jaringan sponsor Anda.');
+            // }
 
             if ($member->status !== 2) {
                 throw new \Exception('Hanya member dengan status Pasif (sudah belanja tapi belum ditempatkan) yang dapat diposisikan.');

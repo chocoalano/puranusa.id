@@ -43,6 +43,9 @@ const convertTreeToModel = (node: TreeNode | null, parentKey: number | null = nu
     const links: any[] = [];
 
     const addNode = (n: TreeNode, pKey: number | null, position: string | null) => {
+        // Check if this node is within allowed depth (max 5 levels from root for adding children)
+        const canAddChildren = n.level < 5;
+
         const nodeData = {
             key: n.id,
             name: n.name,
@@ -54,6 +57,7 @@ const convertTreeToModel = (node: TreeNode | null, parentKey: number | null = nu
             isActive: n.status,
             hasLeft: !!n.left,
             hasRight: !!n.right,
+            level: n.level,
             // Add order for proper left-right positioning
             order: position === 'left' ? 0 : position === 'right' ? 1 : 0,
         };
@@ -69,7 +73,8 @@ const convertTreeToModel = (node: TreeNode | null, parentKey: number | null = nu
         }
 
         // Add placeholder for empty left position FIRST (order 0)
-        if (!n.left && n.status) {
+        // Only show placeholder if node is active AND level is less than 5
+        if (!n.left && n.status && canAddChildren) {
             const placeholderLeftKey = -n.id * 2;
             nodes.push({
                 key: placeholderLeftKey,
@@ -85,7 +90,8 @@ const convertTreeToModel = (node: TreeNode | null, parentKey: number | null = nu
         }
 
         // Add placeholder for empty right position SECOND (order 1)
-        if (!n.right && n.status) {
+        // Only show placeholder if node is active AND level is less than 5
+        if (!n.right && n.status && canAddChildren) {
             const placeholderRightKey = -n.id * 2 - 1;
             nodes.push({
                 key: placeholderRightKey,

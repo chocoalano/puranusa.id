@@ -76,11 +76,14 @@ class RewardController extends Controller
             'code' => 'nullable|max:10',
             'name' => 'required|max:225',
             'reward' => 'nullable|max:225',
-            'value' => 'required|numeric|min:0',
-            'bv' => 'required|numeric|min:0',
+            'value' => 'required|numeric|min:0|max:9999999999999.99',
+            'bv' => 'required|numeric|min:0|max:9999999999999.99',
             'start' => 'required|date',
             'end' => 'required|date|after_or_equal:start',
             'status' => 'required|in:0,1',
+        ], [
+            'value.max' => 'Nilai tidak boleh lebih dari Rp 9.999.999.999.999,99',
+            'bv.max' => 'BV tidak boleh lebih dari 9.999.999.999.999,99',
         ]);
 
         $validated['type'] = 0; // Promotions = periode
@@ -110,11 +113,14 @@ class RewardController extends Controller
             'code' => 'nullable|max:10',
             'name' => 'required|max:225',
             'reward' => 'nullable|max:225',
-            'value' => 'required|numeric|min:0',
-            'bv' => 'required|numeric|min:0',
+            'value' => 'required|numeric|min:0|max:9999999999999.99',
+            'bv' => 'required|numeric|min:0|max:9999999999999.99',
             'start' => 'required|date',
             'end' => 'required|date|after_or_equal:start',
             'status' => 'required|in:0,1',
+        ], [
+            'value.max' => 'Nilai tidak boleh lebih dari Rp 9.999.999.999.999,99',
+            'bv.max' => 'BV tidak boleh lebih dari 9.999.999.999.999,99',
         ]);
 
         $reward->update($validated);
@@ -186,9 +192,12 @@ class RewardController extends Controller
             'code' => 'nullable|max:10',
             'name' => 'required|max:225',
             'reward' => 'nullable|max:225',
-            'value' => 'required|numeric|min:0',
-            'bv' => 'required|numeric|min:0',
+            'value' => 'required|numeric|min:0|max:9999999999999.99',
+            'bv' => 'required|numeric|min:0|max:9999999999999.99',
             'status' => 'required|in:0,1',
+        ], [
+            'value.max' => 'Nilai tidak boleh lebih dari Rp 9.999.999.999.999,99',
+            'bv.max' => 'BV tidak boleh lebih dari 9.999.999.999.999,99',
         ]);
 
         $validated['type'] = 1; // Lifetime = permanen
@@ -220,9 +229,12 @@ class RewardController extends Controller
             'code' => 'nullable|max:10',
             'name' => 'required|max:225',
             'reward' => 'nullable|max:225',
-            'value' => 'required|numeric|min:0',
-            'bv' => 'required|numeric|min:0',
+            'value' => 'required|numeric|min:0|max:9999999999999.99',
+            'bv' => 'required|numeric|min:0|max:9999999999999.99',
             'status' => 'required|in:0,1',
+        ], [
+            'value.max' => 'Nilai tidak boleh lebih dari Rp 9.999.999.999.999,99',
+            'bv.max' => 'BV tidak boleh lebih dari 9.999.999.999.999,99',
         ]);
 
         $reward->update($validated);
