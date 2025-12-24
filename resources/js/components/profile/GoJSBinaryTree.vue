@@ -338,10 +338,8 @@ const updateDiagram = () => {
     const goLib = go;
     const { nodes, links } = convertTreeToModel(props.binaryTree);
 
-    // Use startTransaction/commitTransaction to batch updates
-    myDiagram.startTransaction('update');
+    // Set new model directly - don't wrap in transaction as model replacement handles this internally
     myDiagram.model = new goLib.GraphLinksModel(nodes, links);
-    myDiagram.commitTransaction('update');
 
     // Zoom to fit after a small delay to ensure layout is complete
     requestAnimationFrame(() => {

@@ -11228,9 +11228,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       if (!myDiagram || !props.binaryTree || !go) return;
       const goLib = go;
       const { nodes, links } = convertTreeToModel(props.binaryTree);
-      myDiagram.startTransaction("update");
       myDiagram.model = new goLib.GraphLinksModel(nodes, links);
-      myDiagram.commitTransaction("update");
       requestAnimationFrame(() => {
         if (myDiagram) {
           myDiagram.zoomToFit();
