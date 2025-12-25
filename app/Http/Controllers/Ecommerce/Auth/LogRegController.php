@@ -104,7 +104,7 @@ class LogRegController extends Controller
 
             // kolom baru (nullable di DB)
             'nik' => ['nullable', 'string', 'max:32', 'regex:/^\d{8,32}$/'], // longgar tapi tetap angka
-            'gender' => ['nullable', Rule::in(['male', 'female', 'L', 'P'])],
+            'gender' => ['nullable', Rule::in(['laki-laki', 'perempuan'])],
             'alamat' => ['nullable', 'string'],
 
             'password' => ['required', 'string', 'min:8', 'confirmed'],

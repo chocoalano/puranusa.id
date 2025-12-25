@@ -13,24 +13,11 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3'
-import {
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  Lock,
-  Mail,
-  Phone,
-  ShoppingBag,
-  User,
-  Users,
-  IdCard,
-  AtSign,
-} from 'lucide-vue-next'
 import { computed, ref } from 'vue'
 import { toast } from 'vue-sonner'
 
 interface Props {
-  ref_code?: string
+  ref_code?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -46,11 +33,11 @@ const form = useForm({
   email: '',
   phone: '',
   nik: '',
-  gender: '' as '' | 'male' | 'female' | 'L' | 'P',
+  gender: '' as '' | 'laki-laki' | 'perempuan',
   alamat: '',
   password: '',
   password_confirmation: '',
-  ref_code: props.ref_code,
+  ref_code: props.ref_code ?? '',
 })
 
 const showPassword = ref(false)
@@ -119,7 +106,12 @@ const submit = () => {
         <div class="flex justify-center">
           <Link href="/">
             <div class="flex items-center gap-2">
-              <ShoppingBag class="h-8 w-8 text-primary" />
+              <!-- ShoppingBag SVG Icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                <path d="M3 6h18"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
               <span class="text-2xl font-bold">Puranusa</span>
             </div>
           </Link>
@@ -136,7 +128,11 @@ const submit = () => {
             <form @submit.prevent="submit" class="space-y-4">
               <!-- Success Alert -->
               <Alert v-if="flashSuccess" variant="default">
-                <CheckCircle2 class="h-4 w-4" />
+                <!-- CheckCircle2 SVG Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
                 <AlertTitle>Berhasil!</AlertTitle>
                 <AlertDescription>{{ flashSuccess }}</AlertDescription>
               </Alert>
@@ -145,7 +141,11 @@ const submit = () => {
               <div class="space-y-2">
                 <Label for="name">Nama Lengkap <span class="text-destructive">*</span></Label>
                 <div class="relative">
-                  <User class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                  <!-- User SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-3 left-3 h-4 w-4 text-muted-foreground">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
                   <Input
                     id="name"
                     v-model="form.name"
@@ -170,7 +170,11 @@ const submit = () => {
               <div class="space-y-2">
                 <Label for="username">Username <span class="text-destructive">*</span></Label>
                 <div class="relative">
-                  <AtSign class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                  <!-- AtSign SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-3 left-3 h-4 w-4 text-muted-foreground">
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>
+                  </svg>
                   <Input
                     id="username"
                     v-model="form.username"
@@ -194,7 +198,11 @@ const submit = () => {
               <div class="space-y-2">
                 <Label for="email">Email <span class="text-destructive">*</span></Label>
                 <div class="relative">
-                  <Mail class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                  <!-- Mail SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-3 left-3 h-4 w-4 text-muted-foreground">
+                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                  </svg>
                   <Input
                     id="email"
                     v-model="form.email"
@@ -218,7 +226,10 @@ const submit = () => {
               <div class="space-y-2">
                 <Label for="phone">Nomor Telepon <span class="text-destructive">*</span></Label>
                 <div class="relative">
-                  <Phone class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                  <!-- Phone SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-3 left-3 h-4 w-4 text-muted-foreground">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
                   <Input
                     id="phone"
                     v-model="form.phone"
@@ -242,7 +253,11 @@ const submit = () => {
               <div class="space-y-2">
                 <Label for="nik">NIK (Opsional)</Label>
                 <div class="relative">
-                  <IdCard class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                  <!-- IdCard SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-3 left-3 h-4 w-4 text-muted-foreground">
+                    <rect width="20" height="14" x="2" y="5" rx="2"/>
+                    <line x1="2" x2="22" y1="10" y2="10"/>
+                  </svg>
                   <Input
                     id="nik"
                     v-model="form.nik"
@@ -252,6 +267,7 @@ const submit = () => {
                     class="pl-10"
                     :class="{ 'border-destructive': form.errors.nik }"
                     autocomplete="off"
+                    maxlength="32"
                   />
                 </div>
                 <p v-if="form.errors.nik" class="text-sm text-destructive">
@@ -270,8 +286,8 @@ const submit = () => {
                     <SelectValue placeholder="Pilih jenis kelamin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Laki-laki</SelectItem>
-                    <SelectItem value="female">Perempuan</SelectItem>
+                    <SelectItem value="laki-laki">Laki-laki</SelectItem>
+                    <SelectItem value="perempuan">Perempuan</SelectItem>
                   </SelectContent>
                 </Select>
                 <p v-if="form.errors.gender" class="text-sm text-destructive">
@@ -304,7 +320,13 @@ const submit = () => {
               <div class="space-y-2">
                 <Label for="ref_code">Kode Referral (Opsional)</Label>
                 <div class="relative">
-                  <Users class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                  <!-- Users SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-3 left-3 h-4 w-4 text-muted-foreground">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
                   <Input
                     id="ref_code"
                     v-model="form.ref_code"
@@ -327,7 +349,11 @@ const submit = () => {
               <div class="space-y-2">
                 <Label for="password">Password <span class="text-destructive">*</span></Label>
                 <div class="relative">
-                  <Lock class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                  <!-- Lock SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-3 left-3 h-4 w-4 text-muted-foreground">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
                   <Input
                     id="password"
                     v-model="form.password"
@@ -343,8 +369,18 @@ const submit = () => {
                     @click="showPassword = !showPassword"
                     class="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
                   >
-                    <Eye v-if="!showPassword" class="h-4 w-4" />
-                    <EyeOff v-else class="h-4 w-4" />
+                    <!-- Eye SVG Icon (when password is hidden) -->
+                    <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                      <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <!-- EyeOff SVG Icon (when password is shown) -->
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                      <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/>
+                      <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/>
+                      <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/>
+                      <path d="m2 2 20 20"/>
+                    </svg>
                   </button>
                 </div>
                 <p v-if="form.errors.password" class="text-sm text-destructive">
@@ -359,7 +395,11 @@ const submit = () => {
               <div class="space-y-2">
                 <Label for="password_confirmation">Konfirmasi Password <span class="text-destructive">*</span></Label>
                 <div class="relative">
-                  <Lock class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                  <!-- Lock SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-3 left-3 h-4 w-4 text-muted-foreground">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
                   <Input
                     id="password_confirmation"
                     v-model="form.password_confirmation"
@@ -375,8 +415,18 @@ const submit = () => {
                     @click="showPasswordConfirmation = !showPasswordConfirmation"
                     class="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
                   >
-                    <Eye v-if="!showPasswordConfirmation" class="h-4 w-4" />
-                    <EyeOff v-else class="h-4 w-4" />
+                    <!-- Eye SVG Icon (when password is hidden) -->
+                    <svg v-if="!showPasswordConfirmation" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                      <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <!-- EyeOff SVG Icon (when password is shown) -->
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                      <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/>
+                      <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/>
+                      <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/>
+                      <path d="m2 2 20 20"/>
+                    </svg>
                   </button>
                 </div>
                 <p v-if="form.errors.password_confirmation" class="text-sm text-destructive">
@@ -398,7 +448,13 @@ const submit = () => {
 
               <!-- Submit Button -->
               <Button type="submit" class="w-full" :disabled="form.processing">
-                <span v-if="form.processing">Memproses...</span>
+                <template v-if="form.processing">
+                  <!-- Loader SVG Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 h-4 w-4 animate-spin">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Memproses...
+                </template>
                 <span v-else>Daftar Sekarang</span>
               </Button>
             </form>
