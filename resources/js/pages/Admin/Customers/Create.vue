@@ -60,7 +60,8 @@ const filteredSponsors = computed(() => {
     const query = searchSponsor.value.toLowerCase();
     return props.customers.filter(
         (c) =>
-            c.name.toLowerCase().includes(query) || c.ewallet_id.toLowerCase().includes(query)
+            (c.name?.toLowerCase().includes(query) ?? false) ||
+            (c.ewallet_id?.toLowerCase().includes(query) ?? false)
     );
 });
 
@@ -280,7 +281,30 @@ const submit = () => {
                             <!-- Sponsor Selection -->
                             <div class="space-y-2">
                                 <Label for="sponsor">Sponsor</Label>
-                                <div class="relative">
+
+                                <!-- Selected Sponsor Display -->
+                                <div
+                                    v-if="selectedSponsor"
+                                    class="flex items-center justify-between rounded-md border bg-muted p-3"
+                                >
+                                    <div>
+                                        <p class="text-sm font-medium">{{ selectedSponsor.name }}</p>
+                                        <p class="text-xs text-muted-foreground">
+                                            {{ selectedSponsor.ewallet_id }}
+                                        </p>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        @click="form.sponsor_id = null"
+                                    >
+                                        Hapus
+                                    </Button>
+                                </div>
+
+                                <!-- Search Input -->
+                                <div v-else class="relative">
                                     <div class="relative">
                                         <Input
                                             v-model="searchSponsor"
@@ -309,16 +333,6 @@ const submit = () => {
                                             </div>
                                         </button>
                                     </div>
-                                </div>
-
-                                <div
-                                    v-if="selectedSponsor"
-                                    class="mt-2 rounded-md border bg-muted p-3"
-                                >
-                                    <p class="text-sm font-medium">{{ selectedSponsor.name }}</p>
-                                    <p class="text-xs text-muted-foreground">
-                                        {{ selectedSponsor.ewallet_id }}
-                                    </p>
                                 </div>
 
                                 <p class="text-xs text-muted-foreground">

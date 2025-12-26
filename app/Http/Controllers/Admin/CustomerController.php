@@ -51,12 +51,34 @@ class CustomerController extends Controller
         }
 
         // Filter by email verified
-        if ($request->has('email_verified')) {
+        if ($request->has('email_verified') && $request->get('email_verified') !== '') {
             if ($request->boolean('email_verified')) {
                 $query->whereNotNull('email_verified_at');
             } else {
                 $query->whereNull('email_verified_at');
             }
+        }
+
+        // Filter by package
+        if ($request->has('package_id') && $request->get('package_id') !== '') {
+            $packageId = $request->get('package_id');
+            if ($packageId === 'null') {
+                $query->whereNull('package_id');
+            } else {
+                $query->where('package_id', $packageId);
+            }
+        }
+
+        // Filter by position
+        if ($request->has('position') && $request->get('position') !== '') {
+            $query->whereHas('networkPosition', function ($q) use ($request) {
+                $q->where('position', $request->get('position'));
+            });
+        }
+
+        // Filter by status (customer status, not email verified)
+        if ($request->has('status') && $request->get('status') !== '') {
+            $query->where('status', $request->get('status'));
         }
 
         // Sorting
@@ -82,12 +104,14 @@ class CustomerController extends Controller
                     'upline_name' => $customer->upline?->name,
                     'position' => $customer->networkPosition?->position,
                     'status' => $customer->status,
+                    'package_id' => $customer->package_id,
+                    'package_name' => $customer->get_package_name(),
                 ];
             });
 
         return Inertia::render('Admin/Customers/Index', [
             'customers' => $customers,
-            'filters' => $request->only(['search', 'sponsor_id', 'upline_id', 'email_verified', 'sort_by', 'sort_order', 'per_page']),
+            'filters' => $request->only(['search', 'sponsor_id', 'upline_id', 'email_verified', 'package_id', 'position', 'status', 'sort_by', 'sort_order', 'per_page']),
         ]);
     }
 

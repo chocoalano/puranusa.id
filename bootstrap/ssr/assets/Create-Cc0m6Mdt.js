@@ -50,7 +50,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       if (!searchSponsor.value) return props.customers;
       const query = searchSponsor.value.toLowerCase();
       return props.customers.filter(
-        (c) => c.name.toLowerCase().includes(query) || c.ewallet_id.toLowerCase().includes(query)
+        (c) => (c.name?.toLowerCase().includes(query) ?? false) || (c.ewallet_id?.toLowerCase().includes(query) ?? false)
       );
     });
     const selectSponsor = (customer) => {
@@ -813,31 +813,48 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(`<div class="relative"${_scopeId3}><div class="relative"${_scopeId3}>`);
-                        _push4(ssrRenderComponent(unref(_sfc_main$9), {
-                          modelValue: searchSponsor.value,
-                          "onUpdate:modelValue": ($event) => searchSponsor.value = $event,
-                          onFocus: ($event) => showSponsorDropdown.value = true,
-                          onBlur: handleSponsorBlur,
-                          placeholder: "Cari sponsor berdasarkan nama atau ID...",
-                          class: { "border-destructive": unref(form).errors.sponsor_id }
-                        }, null, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(Search), { class: "absolute right-3 top-3 h-4 w-4 text-muted-foreground" }, null, _parent4, _scopeId3));
-                        _push4(`</div>`);
-                        if (showSponsorDropdown.value && filteredSponsors.value.length > 0) {
-                          _push4(`<div class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md"${_scopeId3}><!--[-->`);
-                          ssrRenderList(filteredSponsors.value, (customer) => {
-                            _push4(`<button type="button" class="w-full rounded px-3 py-2 text-left text-sm hover:bg-accent"${_scopeId3}><div class="font-medium"${_scopeId3}>${ssrInterpolate(customer.name)}</div><div class="text-xs text-muted-foreground"${_scopeId3}>${ssrInterpolate(customer.ewallet_id)}</div></button>`);
-                          });
-                          _push4(`<!--]--></div>`);
-                        } else {
-                          _push4(`<!---->`);
-                        }
-                        _push4(`</div>`);
                         if (selectedSponsor.value) {
-                          _push4(`<div class="mt-2 rounded-md border bg-muted p-3"${_scopeId3}><p class="text-sm font-medium"${_scopeId3}>${ssrInterpolate(selectedSponsor.value.name)}</p><p class="text-xs text-muted-foreground"${_scopeId3}>${ssrInterpolate(selectedSponsor.value.ewallet_id)}</p></div>`);
+                          _push4(`<div class="flex items-center justify-between rounded-md border bg-muted p-3"${_scopeId3}><div${_scopeId3}><p class="text-sm font-medium"${_scopeId3}>${ssrInterpolate(selectedSponsor.value.name)}</p><p class="text-xs text-muted-foreground"${_scopeId3}>${ssrInterpolate(selectedSponsor.value.ewallet_id)}</p></div>`);
+                          _push4(ssrRenderComponent(unref(_sfc_main$2), {
+                            type: "button",
+                            variant: "ghost",
+                            size: "sm",
+                            onClick: ($event) => unref(form).sponsor_id = null
+                          }, {
+                            default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                              if (_push5) {
+                                _push5(` Hapus `);
+                              } else {
+                                return [
+                                  createTextVNode(" Hapus ")
+                                ];
+                              }
+                            }),
+                            _: 1
+                          }, _parent4, _scopeId3));
+                          _push4(`</div>`);
                         } else {
-                          _push4(`<!---->`);
+                          _push4(`<div class="relative"${_scopeId3}><div class="relative"${_scopeId3}>`);
+                          _push4(ssrRenderComponent(unref(_sfc_main$9), {
+                            modelValue: searchSponsor.value,
+                            "onUpdate:modelValue": ($event) => searchSponsor.value = $event,
+                            onFocus: ($event) => showSponsorDropdown.value = true,
+                            onBlur: handleSponsorBlur,
+                            placeholder: "Cari sponsor berdasarkan nama atau ID...",
+                            class: { "border-destructive": unref(form).errors.sponsor_id }
+                          }, null, _parent4, _scopeId3));
+                          _push4(ssrRenderComponent(unref(Search), { class: "absolute right-3 top-3 h-4 w-4 text-muted-foreground" }, null, _parent4, _scopeId3));
+                          _push4(`</div>`);
+                          if (showSponsorDropdown.value && filteredSponsors.value.length > 0) {
+                            _push4(`<div class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md"${_scopeId3}><!--[-->`);
+                            ssrRenderList(filteredSponsors.value, (customer) => {
+                              _push4(`<button type="button" class="w-full rounded px-3 py-2 text-left text-sm hover:bg-accent"${_scopeId3}><div class="font-medium"${_scopeId3}>${ssrInterpolate(customer.name)}</div><div class="text-xs text-muted-foreground"${_scopeId3}>${ssrInterpolate(customer.ewallet_id)}</div></button>`);
+                            });
+                            _push4(`<!--]--></div>`);
+                          } else {
+                            _push4(`<!---->`);
+                          }
+                          _push4(`</div>`);
                         }
                         _push4(`<p class="text-xs text-muted-foreground"${_scopeId3}> Member yang merekomendasikan pelanggan ini (opsional). Kosongkan jika tidak ada sponsor </p>`);
                         if (unref(form).errors.sponsor_id) {
@@ -973,7 +990,29 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 ]),
                                 _: 1
                               }),
-                              createVNode("div", { class: "relative" }, [
+                              selectedSponsor.value ? (openBlock(), createBlock("div", {
+                                key: 0,
+                                class: "flex items-center justify-between rounded-md border bg-muted p-3"
+                              }, [
+                                createVNode("div", null, [
+                                  createVNode("p", { class: "text-sm font-medium" }, toDisplayString(selectedSponsor.value.name), 1),
+                                  createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString(selectedSponsor.value.ewallet_id), 1)
+                                ]),
+                                createVNode(unref(_sfc_main$2), {
+                                  type: "button",
+                                  variant: "ghost",
+                                  size: "sm",
+                                  onClick: ($event) => unref(form).sponsor_id = null
+                                }, {
+                                  default: withCtx(() => [
+                                    createTextVNode(" Hapus ")
+                                  ]),
+                                  _: 1
+                                }, 8, ["onClick"])
+                              ])) : (openBlock(), createBlock("div", {
+                                key: 1,
+                                class: "relative"
+                              }, [
                                 createVNode("div", { class: "relative" }, [
                                   createVNode(unref(_sfc_main$9), {
                                     modelValue: searchSponsor.value,
@@ -1001,17 +1040,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ], 8, ["onClick"]);
                                   }), 128))
                                 ])) : createCommentVNode("", true)
-                              ]),
-                              selectedSponsor.value ? (openBlock(), createBlock("div", {
-                                key: 0,
-                                class: "mt-2 rounded-md border bg-muted p-3"
-                              }, [
-                                createVNode("p", { class: "text-sm font-medium" }, toDisplayString(selectedSponsor.value.name), 1),
-                                createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString(selectedSponsor.value.ewallet_id), 1)
-                              ])) : createCommentVNode("", true),
+                              ])),
                               createVNode("p", { class: "text-xs text-muted-foreground" }, " Member yang merekomendasikan pelanggan ini (opsional). Kosongkan jika tidak ada sponsor "),
                               unref(form).errors.sponsor_id ? (openBlock(), createBlock("p", {
-                                key: 1,
+                                key: 2,
                                 class: "text-sm text-destructive"
                               }, toDisplayString(unref(form).errors.sponsor_id), 1)) : createCommentVNode("", true)
                             ]),
@@ -1102,7 +1134,29 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode("div", { class: "relative" }, [
+                            selectedSponsor.value ? (openBlock(), createBlock("div", {
+                              key: 0,
+                              class: "flex items-center justify-between rounded-md border bg-muted p-3"
+                            }, [
+                              createVNode("div", null, [
+                                createVNode("p", { class: "text-sm font-medium" }, toDisplayString(selectedSponsor.value.name), 1),
+                                createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString(selectedSponsor.value.ewallet_id), 1)
+                              ]),
+                              createVNode(unref(_sfc_main$2), {
+                                type: "button",
+                                variant: "ghost",
+                                size: "sm",
+                                onClick: ($event) => unref(form).sponsor_id = null
+                              }, {
+                                default: withCtx(() => [
+                                  createTextVNode(" Hapus ")
+                                ]),
+                                _: 1
+                              }, 8, ["onClick"])
+                            ])) : (openBlock(), createBlock("div", {
+                              key: 1,
+                              class: "relative"
+                            }, [
                               createVNode("div", { class: "relative" }, [
                                 createVNode(unref(_sfc_main$9), {
                                   modelValue: searchSponsor.value,
@@ -1130,17 +1184,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                   ], 8, ["onClick"]);
                                 }), 128))
                               ])) : createCommentVNode("", true)
-                            ]),
-                            selectedSponsor.value ? (openBlock(), createBlock("div", {
-                              key: 0,
-                              class: "mt-2 rounded-md border bg-muted p-3"
-                            }, [
-                              createVNode("p", { class: "text-sm font-medium" }, toDisplayString(selectedSponsor.value.name), 1),
-                              createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString(selectedSponsor.value.ewallet_id), 1)
-                            ])) : createCommentVNode("", true),
+                            ])),
                             createVNode("p", { class: "text-xs text-muted-foreground" }, " Member yang merekomendasikan pelanggan ini (opsional). Kosongkan jika tidak ada sponsor "),
                             unref(form).errors.sponsor_id ? (openBlock(), createBlock("p", {
-                              key: 1,
+                              key: 2,
                               class: "text-sm text-destructive"
                             }, toDisplayString(unref(form).errors.sponsor_id), 1)) : createCommentVNode("", true)
                           ]),
@@ -1508,7 +1555,29 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 ]),
                                 _: 1
                               }),
-                              createVNode("div", { class: "relative" }, [
+                              selectedSponsor.value ? (openBlock(), createBlock("div", {
+                                key: 0,
+                                class: "flex items-center justify-between rounded-md border bg-muted p-3"
+                              }, [
+                                createVNode("div", null, [
+                                  createVNode("p", { class: "text-sm font-medium" }, toDisplayString(selectedSponsor.value.name), 1),
+                                  createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString(selectedSponsor.value.ewallet_id), 1)
+                                ]),
+                                createVNode(unref(_sfc_main$2), {
+                                  type: "button",
+                                  variant: "ghost",
+                                  size: "sm",
+                                  onClick: ($event) => unref(form).sponsor_id = null
+                                }, {
+                                  default: withCtx(() => [
+                                    createTextVNode(" Hapus ")
+                                  ]),
+                                  _: 1
+                                }, 8, ["onClick"])
+                              ])) : (openBlock(), createBlock("div", {
+                                key: 1,
+                                class: "relative"
+                              }, [
                                 createVNode("div", { class: "relative" }, [
                                   createVNode(unref(_sfc_main$9), {
                                     modelValue: searchSponsor.value,
@@ -1536,17 +1605,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ], 8, ["onClick"]);
                                   }), 128))
                                 ])) : createCommentVNode("", true)
-                              ]),
-                              selectedSponsor.value ? (openBlock(), createBlock("div", {
-                                key: 0,
-                                class: "mt-2 rounded-md border bg-muted p-3"
-                              }, [
-                                createVNode("p", { class: "text-sm font-medium" }, toDisplayString(selectedSponsor.value.name), 1),
-                                createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString(selectedSponsor.value.ewallet_id), 1)
-                              ])) : createCommentVNode("", true),
+                              ])),
                               createVNode("p", { class: "text-xs text-muted-foreground" }, " Member yang merekomendasikan pelanggan ini (opsional). Kosongkan jika tidak ada sponsor "),
                               unref(form).errors.sponsor_id ? (openBlock(), createBlock("p", {
-                                key: 1,
+                                key: 2,
                                 class: "text-sm text-destructive"
                               }, toDisplayString(unref(form).errors.sponsor_id), 1)) : createCommentVNode("", true)
                             ]),

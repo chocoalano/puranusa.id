@@ -42,6 +42,13 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { index, show, edit, create, destroy, topUp, loginAsCustomer as loginAsCustomerAction } from '@/actions/App/Http/Controllers/Admin/CustomerController';
 import { toast } from 'vue-sonner';
 
@@ -138,6 +145,8 @@ interface Customer {
     upline_name: string | null;
     position: string | null;
     status: number; // 1 = Aktif, 2 = Pasif, 3 = Prospek
+    package_id: number | null;
+    package_name: string;
 }
 
 interface Pagination {
@@ -158,6 +167,10 @@ interface Props {
         sort_by?: string;
         sort_order?: string;
         per_page?: number;
+        package_id?: string;
+        position?: string;
+        email_verified?: string;
+        status?: string;
     };
 }
 
@@ -167,6 +180,10 @@ const search = ref(props.filters.search || '');
 const sortBy = ref(props.filters.sort_by || 'created_at');
 const sortOrder = ref(props.filters.sort_order || 'desc');
 const perPage = ref(props.filters.per_page || 10);
+const packageFilter = ref(props.filters.package_id || 'all');
+const positionFilter = ref(props.filters.position || 'all');
+const emailVerifiedFilter = ref(props.filters.email_verified || 'all');
+const statusFilter = ref(props.filters.status || 'all');
 
 // Delete customer action
 const deleteCustomer = (id: number) => {
@@ -198,10 +215,14 @@ const performSearch = debounce(() => {
     router.get(
         index.url(),
         {
-            search: search.value,
+            search: search.value || undefined,
             sort_by: sortBy.value,
             sort_order: sortOrder.value,
             per_page: perPage.value,
+            package_id: packageFilter.value && packageFilter.value !== 'all' ? packageFilter.value : undefined,
+            position: positionFilter.value && positionFilter.value !== 'all' ? positionFilter.value : undefined,
+            email_verified: emailVerifiedFilter.value && emailVerifiedFilter.value !== 'all' ? emailVerifiedFilter.value : undefined,
+            status: statusFilter.value && statusFilter.value !== 'all' ? statusFilter.value : undefined,
         },
         {
             preserveState: true,
@@ -209,6 +230,27 @@ const performSearch = debounce(() => {
         }
     );
 }, 300);
+
+const handleFilterChange = () => {
+    performSearch();
+};
+
+const clearFilters = () => {
+    search.value = '';
+    packageFilter.value = 'all';
+    positionFilter.value = 'all';
+    emailVerifiedFilter.value = 'all';
+    statusFilter.value = 'all';
+    performSearch();
+};
+
+const hasActiveFilters = computed(() => {
+    return search.value ||
+        (packageFilter.value && packageFilter.value !== 'all') ||
+        (positionFilter.value && positionFilter.value !== 'all') ||
+        (emailVerifiedFilter.value && emailVerifiedFilter.value !== 'all') ||
+        (statusFilter.value && statusFilter.value !== 'all');
+});
 
 const handleSort = (column: string) => {
     if (sortBy.value === column) {
@@ -279,9 +321,18 @@ const columns: ColumnDef<Customer>[] = [
         cell: ({ row }) => h('div', {}, row.getValue('name')),
     },
     {
-        accessorKey: 'email',
-        header: 'Email',
-        cell: ({ row }) => h('div', { class: 'text-sm' }, row.getValue('email')),
+        accessorKey: 'package_name',
+        header: 'Peringkat',
+        cell: ({ row }) => {
+            const packageId = row.original.package_id;
+            const packageName = row.getValue('package_name') as string;
+            const variant = packageId === 3 ? 'default' : packageId === 2 ? 'secondary' : packageId === 1 ? 'outline' : 'outline';
+            return h(
+                Badge,
+                { variant },
+                () => packageName
+            );
+        },
     },
     {
         accessorKey: 'phone',
@@ -454,15 +505,73 @@ const table = useVueTable({
                 </Link>
             </div>
 
-            <div class="mb-4 flex items-center gap-4">
-                <div class="relative flex-1">
-                    <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        v-model="search"
-                        placeholder="Cari nama, email, telepon, atau ewallet ID..."
-                        class="pl-10"
-                        @input="performSearch"
-                    />
+            <div class="mb-4 space-y-4">
+                <div class="flex items-center gap-4">
+                    <div class="relative flex-1">
+                        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            v-model="search"
+                            placeholder="Cari nama, email, telepon, atau ewallet ID..."
+                            class="pl-10"
+                            @input="performSearch"
+                        />
+                    </div>
+                    <Button
+                        v-if="hasActiveFilters"
+                        variant="outline"
+                        size="sm"
+                        @click="clearFilters"
+                    >
+                        Reset Filter
+                    </Button>
+                </div>
+                <div class="flex flex-wrap items-center gap-4">
+                    <Select v-model="packageFilter" @update:model-value="handleFilterChange">
+                        <SelectTrigger class="w-[180px]">
+                            <SelectValue placeholder="Semua Peringkat" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua Peringkat</SelectItem>
+                            <SelectItem value="null">Tidak ada paket</SelectItem>
+                            <SelectItem value="1">ZENNER Plus</SelectItem>
+                            <SelectItem value="2">ZENNER Prime</SelectItem>
+                            <SelectItem value="3">ZENNER Ultra</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select v-model="positionFilter" @update:model-value="handleFilterChange">
+                        <SelectTrigger class="w-[150px]">
+                            <SelectValue placeholder="Semua Posisi" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua Posisi</SelectItem>
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select v-model="emailVerifiedFilter" @update:model-value="handleFilterChange">
+                        <SelectTrigger class="w-[160px]">
+                            <SelectValue placeholder="Semua Verifikasi" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua Verifikasi</SelectItem>
+                            <SelectItem value="1">Verified</SelectItem>
+                            <SelectItem value="0">Unverified</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select v-model="statusFilter" @update:model-value="handleFilterChange">
+                        <SelectTrigger class="w-[150px]">
+                            <SelectValue placeholder="Semua Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua Status</SelectItem>
+                            <SelectItem value="1">Prospek</SelectItem>
+                            <SelectItem value="2">Pasif</SelectItem>
+                            <SelectItem value="3">Aktif</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
@@ -520,10 +629,14 @@ const table = useVueTable({
                 :data="customers"
                 :url="index.url()"
                 :filters="{
-                    search: search,
+                    search: search || undefined,
                     sort_by: sortBy,
                     sort_order: sortOrder,
                     per_page: perPage,
+                    package_id: packageFilter && packageFilter !== 'all' ? packageFilter : undefined,
+                    position: positionFilter && positionFilter !== 'all' ? positionFilter : undefined,
+                    email_verified: emailVerifiedFilter && emailVerifiedFilter !== 'all' ? emailVerifiedFilter : undefined,
+                    status: statusFilter && statusFilter !== 'all' ? statusFilter : undefined,
                 }"
             />
         </div>
