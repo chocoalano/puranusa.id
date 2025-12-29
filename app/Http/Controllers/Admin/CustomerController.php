@@ -24,7 +24,7 @@ class CustomerController extends Controller
     public function index(Request $request): Response
     {
         $query = Customer::query()
-            ->with(['networkPosition', 'matrixPosition', 'sponsor:id,name', 'upline:id,name']);
+            ->with(['networkPosition', 'matrixPosition', 'sponsor:id,name,username', 'upline:id,name,username']);
 
         // Search
         if ($search = $request->get('search')) {
