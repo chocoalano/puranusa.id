@@ -561,7 +561,7 @@ class CheckoutController extends Controller
 
             Log::error('Checkout process error', [
                 'customer_id' => $customer->id,
-                'product_id' => $validated['product_id'],
+                'items' => array_map(fn ($item) => $item['product_id'], $validated['items']),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
