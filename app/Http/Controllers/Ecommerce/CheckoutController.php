@@ -285,8 +285,10 @@ class CheckoutController extends Controller
             'applied_promos' => $appliedPromos,
         ]);
 
-        // Execute bonus engine stored procedure
-        DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+        // Execute bonus engine stored procedure only if member is active
+        if ($customer->status == 3) {
+            DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+        }
 
         foreach ($cart->items as $item) {
             $item->product->decrement('stock', $item->qty);
@@ -719,8 +721,10 @@ class CheckoutController extends Controller
             'applied_promos' => $appliedPromos,
         ]);
 
-        // Execute bonus engine stored procedure
-        DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+        // Execute bonus engine stored procedure only if member is active
+        if ($customer->status == 3) {
+            DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+        }
 
         $product->decrement('stock', $validated['quantity']);
 
@@ -919,8 +923,11 @@ class CheckoutController extends Controller
                         'applied_promos' => $appliedPromos,
                     ]);
 
-                    // Execute bonus engine stored procedure
-                    DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+                    // Execute bonus engine stored procedure only if member is active
+                    $customerForBonus = Customer::find($order->customer_id);
+                    if ($customerForBonus && $customerForBonus->status == 3) {
+                        DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+                    }
 
                     // Reduce product stock
                     foreach ($order->items as $item) {
@@ -956,8 +963,11 @@ class CheckoutController extends Controller
                     'applied_promos' => $appliedPromos,
                 ]);
 
-                // Execute bonus engine stored procedure
-                DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+                // Execute bonus engine stored procedure only if member is active
+                $customerForBonus = Customer::find($order->customer_id);
+                if ($customerForBonus && $customerForBonus->status == 3) {
+                    DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+                }
 
                 // Reduce product stock
                 foreach ($order->items as $item) {
@@ -1330,8 +1340,10 @@ class CheckoutController extends Controller
             'applied_promos' => $appliedPromos,
         ]);
 
-        // Execute bonus engine stored procedure
-        DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+        // Execute bonus engine stored procedure only if member is active
+        if ($customer->status == 3) {
+            DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+        }
 
         // Update customer omzet
         $customerRecord = Customer::find($customer->id);
