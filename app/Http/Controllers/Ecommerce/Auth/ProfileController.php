@@ -239,6 +239,7 @@ class ProfileController extends Controller
                 ->whereIn('customers.status', [1, 2, 3])
                 ->select(
                     'customers.id',
+                    'customers.username',
                     'customers.name',
                     'customers.email',
                     'customers.phone',
@@ -263,6 +264,7 @@ class ProfileController extends Controller
 
                 $data = [
                     'id' => $member->id,
+                    'username' => $member->username,
                     'name' => $member->name,
                     'email' => $member->email,
                     'phone' => $member->phone,

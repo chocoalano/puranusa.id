@@ -141,8 +141,10 @@ interface Customer {
     created_at: string;
     sponsor_id: number | null;
     sponsor_name: string | null;
+    sponsor_username: string | null;
     upline_id: number | null;
     upline_name: string | null;
+    upline_username: string | null;
     position: string | null;
     status: number; // 1 = Aktif, 2 = Pasif, 3 = Prospek
     package_id: number | null;
@@ -355,19 +357,19 @@ const columns: ColumnDef<Customer>[] = [
         },
     },
     {
-        accessorKey: 'sponsor_name',
+        accessorKey: 'sponsor_username',
         header: 'Sponsor',
         cell: ({ row }) => {
-            const sponsorName = row.getValue('sponsor_name') as string | null;
-            return h('div', { class: 'text-sm' }, sponsorName || '-');
+            const sponsorUsername = row.getValue('sponsor_username') as string | null;
+            return h('div', { class: 'text-sm' }, sponsorUsername ? `@${sponsorUsername}` : '-');
         },
     },
     {
-        accessorKey: 'upline_name',
+        accessorKey: 'upline_username',
         header: 'Upline',
         cell: ({ row }) => {
-            const uplineName = row.getValue('upline_name') as string | null;
-            return h('div', { class: 'text-sm' }, uplineName || '-');
+            const uplineUsername = row.getValue('upline_username') as string | null;
+            return h('div', { class: 'text-sm' }, uplineUsername ? `@${uplineUsername}` : '-');
         },
     },
     {

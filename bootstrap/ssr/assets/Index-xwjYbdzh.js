@@ -8886,7 +8886,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                       _push6(ssrRenderComponent(unref(_sfc_main$p), { class: "p-4" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
-                                            _push7(`<div class="flex items-start justify-between"${_scopeId6}><div class="flex-1"${_scopeId6}><div class="flex items-center gap-2 mb-2"${_scopeId6}><h4 class="font-semibold text-lg"${_scopeId6}>${ssrInterpolate(member.name)}</h4>`);
+                                            _push7(`<div class="flex items-start justify-between"${_scopeId6}><div class="flex-1"${_scopeId6}><div class="flex items-center gap-2 mb-2"${_scopeId6}><h4 class="font-semibold text-lg"${_scopeId6}>${ssrInterpolate(member.name)} <span class="text-sm font-normal text-muted-foreground"${_scopeId6}>(@${ssrInterpolate(member.username)})</span></h4>`);
                                             _push7(ssrRenderComponent(unref(_sfc_main$t), {
                                               variant: getPositionBadge(member.position).variant
                                             }, {
@@ -8954,7 +8954,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                               createVNode("div", { class: "flex items-start justify-between" }, [
                                                 createVNode("div", { class: "flex-1" }, [
                                                   createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                                    createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                                    createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                      createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                      createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                                    ]),
                                                     createVNode(unref(_sfc_main$t), {
                                                       variant: getPositionBadge(member.position).variant
                                                     }, {
@@ -9014,7 +9017,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                             createVNode("div", { class: "flex items-start justify-between" }, [
                                               createVNode("div", { class: "flex-1" }, [
                                                 createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                                  createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                                  createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                    createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                    createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                                  ]),
                                                   createVNode(unref(_sfc_main$t), {
                                                     variant: getPositionBadge(member.position).variant
                                                   }, {
@@ -9093,7 +9099,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                           createVNode("div", { class: "flex items-start justify-between" }, [
                                             createVNode("div", { class: "flex-1" }, [
                                               createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                                createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                                createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                  createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                  createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                                ]),
                                                 createVNode(unref(_sfc_main$t), {
                                                   variant: getPositionBadge(member.position).variant
                                                 }, {
@@ -9177,7 +9186,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                       _push6(ssrRenderComponent(unref(_sfc_main$p), { class: "p-4" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
-                                            _push7(`<div class="flex items-start justify-between"${_scopeId6}><div class="flex-1"${_scopeId6}><div class="flex items-center gap-2 mb-2"${_scopeId6}><h4 class="font-semibold text-lg"${_scopeId6}>${ssrInterpolate(member.name)}</h4>`);
+                                            _push7(`<div class="flex items-start justify-between"${_scopeId6}><div class="flex-1"${_scopeId6}><div class="flex items-center gap-2 mb-2"${_scopeId6}><h4 class="font-semibold text-lg"${_scopeId6}>${ssrInterpolate(member.name)} <span class="text-sm font-normal text-muted-foreground"${_scopeId6}>(@${ssrInterpolate(member.username)})</span></h4>`);
                                             _push7(ssrRenderComponent(unref(_sfc_main$t), { variant: "secondary" }, {
                                               default: withCtx((_7, _push8, _parent8, _scopeId7) => {
                                                 if (_push8) {
@@ -9262,7 +9271,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                               createVNode("div", { class: "flex items-start justify-between" }, [
                                                 createVNode("div", { class: "flex-1" }, [
                                                   createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                                    createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                                    createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                      createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                      createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                                    ]),
                                                     createVNode(unref(_sfc_main$t), { variant: "secondary" }, {
                                                       default: withCtx(() => [
                                                         createTextVNode("Belum Ditempatkan")
@@ -9330,7 +9342,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                             createVNode("div", { class: "flex items-start justify-between" }, [
                                               createVNode("div", { class: "flex-1" }, [
                                                 createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                                  createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                                  createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                    createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                    createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                                  ]),
                                                   createVNode(unref(_sfc_main$t), { variant: "secondary" }, {
                                                     default: withCtx(() => [
                                                       createTextVNode("Belum Ditempatkan")
@@ -9417,7 +9432,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                           createVNode("div", { class: "flex items-start justify-between" }, [
                                             createVNode("div", { class: "flex-1" }, [
                                               createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                                createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                                createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                  createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                  createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                                ]),
                                                 createVNode(unref(_sfc_main$t), { variant: "secondary" }, {
                                                   default: withCtx(() => [
                                                     createTextVNode("Belum Ditempatkan")
@@ -9509,7 +9527,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                       _push6(ssrRenderComponent(unref(_sfc_main$p), { class: "p-4" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
-                                            _push7(`<div class="flex items-start justify-between"${_scopeId6}><div class="flex-1"${_scopeId6}><div class="flex items-center gap-2 mb-2"${_scopeId6}><h4 class="font-semibold text-lg"${_scopeId6}>${ssrInterpolate(member.name)}</h4>`);
+                                            _push7(`<div class="flex items-start justify-between"${_scopeId6}><div class="flex-1"${_scopeId6}><div class="flex items-center gap-2 mb-2"${_scopeId6}><h4 class="font-semibold text-lg"${_scopeId6}>${ssrInterpolate(member.name)} <span class="text-sm font-normal text-muted-foreground"${_scopeId6}>(@${ssrInterpolate(member.username)})</span></h4>`);
                                             _push7(ssrRenderComponent(unref(_sfc_main$t), { variant: "outline" }, {
                                               default: withCtx((_7, _push8, _parent8, _scopeId7) => {
                                                 if (_push8) {
@@ -9571,7 +9589,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                               createVNode("div", { class: "flex items-start justify-between" }, [
                                                 createVNode("div", { class: "flex-1" }, [
                                                   createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                                    createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                                    createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                      createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                      createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                                    ]),
                                                     createVNode(unref(_sfc_main$t), { variant: "outline" }, {
                                                       default: withCtx(() => [
                                                         createTextVNode("Baru Bergabung")
@@ -9626,7 +9647,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                             createVNode("div", { class: "flex items-start justify-between" }, [
                                               createVNode("div", { class: "flex-1" }, [
                                                 createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                                  createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                                  createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                    createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                    createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                                  ]),
                                                   createVNode(unref(_sfc_main$t), { variant: "outline" }, {
                                                     default: withCtx(() => [
                                                       createTextVNode("Baru Bergabung")
@@ -9700,7 +9724,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                           createVNode("div", { class: "flex items-start justify-between" }, [
                                             createVNode("div", { class: "flex-1" }, [
                                               createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                                createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                                createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                  createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                  createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                                ]),
                                                 createVNode(unref(_sfc_main$t), { variant: "outline" }, {
                                                   default: withCtx(() => [
                                                     createTextVNode("Baru Bergabung")
@@ -9807,7 +9834,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                         createVNode("div", { class: "flex items-start justify-between" }, [
                                           createVNode("div", { class: "flex-1" }, [
                                             createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                              createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                              createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                              ]),
                                               createVNode(unref(_sfc_main$t), {
                                                 variant: getPositionBadge(member.position).variant
                                               }, {
@@ -9889,7 +9919,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                         createVNode("div", { class: "flex items-start justify-between" }, [
                                           createVNode("div", { class: "flex-1" }, [
                                             createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                              createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                              createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                              ]),
                                               createVNode(unref(_sfc_main$t), { variant: "secondary" }, {
                                                 default: withCtx(() => [
                                                   createTextVNode("Belum Ditempatkan")
@@ -9979,7 +10012,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                         createVNode("div", { class: "flex items-start justify-between" }, [
                                           createVNode("div", { class: "flex-1" }, [
                                             createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                              createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                              createVNode("h4", { class: "font-semibold text-lg" }, [
+                                                createTextVNode(toDisplayString(member.name) + " ", 1),
+                                                createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                              ]),
                                               createVNode(unref(_sfc_main$t), { variant: "outline" }, {
                                                 default: withCtx(() => [
                                                   createTextVNode("Baru Bergabung")
@@ -10094,7 +10130,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                       createVNode("div", { class: "flex items-start justify-between" }, [
                                         createVNode("div", { class: "flex-1" }, [
                                           createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                            createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                            createVNode("h4", { class: "font-semibold text-lg" }, [
+                                              createTextVNode(toDisplayString(member.name) + " ", 1),
+                                              createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                            ]),
                                             createVNode(unref(_sfc_main$t), {
                                               variant: getPositionBadge(member.position).variant
                                             }, {
@@ -10176,7 +10215,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                       createVNode("div", { class: "flex items-start justify-between" }, [
                                         createVNode("div", { class: "flex-1" }, [
                                           createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                            createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                            createVNode("h4", { class: "font-semibold text-lg" }, [
+                                              createTextVNode(toDisplayString(member.name) + " ", 1),
+                                              createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                            ]),
                                             createVNode(unref(_sfc_main$t), { variant: "secondary" }, {
                                               default: withCtx(() => [
                                                 createTextVNode("Belum Ditempatkan")
@@ -10266,7 +10308,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                       createVNode("div", { class: "flex items-start justify-between" }, [
                                         createVNode("div", { class: "flex-1" }, [
                                           createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                            createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                            createVNode("h4", { class: "font-semibold text-lg" }, [
+                                              createTextVNode(toDisplayString(member.name) + " ", 1),
+                                              createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                            ]),
                                             createVNode(unref(_sfc_main$t), { variant: "outline" }, {
                                               default: withCtx(() => [
                                                 createTextVNode("Baru Bergabung")
@@ -10403,7 +10448,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                     createVNode("div", { class: "flex items-start justify-between" }, [
                                       createVNode("div", { class: "flex-1" }, [
                                         createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                          createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                          createVNode("h4", { class: "font-semibold text-lg" }, [
+                                            createTextVNode(toDisplayString(member.name) + " ", 1),
+                                            createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                          ]),
                                           createVNode(unref(_sfc_main$t), {
                                             variant: getPositionBadge(member.position).variant
                                           }, {
@@ -10485,7 +10533,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                     createVNode("div", { class: "flex items-start justify-between" }, [
                                       createVNode("div", { class: "flex-1" }, [
                                         createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                          createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                          createVNode("h4", { class: "font-semibold text-lg" }, [
+                                            createTextVNode(toDisplayString(member.name) + " ", 1),
+                                            createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                          ]),
                                           createVNode(unref(_sfc_main$t), { variant: "secondary" }, {
                                             default: withCtx(() => [
                                               createTextVNode("Belum Ditempatkan")
@@ -10575,7 +10626,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                     createVNode("div", { class: "flex items-start justify-between" }, [
                                       createVNode("div", { class: "flex-1" }, [
                                         createVNode("div", { class: "flex items-center gap-2 mb-2" }, [
-                                          createVNode("h4", { class: "font-semibold text-lg" }, toDisplayString(member.name), 1),
+                                          createVNode("h4", { class: "font-semibold text-lg" }, [
+                                            createTextVNode(toDisplayString(member.name) + " ", 1),
+                                            createVNode("span", { class: "text-sm font-normal text-muted-foreground" }, "(@" + toDisplayString(member.username) + ")", 1)
+                                          ]),
                                           createVNode(unref(_sfc_main$t), { variant: "outline" }, {
                                             default: withCtx(() => [
                                               createTextVNode("Baru Bergabung")

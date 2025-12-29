@@ -18,6 +18,7 @@ import { toast } from 'vue-sonner';
 
 interface NetworkMember {
     id: number;
+    username: string;
     name: string;
     email: string;
     phone: string | null;
@@ -155,7 +156,7 @@ const getPositionBadge = (position: string | null): {
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <h4 class="font-semibold text-lg">{{ member.name }}</h4>
+                                        <h4 class="font-semibold text-lg">{{ member.name }} <span class="text-sm font-normal text-muted-foreground">(@{{ member.username }})</span></h4>
                                         <Badge :variant="getPositionBadge(member.position).variant">
                                             {{ getPositionBadge(member.position).text }}
                                         </Badge>
@@ -210,7 +211,7 @@ const getPositionBadge = (position: string | null): {
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <h4 class="font-semibold text-lg">{{ member.name }}</h4>
+                                        <h4 class="font-semibold text-lg">{{ member.name }} <span class="text-sm font-normal text-muted-foreground">(@{{ member.username }})</span></h4>
                                         <Badge variant="secondary">Belum Ditempatkan</Badge>
                                     </div>
                                     <div class="space-y-1 text-sm text-muted-foreground">
@@ -273,7 +274,7 @@ const getPositionBadge = (position: string | null): {
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <h4 class="font-semibold text-lg">{{ member.name }}</h4>
+                                        <h4 class="font-semibold text-lg">{{ member.name }} <span class="text-sm font-normal text-muted-foreground">(@{{ member.username }})</span></h4>
                                         <Badge variant="outline">Baru Bergabung</Badge>
                                     </div>
                                     <div class="space-y-1 text-sm text-muted-foreground">

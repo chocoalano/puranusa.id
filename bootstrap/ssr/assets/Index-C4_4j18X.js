@@ -257,19 +257,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
       },
       {
-        accessorKey: "sponsor_name",
+        accessorKey: "sponsor_username",
         header: "Sponsor",
         cell: ({ row }) => {
-          const sponsorName = row.getValue("sponsor_name");
-          return h("div", { class: "text-sm" }, sponsorName || "-");
+          const sponsorUsername = row.getValue("sponsor_username");
+          return h("div", { class: "text-sm" }, sponsorUsername ? `@${sponsorUsername}` : "-");
         }
       },
       {
-        accessorKey: "upline_name",
+        accessorKey: "upline_username",
         header: "Upline",
         cell: ({ row }) => {
-          const uplineName = row.getValue("upline_name");
-          return h("div", { class: "text-sm" }, uplineName || "-");
+          const uplineUsername = row.getValue("upline_username");
+          return h("div", { class: "text-sm" }, uplineUsername ? `@${uplineUsername}` : "-");
         }
       },
       {
