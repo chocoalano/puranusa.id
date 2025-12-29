@@ -18,6 +18,10 @@ use Illuminate\Support\Str;
  * @property int|null $upline_id
  * @property string|null $position
  * @property string $ref_code
+ * @property string $username
+ * @property string|null $nik
+ * @property string|null $gender
+ * @property string|null $alamat
  * @property string $name
  * @property string $email
  * @property string|null $phone

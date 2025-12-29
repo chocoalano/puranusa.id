@@ -215,7 +215,7 @@ class CheckoutController extends Controller
         return Order::create([
             'order_no' => $orderNo,
             'customer_id' => $customerId,
-            'type' => $validated['transaction_type'] ?? null,
+            'type' => $validated['transaction_type'] ?? 'planA',
             'currency' => 'IDR',
             'status' => 'PENDING',
             'subtotal_amount' => $validated['subtotal'],
@@ -1263,7 +1263,7 @@ class CheckoutController extends Controller
         return Order::create([
             'order_no' => $orderNo,
             'customer_id' => $customerId,
-            'type' => $validated['transaction_type'] ?? null,
+            'type' => $validated['transaction_type'] ?? 'planA',
             'currency' => 'IDR',
             'status' => 'PENDING',
             'subtotal_amount' => $validated['subtotal'],
