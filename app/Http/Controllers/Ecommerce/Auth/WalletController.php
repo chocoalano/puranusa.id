@@ -319,7 +319,7 @@ class WalletController extends Controller
             ]);
 
             // Deduct balance (will be processed by admin)
-            $customer->deductBalance($request->amount, 'Withdrawal request: '.$transaction->transaction_ref);
+            $customer->deductBalance($request->amount, 'Withdrawal request: '.$transaction->transaction_ref, 'withdrawal');
 
             DB::commit();
 

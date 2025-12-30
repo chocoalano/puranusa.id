@@ -346,10 +346,33 @@ watch(
             if (data.success) {
                 shippingMethods.value = data.data;
             }
-        } catch (error) {
-            toast.error('Gagal menghitung ongkos kirim:');
-            console.log(error);
-
+        } catch (error: any) {
+            // Handle 419 CSRF Token Mismatch
+            if (error.response?.status === 419) {
+                toast.error('Sesi keamanan kedaluwarsa. Memperbarui...');
+                try {
+                    await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
+                    const newToken = document.head.querySelector('meta[name="csrf-token"]');
+                    if (newToken) {
+                        axios.defaults.headers.common['X-CSRF-TOKEN'] = (newToken as HTMLMetaElement).content;
+                    }
+                    // Retry the request
+                    const retryResponse = await axios.post('/api/shipping/calculate', {
+                        destination_city_id: parseInt(newCityId),
+                        weight: totalWeight.value,
+                    });
+                    if (retryResponse.data.success) {
+                        shippingMethods.value = retryResponse.data.data;
+                        toast.success('Berhasil menghitung ongkos kirim.');
+                    }
+                } catch (retryError) {
+                    console.error('Retry failed:', retryError);
+                    toast.error('Gagal menghitung ongkos kirim. Silakan refresh halaman.');
+                }
+            } else {
+                toast.error('Gagal menghitung ongkos kirim.');
+                console.log(error);
+            }
         } finally {
             loadingShipping.value = false;
         }
@@ -469,46 +492,49 @@ const handleCheckout = async () => {
         const response = await axios.post('/checkout/process', payload);
 
         const data = response.data;
+        console.log('Checkout response:', data);
 
         if (data.success) {
-            alertMessage.value = {
-                type: 'success',
-                message: data.message || 'Pesanan berhasil dibuat!',
-            };
-            toast.success(data.message || 'Pesanan berhasil dibuat!');
-
             // Handle based on payment method
             if (form.value.payment_method === 'wallet') {
-                // Wallet payment completed, redirect to success page
+                // Wallet payment completed - show success and redirect immediately
+                toast.success(data.message || 'Pembayaran berhasil!');
+                processingOrder.value = false;
+
+                // Redirect to profile orders tab
                 if (typeof window !== 'undefined') {
-                    window.location.href = `/checkout/finish?order_no=${data.order_no}`;
+                    window.location.href = `/client/profile?tab=orders&order=${data.order_no}`;
                 }
                 return;
             }
 
             // Midtrans payment - open Snap modal
             if (typeof window !== 'undefined' && data.snap_token) {
+                toast.success('Pesanan berhasil dibuat! Silakan selesaikan pembayaran.');
+
                 const snapInstance = (window as any).snap;
                 midtransPopupOpen.value = true;
                 snapInstance.pay(data.snap_token, {
-                    onSuccess: function (result: any) {
-                        midtransPopupOpen.value = false;
-                        toast.success('Pembayaran berhasil '+result.order_id);
-                        if (typeof window !== 'undefined') {
-                            window.location.href = `/checkout/finish?order_no=${data.order_no}`;
-                        }
-                    },
-                    onPending: function (result: any) {
-                        midtransPopupOpen.value = false;
-                        toast.info('Pembayaran tertunda '+result.order_id);
-                        if (typeof window !== 'undefined') {
-                            window.location.href = `/checkout/finish?order_no=${data.order_no}`;
-                        }
-                    },
-                    onError: function (result: any) {
+                    onSuccess: function () {
                         midtransPopupOpen.value = false;
                         processingOrder.value = false;
-                        toast.error('Pembayaran gagal. Silakan coba lagi. '+result.order_id);
+                        toast.success('Pembayaran berhasil!');
+                        if (typeof window !== 'undefined') {
+                            window.location.href = `/client/profile?tab=orders&order=${data.order_no}`;
+                        }
+                    },
+                    onPending: function () {
+                        midtransPopupOpen.value = false;
+                        processingOrder.value = false;
+                        toast.info('Pembayaran tertunda. Silakan selesaikan pembayaran.');
+                        if (typeof window !== 'undefined') {
+                            window.location.href = `/client/profile?tab=orders&order=${data.order_no}`;
+                        }
+                    },
+                    onError: function () {
+                        midtransPopupOpen.value = false;
+                        processingOrder.value = false;
+                        toast.error('Pembayaran gagal. Silakan coba lagi.');
                         alertMessage.value = {
                             type: 'error',
                             message: 'Pembayaran gagal. Silakan coba lagi.',
@@ -545,8 +571,12 @@ const handleCheckout = async () => {
                     payment_method: 'midtrans',
                     transaction_type: '',
                 };
+
+                // Don't set processingOrder to false here - Midtrans modal handles it
+                return;
             }
         } else {
+            processingOrder.value = false;
             alertMessage.value = {
                 type: 'error',
                 message:
@@ -558,6 +588,41 @@ const handleCheckout = async () => {
             );
         }
     } catch (error: any) {
+        processingOrder.value = false;
+        console.error('Checkout error:', error);
+
+        // Handle 419 CSRF Token Mismatch - refresh token and inform user
+        if (error.response?.status === 419) {
+            alertMessage.value = {
+                type: 'error',
+                message: 'Sesi keamanan telah kedaluwarsa. Silakan coba lagi.',
+            };
+            toast.error('Sesi keamanan telah kedaluwarsa. Mencoba ulang...');
+
+            // Refresh CSRF token
+            try {
+                await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
+                const newToken = document.head.querySelector('meta[name="csrf-token"]');
+                if (newToken) {
+                    axios.defaults.headers.common['X-CSRF-TOKEN'] = (newToken as HTMLMetaElement).content;
+                }
+                // Wait a moment then prompt user to retry
+                setTimeout(() => {
+                    alertMessage.value = {
+                        type: 'error',
+                        message: 'Sesi telah diperbarui. Silakan klik tombol Bayar lagi.',
+                    };
+                    toast.info('Sesi telah diperbarui. Silakan coba lagi.');
+                }, 500);
+            } catch (refreshError) {
+                console.error('Failed to refresh CSRF token:', refreshError);
+                // If refresh fails, reload page
+                toast.error('Gagal memperbarui sesi. Halaman akan dimuat ulang.');
+                setTimeout(() => window.location.reload(), 1500);
+            }
+            return;
+        }
+
         // Handle 401 Unauthorized - redirect to login
         if (error.response?.status === 401) {
             const message =
@@ -589,16 +654,30 @@ const handleCheckout = async () => {
             error.response?.data?.message ||
                 'Gagal memproses checkout. Silakan coba lagi.',
         );
-    } finally {
-        processingOrder.value = false;
+    }
+};
+
+// Helper function to refresh CSRF token proactively
+const refreshCsrfToken = async () => {
+    try {
+        await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
+        const token = document.head.querySelector('meta[name="csrf-token"]');
+        if (token) {
+            axios.defaults.headers.common['X-CSRF-TOKEN'] = (token as HTMLMetaElement).content;
+        }
+    } catch (error) {
+        console.error('Failed to refresh CSRF token:', error);
     }
 };
 
 // Load provinces when sheet opens
 watch(
     () => props.open,
-    (isOpen) => {
+    async (isOpen) => {
         if (isOpen) {
+            // Refresh CSRF token when sheet opens to ensure fresh session
+            await refreshCsrfToken();
+
             if (provinces.value.length === 0) {
                 loadProvinces();
             } else {
@@ -729,9 +808,9 @@ watch(
                         >
                             <RadioGroupItem value="planA" id="transaction-planA" />
                             <Label for="transaction-planA" class="flex-1 cursor-pointer">
-                                <div class="font-medium">Plan A</div>
+                                <div class="font-medium">NETWORK BUILDER SHARING PLAN</div>
                                 <div class="text-sm text-muted-foreground">
-                                    Transaksi dengan skema Plan A
+                                    Transaksi dengan skema Network Builder
                                 </div>
                             </Label>
                         </div>
@@ -747,9 +826,9 @@ watch(
                         >
                             <RadioGroupItem value="planB" id="transaction-planB" />
                             <Label for="transaction-planB" class="flex-1 cursor-pointer">
-                                <div class="font-medium">Plan B</div>
+                                <div class="font-medium">RETAIL SHARING PLAN</div>
                                 <div class="text-sm text-muted-foreground">
-                                    Transaksi dengan skema Plan B
+                                    Transaksi dengan skema Retail
                                 </div>
                             </Label>
                         </div>

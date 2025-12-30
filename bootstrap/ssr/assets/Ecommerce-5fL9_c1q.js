@@ -324,8 +324,30 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             shippingMethods.value = data.data;
           }
         } catch (error) {
-          toast.error("Gagal menghitung ongkos kirim:");
-          console.log(error);
+          if (error.response?.status === 419) {
+            toast.error("Sesi keamanan kedaluwarsa. Memperbarui...");
+            try {
+              await fetch("/sanctum/csrf-cookie", { credentials: "same-origin" });
+              const newToken = document.head.querySelector('meta[name="csrf-token"]');
+              if (newToken) {
+                axios.defaults.headers.common["X-CSRF-TOKEN"] = newToken.content;
+              }
+              const retryResponse = await axios.post("/api/shipping/calculate", {
+                destination_city_id: parseInt(newCityId),
+                weight: totalWeight.value
+              });
+              if (retryResponse.data.success) {
+                shippingMethods.value = retryResponse.data.data;
+                toast.success("Berhasil menghitung ongkos kirim.");
+              }
+            } catch (retryError) {
+              console.error("Retry failed:", retryError);
+              toast.error("Gagal menghitung ongkos kirim. Silakan refresh halaman.");
+            }
+          } else {
+            toast.error("Gagal menghitung ongkos kirim.");
+            console.log(error);
+          }
         } finally {
           loadingShipping.value = false;
         }
@@ -421,40 +443,41 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         console.log("Full payload:", JSON.stringify(payload, null, 2));
         const response = await axios.post("/checkout/process", payload);
         const data = response.data;
+        console.log("Checkout response:", data);
         if (data.success) {
-          alertMessage.value = {
-            type: "success",
-            message: data.message || "Pesanan berhasil dibuat!"
-          };
-          toast.success(data.message || "Pesanan berhasil dibuat!");
           if (form.value.payment_method === "wallet") {
+            toast.success(data.message || "Pembayaran berhasil!");
+            processingOrder.value = false;
             if (typeof window !== "undefined") {
-              window.location.href = `/checkout/finish?order_no=${data.order_no}`;
+              window.location.href = `/client/profile?tab=orders&order=${data.order_no}`;
             }
             return;
           }
           if (typeof window !== "undefined" && data.snap_token) {
+            toast.success("Pesanan berhasil dibuat! Silakan selesaikan pembayaran.");
             const snapInstance = window.snap;
             midtransPopupOpen.value = true;
             snapInstance.pay(data.snap_token, {
-              onSuccess: function(result) {
-                midtransPopupOpen.value = false;
-                toast.success("Pembayaran berhasil " + result.order_id);
-                if (typeof window !== "undefined") {
-                  window.location.href = `/checkout/finish?order_no=${data.order_no}`;
-                }
-              },
-              onPending: function(result) {
-                midtransPopupOpen.value = false;
-                toast.info("Pembayaran tertunda " + result.order_id);
-                if (typeof window !== "undefined") {
-                  window.location.href = `/checkout/finish?order_no=${data.order_no}`;
-                }
-              },
-              onError: function(result) {
+              onSuccess: function() {
                 midtransPopupOpen.value = false;
                 processingOrder.value = false;
-                toast.error("Pembayaran gagal. Silakan coba lagi. " + result.order_id);
+                toast.success("Pembayaran berhasil!");
+                if (typeof window !== "undefined") {
+                  window.location.href = `/client/profile?tab=orders&order=${data.order_no}`;
+                }
+              },
+              onPending: function() {
+                midtransPopupOpen.value = false;
+                processingOrder.value = false;
+                toast.info("Pembayaran tertunda. Silakan selesaikan pembayaran.");
+                if (typeof window !== "undefined") {
+                  window.location.href = `/client/profile?tab=orders&order=${data.order_no}`;
+                }
+              },
+              onError: function() {
+                midtransPopupOpen.value = false;
+                processingOrder.value = false;
+                toast.error("Pembayaran gagal. Silakan coba lagi.");
                 alertMessage.value = {
                   type: "error",
                   message: "Pembayaran gagal. Silakan coba lagi."
@@ -487,8 +510,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               payment_method: "midtrans",
               transaction_type: ""
             };
+            return;
           }
         } else {
+          processingOrder.value = false;
           alertMessage.value = {
             type: "error",
             message: data.message || "Gagal memproses checkout. Silakan coba lagi."
@@ -498,6 +523,34 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           );
         }
       } catch (error) {
+        processingOrder.value = false;
+        console.error("Checkout error:", error);
+        if (error.response?.status === 419) {
+          alertMessage.value = {
+            type: "error",
+            message: "Sesi keamanan telah kedaluwarsa. Silakan coba lagi."
+          };
+          toast.error("Sesi keamanan telah kedaluwarsa. Mencoba ulang...");
+          try {
+            await fetch("/sanctum/csrf-cookie", { credentials: "same-origin" });
+            const newToken = document.head.querySelector('meta[name="csrf-token"]');
+            if (newToken) {
+              axios.defaults.headers.common["X-CSRF-TOKEN"] = newToken.content;
+            }
+            setTimeout(() => {
+              alertMessage.value = {
+                type: "error",
+                message: "Sesi telah diperbarui. Silakan klik tombol Bayar lagi."
+              };
+              toast.info("Sesi telah diperbarui. Silakan coba lagi.");
+            }, 500);
+          } catch (refreshError) {
+            console.error("Failed to refresh CSRF token:", refreshError);
+            toast.error("Gagal memperbarui sesi. Halaman akan dimuat ulang.");
+            setTimeout(() => window.location.reload(), 1500);
+          }
+          return;
+        }
         if (error.response?.status === 401) {
           const message = error.response?.data?.message || "Anda harus login terlebih dahulu.";
           alertMessage.value = { type: "error", message };
@@ -518,14 +571,24 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         toast.error(
           error.response?.data?.message || "Gagal memproses checkout. Silakan coba lagi."
         );
-      } finally {
-        processingOrder.value = false;
+      }
+    };
+    const refreshCsrfToken = async () => {
+      try {
+        await fetch("/sanctum/csrf-cookie", { credentials: "same-origin" });
+        const token = document.head.querySelector('meta[name="csrf-token"]');
+        if (token) {
+          axios.defaults.headers.common["X-CSRF-TOKEN"] = token.content;
+        }
+      } catch (error) {
+        console.error("Failed to refresh CSRF token:", error);
       }
     };
     watch(
       () => props.open,
-      (isOpen) => {
+      async (isOpen) => {
         if (isOpen) {
+          await refreshCsrfToken();
           if (provinces.value.length === 0) {
             loadProvinces();
           } else {
@@ -751,11 +814,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
-                                _push5(`<div class="font-medium"${_scopeId4}>Plan A</div><div class="text-sm text-muted-foreground"${_scopeId4}> Transaksi dengan skema Plan A </div>`);
+                                _push5(`<div class="font-medium"${_scopeId4}>NETWORK BUILDER SHARING PLAN</div><div class="text-sm text-muted-foreground"${_scopeId4}> Transaksi dengan skema Network Builder </div>`);
                               } else {
                                 return [
-                                  createVNode("div", { class: "font-medium" }, "Plan A"),
-                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Plan A ")
+                                  createVNode("div", { class: "font-medium" }, "NETWORK BUILDER SHARING PLAN"),
+                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Network Builder ")
                                 ];
                               }
                             }),
@@ -775,11 +838,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
-                                _push5(`<div class="font-medium"${_scopeId4}>Plan B</div><div class="text-sm text-muted-foreground"${_scopeId4}> Transaksi dengan skema Plan B </div>`);
+                                _push5(`<div class="font-medium"${_scopeId4}>RETAIL SHARING PLAN</div><div class="text-sm text-muted-foreground"${_scopeId4}> Transaksi dengan skema Retail </div>`);
                               } else {
                                 return [
-                                  createVNode("div", { class: "font-medium" }, "Plan B"),
-                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Plan B ")
+                                  createVNode("div", { class: "font-medium" }, "RETAIL SHARING PLAN"),
+                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Retail ")
                                 ];
                               }
                             }),
@@ -804,8 +867,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                 class: "flex-1 cursor-pointer"
                               }, {
                                 default: withCtx(() => [
-                                  createVNode("div", { class: "font-medium" }, "Plan A"),
-                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Plan A ")
+                                  createVNode("div", { class: "font-medium" }, "NETWORK BUILDER SHARING PLAN"),
+                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Network Builder ")
                                 ]),
                                 _: 1
                               })
@@ -826,8 +889,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                 class: "flex-1 cursor-pointer"
                               }, {
                                 default: withCtx(() => [
-                                  createVNode("div", { class: "font-medium" }, "Plan B"),
-                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Plan B ")
+                                  createVNode("div", { class: "font-medium" }, "RETAIL SHARING PLAN"),
+                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Retail ")
                                 ]),
                                 _: 1
                               })
@@ -1633,8 +1696,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                 class: "flex-1 cursor-pointer"
                               }, {
                                 default: withCtx(() => [
-                                  createVNode("div", { class: "font-medium" }, "Plan A"),
-                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Plan A ")
+                                  createVNode("div", { class: "font-medium" }, "NETWORK BUILDER SHARING PLAN"),
+                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Network Builder ")
                                 ]),
                                 _: 1
                               })
@@ -1655,8 +1718,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                 class: "flex-1 cursor-pointer"
                               }, {
                                 default: withCtx(() => [
-                                  createVNode("div", { class: "font-medium" }, "Plan B"),
-                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Plan B ")
+                                  createVNode("div", { class: "font-medium" }, "RETAIL SHARING PLAN"),
+                                  createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Retail ")
                                 ]),
                                 _: 1
                               })
@@ -2253,8 +2316,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               class: "flex-1 cursor-pointer"
                             }, {
                               default: withCtx(() => [
-                                createVNode("div", { class: "font-medium" }, "Plan A"),
-                                createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Plan A ")
+                                createVNode("div", { class: "font-medium" }, "NETWORK BUILDER SHARING PLAN"),
+                                createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Network Builder ")
                               ]),
                               _: 1
                             })
@@ -2275,8 +2338,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               class: "flex-1 cursor-pointer"
                             }, {
                               default: withCtx(() => [
-                                createVNode("div", { class: "font-medium" }, "Plan B"),
-                                createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Plan B ")
+                                createVNode("div", { class: "font-medium" }, "RETAIL SHARING PLAN"),
+                                createVNode("div", { class: "text-sm text-muted-foreground" }, " Transaksi dengan skema Retail ")
                               ]),
                               _: 1
                             })

@@ -21,6 +21,7 @@ import NetworkStatsCard from '@/components/profile/NetworkStatsCard.vue';
 
 interface NetworkMember {
     id: number;
+    username: string;
     name: string;
     email: string;
     phone: string | null;

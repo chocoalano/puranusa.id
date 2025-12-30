@@ -42,7 +42,7 @@ class ProfileController extends Controller
         $walletTransactions = DB::table('customer_wallet_transactions')
             ->where('customer_id', $customer->id)
             ->orderByDesc('created_at')
-            ->limit(10)
+            ->limit(20)
             ->get()
             ->map(fn ($transaction) => [
                 'id' => $transaction->id,
@@ -51,6 +51,10 @@ class ProfileController extends Controller
                 'status' => $transaction->status,
                 'transaction_ref' => $transaction->transaction_ref,
                 'midtrans_transaction_id' => $transaction->midtrans_transaction_id,
+                'notes' => $transaction->notes,
+                'payment_method' => $transaction->payment_method,
+                'balance_before' => $transaction->balance_before,
+                'balance_after' => $transaction->balance_after,
                 'created_at' => $transaction->created_at,
             ]);
 

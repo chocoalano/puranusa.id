@@ -89,7 +89,7 @@ const shareReferralLink = async () => {
                     {{ customer.name }}
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {{ customer.email }}
+                    {{ customer.username }}
                 </p>
 
                 <Badge

@@ -5,6 +5,10 @@ export interface WalletTransaction {
     status: string;
     transaction_ref: string;
     midtrans_transaction_id?: string | null;
+    notes?: string | null;
+    payment_method?: string | null;
+    balance_before?: number | null;
+    balance_after?: number | null;
     created_at: string;
 }
 

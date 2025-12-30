@@ -1,7 +1,7 @@
 import { defineComponent, ref, computed, unref, withCtx, createTextVNode, toDisplayString, createVNode, createBlock, openBlock, useSSRContext, watch, resolveDynamicComponent, Fragment, renderList, createCommentVNode, withModifiers, watchEffect, onUnmounted, mergeProps, onMounted } from "vue";
 import { ssrRenderComponent, ssrInterpolate, ssrRenderList, ssrRenderClass, ssrRenderVNode, ssrRenderAttr, ssrRenderAttrs, ssrIncludeBooleanAttr, ssrRenderStyle } from "vue/server-renderer";
 import { _ as _sfc_main$Y, a as _sfc_main$Z, b as _sfc_main$_, c as _sfc_main$$ } from "./TabsTrigger-Bvg0QZyC.js";
-import { b as _sfc_main$T, c as _sfc_main$U, _ as _sfc_main$10 } from "./Ecommerce-CcXwhgpk.js";
+import { b as _sfc_main$T, c as _sfc_main$U, _ as _sfc_main$10 } from "./Ecommerce-5fL9_c1q.js";
 import { router, useForm, usePage, Link, Head } from "@inertiajs/vue3";
 import { CheckCircle, AlertCircle, Check, Copy, Share2, MapPin, Plus, Pencil, Trash2, Home, Building2, Trophy, Calendar, UserCircle, User, CreditCard, Mail, Phone, Loader2, Package, Truck, Wallet, CheckCircle2, Star, RefreshCw, PackageCheck, ArrowDownLeft, ArrowUpRight, Lock, Eye, EyeOff, ShieldCheck, Clock, UserPlus, GitBranch, Users, TrendingUp, ArrowLeft, Search, ZoomOut, ZoomIn, RotateCcw, Handshake, DollarSign, Percent, ShoppingCart, Gift, Network } from "lucide-vue-next";
 import { _ as _sfc_main$q, a as _sfc_main$r, b as _sfc_main$s } from "./AvatarImage-DWFQMckn.js";
@@ -54,10 +54,12 @@ function useFormatter() {
   const getTransactionTypeLabel = (type) => {
     const labels = {
       topup: "Top Up",
+      top_up: "Top Up",
       withdrawal: "Penarikan",
       bonus: "Bonus",
       purchase: "Pembelian",
-      refund: "Refund"
+      refund: "Refund",
+      deduct: "Potongan Admin"
     };
     return labels[type] || type;
   };
@@ -176,7 +178,7 @@ const _sfc_main$n = /* @__PURE__ */ defineComponent({
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  _push3(`<h2 class="text-xl font-bold text-gray-900 dark:text-gray-100"${_scopeId2}>${ssrInterpolate(__props.customer.name)}</h2><p class="text-sm text-gray-500 dark:text-gray-400 mt-1"${_scopeId2}>${ssrInterpolate(__props.customer.email)}</p>`);
+                  _push3(`<h2 class="text-xl font-bold text-gray-900 dark:text-gray-100"${_scopeId2}>${ssrInterpolate(__props.customer.name)}</h2><p class="text-sm text-gray-500 dark:text-gray-400 mt-1"${_scopeId2}>${ssrInterpolate(__props.customer.username)}</p>`);
                   if (__props.customer.email_verified_at) {
                     _push3(ssrRenderComponent(unref(_sfc_main$t), { class: "mt-3 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-100" }, {
                       default: withCtx((_3, _push4, _parent4, _scopeId3) => {
@@ -279,7 +281,7 @@ const _sfc_main$n = /* @__PURE__ */ defineComponent({
                         _: 1
                       }),
                       createVNode("h2", { class: "text-xl font-bold text-gray-900 dark:text-gray-100" }, toDisplayString(__props.customer.name), 1),
-                      createVNode("p", { class: "text-sm text-gray-500 dark:text-gray-400 mt-1" }, toDisplayString(__props.customer.email), 1),
+                      createVNode("p", { class: "text-sm text-gray-500 dark:text-gray-400 mt-1" }, toDisplayString(__props.customer.username), 1),
                       __props.customer.email_verified_at ? (openBlock(), createBlock(unref(_sfc_main$t), {
                         key: 0,
                         class: "mt-3 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-100"
@@ -380,7 +382,7 @@ const _sfc_main$n = /* @__PURE__ */ defineComponent({
                       _: 1
                     }),
                     createVNode("h2", { class: "text-xl font-bold text-gray-900 dark:text-gray-100" }, toDisplayString(__props.customer.name), 1),
-                    createVNode("p", { class: "text-sm text-gray-500 dark:text-gray-400 mt-1" }, toDisplayString(__props.customer.email), 1),
+                    createVNode("p", { class: "text-sm text-gray-500 dark:text-gray-400 mt-1" }, toDisplayString(__props.customer.username), 1),
                     __props.customer.email_verified_at ? (openBlock(), createBlock(unref(_sfc_main$t), {
                       key: 0,
                       class: "mt-3 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-100"
@@ -7201,6 +7203,8 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
     const { formatCurrency, formatDate, getTransactionTypeLabel, getTransactionStatusLabel } = useFormatter();
     const checkingStatus = ref(false);
     const localStatus = ref(props.transaction.status);
+    const creditTypes = ["topup", "top_up", "bonus", "refund"];
+    const isCredit = computed(() => creditTypes.includes(props.transaction.type));
     const checkPaymentStatus = async (transactionRef) => {
       if (checkingStatus.value) return;
       checkingStatus.value = true;
@@ -7230,32 +7234,23 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
       }
     };
     return (_ctx, _push, _parent, _attrs) => {
-      _push(`<div${ssrRenderAttrs(mergeProps({ class: "p-3 border rounded-lg" }, _attrs))}><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="${ssrRenderClass([{
-        "bg-emerald-100 dark:bg-emerald-900/20": __props.transaction.type === "topup" || __props.transaction.type === "bonus",
-        "bg-red-100 dark:bg-red-900/20": __props.transaction.type === "withdrawal" || __props.transaction.type === "purchase",
-        "bg-blue-100 dark:bg-blue-900/20": __props.transaction.type === "refund"
-      }, "p-2 rounded-full"])}">`);
-      if (__props.transaction.type === "topup" || __props.transaction.type === "bonus" || __props.transaction.type === "refund") {
-        _push(ssrRenderComponent(unref(ArrowDownLeft), {
-          class: ["w-4 h-4", {
-            "text-emerald-600 dark:text-emerald-400": __props.transaction.type === "topup" || __props.transaction.type === "bonus",
-            "text-blue-600 dark:text-blue-400": __props.transaction.type === "refund"
-          }]
-        }, null, _parent));
+      _push(`<div${ssrRenderAttrs(mergeProps({ class: "p-3 border rounded-lg" }, _attrs))}><div class="flex items-start justify-between gap-2 mb-2"><div class="flex items-center gap-2"><div class="${ssrRenderClass([{
+        "bg-emerald-100 dark:bg-emerald-900/20": isCredit.value,
+        "bg-red-100 dark:bg-red-900/20": !isCredit.value
+      }, "p-1.5 rounded-full shrink-0"])}">`);
+      if (isCredit.value) {
+        _push(ssrRenderComponent(unref(ArrowDownLeft), { class: "w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" }, null, _parent));
       } else {
-        _push(ssrRenderComponent(unref(ArrowUpRight), { class: "w-4 h-4 text-red-600 dark:text-red-400" }, null, _parent));
+        _push(ssrRenderComponent(unref(ArrowUpRight), { class: "w-3.5 h-3.5 text-red-600 dark:text-red-400" }, null, _parent));
       }
-      _push(`</div><div><p class="font-semibold text-sm">${ssrInterpolate(unref(getTransactionTypeLabel)(__props.transaction.type))}</p><p class="text-xs text-muted-foreground">${ssrInterpolate(__props.transaction.transaction_ref)}</p><p class="text-xs text-muted-foreground">${ssrInterpolate(unref(formatDate)(__props.transaction.created_at))}</p></div></div><div class="text-right"><p class="${ssrRenderClass([{
-        "text-emerald-600 dark:text-emerald-400": __props.transaction.type === "topup" || __props.transaction.type === "bonus" || __props.transaction.type === "refund",
-        "text-red-600 dark:text-red-400": __props.transaction.type === "withdrawal" || __props.transaction.type === "purchase"
-      }, "font-bold"])}">${ssrInterpolate(__props.transaction.type === "topup" || __props.transaction.type === "bonus" || __props.transaction.type === "refund" ? "+" : "-")} ${ssrInterpolate(unref(formatCurrency)(__props.transaction.amount))}</p>`);
+      _push(`</div><div><p class="font-semibold text-sm">${ssrInterpolate(unref(getTransactionTypeLabel)(__props.transaction.type))}</p><p class="text-xs text-muted-foreground">${ssrInterpolate(unref(formatDate)(__props.transaction.created_at))}</p></div></div>`);
       _push(ssrRenderComponent(unref(_sfc_main$t), {
         variant: "secondary",
-        class: {
+        class: ["shrink-0", {
           "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-100": localStatus.value === "pending",
           "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-100": localStatus.value === "completed",
           "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-100": localStatus.value === "failed" || localStatus.value === "cancelled"
-        }
+        }]
       }, {
         default: withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
@@ -7268,7 +7263,13 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
         }),
         _: 1
       }, _parent));
-      _push(`</div></div>`);
+      _push(`</div><div class="mb-2 text-xs text-muted-foreground">`);
+      if (__props.transaction.notes) {
+        _push(`<p class="line-clamp-2">${ssrInterpolate(__props.transaction.notes)}</p>`);
+      } else {
+        _push(`<!---->`);
+      }
+      _push(`<p>Ref: ${ssrInterpolate(__props.transaction.transaction_ref)}</p></div><div class="grid grid-cols-3 gap-2 text-xs border-t pt-2"><div class="text-center"><p class="text-muted-foreground mb-0.5">Debit</p><p class="font-semibold text-red-600 dark:text-red-400">${ssrInterpolate(!isCredit.value && localStatus.value === "completed" ? unref(formatCurrency)(__props.transaction.amount) : "-")}</p></div><div class="text-center border-x"><p class="text-muted-foreground mb-0.5">Kredit</p><p class="font-semibold text-emerald-600 dark:text-emerald-400">${ssrInterpolate(isCredit.value && localStatus.value === "completed" ? unref(formatCurrency)(__props.transaction.amount) : "-")}</p></div><div class="text-center"><p class="text-muted-foreground mb-0.5">Saldo</p><p class="font-semibold">${ssrInterpolate(__props.transaction.balance_after !== null && __props.transaction.balance_after !== void 0 ? unref(formatCurrency)(__props.transaction.balance_after) : "-")}</p></div></div>`);
       if (__props.transaction.type === "topup" && localStatus.value === "pending" && __props.transaction.midtrans_transaction_id) {
         _push(`<div class="mt-3 pt-3 border-t"><div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"><p class="text-xs text-muted-foreground"> Pembayaran menunggu konfirmasi </p><div class="flex gap-2">`);
         _push(ssrRenderComponent(unref(_sfc_main$u), {

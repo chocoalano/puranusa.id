@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowDownLeft, ArrowUpRight, CreditCard, RefreshCw } from 'lucide-vue-next';
 import type { WalletTransaction } from '@/types/profile';
 import { useFormatter } from '@/composables/useFormatter';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
@@ -22,6 +22,11 @@ const { formatCurrency, formatDate, getTransactionTypeLabel, getTransactionStatu
 
 const checkingStatus = ref(false);
 const localStatus = ref(props.transaction.status);
+
+// Kredit = uang masuk (topup, bonus, refund)
+// Debit = uang keluar (withdrawal, purchase, deduct)
+const creditTypes = ['topup', 'top_up', 'bonus', 'refund'];
+const isCredit = computed(() => creditTypes.includes(props.transaction.type));
 
 const checkPaymentStatus = async (transactionRef: string) => {
     if (checkingStatus.value) return;
@@ -64,62 +69,62 @@ const checkPaymentStatus = async (transactionRef: string) => {
 
 <template>
     <div class="p-3 border rounded-lg">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
+        <!-- Header: Date & Type -->
+        <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
                 <div
-                    class="p-2 rounded-full"
+                    class="p-1.5 rounded-full shrink-0"
                     :class="{
-                        'bg-emerald-100 dark:bg-emerald-900/20': transaction.type === 'topup' || transaction.type === 'bonus',
-                        'bg-red-100 dark:bg-red-900/20': transaction.type === 'withdrawal' || transaction.type === 'purchase',
-                        'bg-blue-100 dark:bg-blue-900/20': transaction.type === 'refund',
+                        'bg-emerald-100 dark:bg-emerald-900/20': isCredit,
+                        'bg-red-100 dark:bg-red-900/20': !isCredit,
                     }"
                 >
-                    <ArrowDownLeft
-                        v-if="transaction.type === 'topup' || transaction.type === 'bonus' || transaction.type === 'refund'"
-                        class="w-4 h-4"
-                        :class="{
-                            'text-emerald-600 dark:text-emerald-400': transaction.type === 'topup' || transaction.type === 'bonus',
-                            'text-blue-600 dark:text-blue-400': transaction.type === 'refund',
-                        }"
-                    />
-                    <ArrowUpRight
-                        v-else
-                        class="w-4 h-4 text-red-600 dark:text-red-400"
-                    />
+                    <ArrowDownLeft v-if="isCredit" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <ArrowUpRight v-else class="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                    <p class="font-semibold text-sm">
-                        {{ getTransactionTypeLabel(transaction.type) }}
-                    </p>
-                    <p class="text-xs text-muted-foreground">
-                        {{ transaction.transaction_ref }}
-                    </p>
-                    <p class="text-xs text-muted-foreground">
-                        {{ formatDate(transaction.created_at) }}
-                    </p>
+                    <p class="font-semibold text-sm">{{ getTransactionTypeLabel(transaction.type) }}</p>
+                    <p class="text-xs text-muted-foreground">{{ formatDate(transaction.created_at) }}</p>
                 </div>
             </div>
-            <div class="text-right">
-                <p
-                    class="font-bold"
-                    :class="{
-                        'text-emerald-600 dark:text-emerald-400': transaction.type === 'topup' || transaction.type === 'bonus' || transaction.type === 'refund',
-                        'text-red-600 dark:text-red-400': transaction.type === 'withdrawal' || transaction.type === 'purchase',
-                    }"
-                >
-                    {{ (transaction.type === 'topup' || transaction.type === 'bonus' || transaction.type === 'refund') ? '+' : '-' }}
-                    {{ formatCurrency(transaction.amount) }}
+            <Badge
+                variant="secondary"
+                class="shrink-0"
+                :class="{
+                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-100': localStatus === 'pending',
+                    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-100': localStatus === 'completed',
+                    'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-100': localStatus === 'failed' || localStatus === 'cancelled',
+                }"
+            >
+                {{ getTransactionStatusLabel(localStatus) }}
+            </Badge>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-2 text-xs text-muted-foreground">
+            <p v-if="transaction.notes" class="line-clamp-2">{{ transaction.notes }}</p>
+            <p>Ref: {{ transaction.transaction_ref }}</p>
+        </div>
+
+        <!-- Rekening Koran Style: Debit | Kredit | Saldo -->
+        <div class="grid grid-cols-3 gap-2 text-xs border-t pt-2">
+            <div class="text-center">
+                <p class="text-muted-foreground mb-0.5">Debit</p>
+                <p class="font-semibold text-red-600 dark:text-red-400">
+                    {{ !isCredit && localStatus === 'completed' ? formatCurrency(transaction.amount) : '-' }}
                 </p>
-                <Badge
-                    variant="secondary"
-                    :class="{
-                        'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-100': localStatus === 'pending',
-                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-100': localStatus === 'completed',
-                        'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-100': localStatus === 'failed' || localStatus === 'cancelled',
-                    }"
-                >
-                    {{ getTransactionStatusLabel(localStatus) }}
-                </Badge>
+            </div>
+            <div class="text-center border-x">
+                <p class="text-muted-foreground mb-0.5">Kredit</p>
+                <p class="font-semibold text-emerald-600 dark:text-emerald-400">
+                    {{ isCredit && localStatus === 'completed' ? formatCurrency(transaction.amount) : '-' }}
+                </p>
+            </div>
+            <div class="text-center">
+                <p class="text-muted-foreground mb-0.5">Saldo</p>
+                <p class="font-semibold">
+                    {{ transaction.balance_after !== null && transaction.balance_after !== undefined ? formatCurrency(transaction.balance_after) : '-' }}
+                </p>
             </div>
         </div>
 

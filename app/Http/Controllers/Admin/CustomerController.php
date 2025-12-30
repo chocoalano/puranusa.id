@@ -389,7 +389,8 @@ class CustomerController extends Controller
         try {
             $customer->deductBalance(
                 $request->amount,
-                $request->input('description', 'Deduct ewallet')
+                $request->input('description', 'Potongan saldo oleh admin'),
+                'withdrawal'
             );
 
             return redirect()

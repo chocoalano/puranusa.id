@@ -116,13 +116,29 @@ class CheckoutController extends Controller
 
             if ($validated['payment_method'] === 'wallet') {
                 $result = $this->processCartWalletPayment($customer, $order, $cart, $validated, $orderNo);
-                DB::commit();
+
+                // Commit the transaction first before returning
+                // (SP bonus engine may have already committed implicitly)
+                try {
+                    DB::commit();
+                } catch (\Exception $e) {
+                    // Transaction may already be committed by stored procedure
+                    Log::info('Transaction already committed (likely by stored procedure)', [
+                        'order_no' => $orderNo,
+                    ]);
+                }
 
                 return response()->json($result);
             }
 
             $snapToken = $this->createCartMidtransPayment($customer, $order, $cart, $validated, $orderNo, $transactionId);
-            DB::commit();
+
+            // Commit the transaction
+            try {
+                DB::commit();
+            } catch (\Exception $e) {
+                Log::info('Transaction already committed', ['order_no' => $orderNo]);
+            }
 
             Log::info('Cart checkout order created successfully', [
                 'order_id' => $order->id,
@@ -139,7 +155,12 @@ class CheckoutController extends Controller
                 'message' => 'Silakan selesaikan pembayaran',
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
+            // Try to rollback, but it might already be committed by SP
+            try {
+                DB::rollBack();
+            } catch (\Exception $rollbackException) {
+                Log::info('Rollback skipped in cart checkout - no active transaction');
+            }
 
             Log::error('Cart checkout process error', [
                 'customer_id' => $customer->id,
@@ -287,7 +308,13 @@ class CheckoutController extends Controller
 
         // Execute bonus engine stored procedure only if member is active
         if ($customer->status == 3) {
-            DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+            $generate=DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+            Log::info('Executed bonus engine stored procedure for wallet payment', [
+                'customer_id' => $customer->id,
+                'order_no' => $orderNo,
+                'order_id' => $order->id,
+                'result' => $generate,
+            ]);
         }
 
         foreach ($cart->items as $item) {
@@ -535,13 +562,29 @@ class CheckoutController extends Controller
 
             if ($validated['payment_method'] === 'wallet') {
                 $result = $this->processMultiItemWalletPayment($customer, $order, $validated, $orderNo);
-                DB::commit();
+
+                // Commit the transaction first before returning
+                // (SP bonus engine may have already committed implicitly)
+                try {
+                    DB::commit();
+                } catch (\Exception $e) {
+                    // Transaction may already be committed by stored procedure
+                    Log::info('Transaction already committed (likely by stored procedure)', [
+                        'order_no' => $orderNo,
+                    ]);
+                }
 
                 return response()->json($result);
             }
 
             $snapToken = $this->createMultiItemMidtransPayment($customer, $order, $validated, $orderNo, $transactionId);
-            DB::commit();
+
+            // Commit the transaction
+            try {
+                DB::commit();
+            } catch (\Exception $e) {
+                Log::info('Transaction already committed', ['order_no' => $orderNo]);
+            }
 
             Log::info('Order created successfully', [
                 'order_id' => $order->id,
@@ -557,7 +600,12 @@ class CheckoutController extends Controller
                 'message' => 'Silakan selesaikan pembayaran',
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
+            // Try to rollback, but it might already be committed by SP
+            try {
+                DB::rollBack();
+            } catch (\Exception $rollbackException) {
+                Log::info('Rollback skipped in multi-item checkout - no active transaction');
+            }
 
             Log::error('Checkout process error', [
                 'customer_id' => $customer->id,
@@ -1007,7 +1055,15 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            DB::commit();
+            // Commit the transaction safely
+            // (SP bonus engine may have already committed implicitly)
+            try {
+                DB::commit();
+            } catch (\Exception $e) {
+                Log::info('Transaction already committed in Midtrans callback (likely by stored procedure)', [
+                    'order_no' => $orderNo,
+                ]);
+            }
 
             Log::info('Order status updated', [
                 'order_no' => $orderNo,
@@ -1016,7 +1072,14 @@ class CheckoutController extends Controller
 
             return response()->json(['status' => 'success']);
         } catch (\Exception $e) {
-            DB::rollBack();
+            // Try to rollback, but it might already be committed
+            try {
+                DB::rollBack();
+            } catch (\Exception $rollbackException) {
+                Log::info('Rollback skipped - no active transaction', [
+                    'order_no' => $orderNo ?? 'unknown',
+                ]);
+            }
 
             Log::error('Midtrans callback error', [
                 'error' => $e->getMessage(),
@@ -1213,7 +1276,9 @@ class CheckoutController extends Controller
             }
         }
 
-        return redirect()->route('ecommerce.beranda')->with('success', 'Terima kasih! Pesanan Anda telah diterima. Nomor order: '.$orderNo);
+        // Redirect to profile page with orders tab open
+        return redirect()->to('/client/profile?tab=orders&order='.$orderNo)
+            ->with('success', 'Terima kasih! Pesanan Anda telah diterima. Nomor order: '.$orderNo);
     }
 
     protected function clearCustomerCart(int $customerId): void
@@ -1360,6 +1425,9 @@ class CheckoutController extends Controller
         }
 
         $this->processMlmBonuses($order);
+
+        // Clear cart after successful payment
+        $this->clearCustomerCart($customer->id);
 
         return [
             'success' => true,

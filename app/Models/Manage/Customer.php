@@ -3,6 +3,7 @@
 namespace App\Models\Manage;
 
 use App\Models\CustomerAddress;
+use App\Models\CustomerWalletTransaction;
 use App\Notifications\CustomerResetPasswordNotification;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -449,25 +450,74 @@ class Customer extends Authenticatable
      */
     public function addBalance(float $amount, ?string $description = null): bool
     {
+        $balanceBefore = (float) $this->ewallet_saldo;
         $newBalance = bcadd((string) $this->ewallet_saldo, (string) $amount, 2);
         $this->ewallet_saldo = (float) $newBalance;
 
-        return $this->save();
+        $saved = $this->save();
+
+        if ($saved) {
+            // Record transaction history
+            CustomerWalletTransaction::create([
+                'customer_id' => $this->id,
+                'type' => 'topup',
+                'amount' => $amount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => (float) $newBalance,
+                'status' => 'completed',
+                'payment_method' => 'admin_inject',
+                'transaction_ref' => 'INJECT-'.strtoupper(Str::random(10)),
+                'notes' => $description ?? 'Top up ewallet',
+                'completed_at' => now(),
+            ]);
+        }
+
+        return $saved;
     }
 
     /**
      * Kurangi saldo ewallet
+     *
+     * @param  string  $type  Valid types: 'withdrawal', 'purchase'
      */
-    public function deductBalance(float $amount, ?string $description = null): bool
+    public function deductBalance(float $amount, ?string $description = null, string $type = 'purchase'): bool
     {
         if ((float) $this->ewallet_saldo < $amount) {
             throw new \Exception('Insufficient balance');
         }
 
+        // Validate type - only allow valid deduction types
+        $validTypes = ['withdrawal', 'purchase'];
+        if (! in_array($type, $validTypes)) {
+            $type = 'purchase'; // Default to purchase if invalid
+        }
+
+        $balanceBefore = (float) $this->ewallet_saldo;
         $newBalance = bcsub((string) $this->ewallet_saldo, (string) $amount, 2);
         $this->ewallet_saldo = (float) $newBalance;
 
-        return $this->save();
+        $saved = $this->save();
+
+        if ($saved) {
+            // Generate transaction ref prefix based on type
+            $refPrefix = $type === 'withdrawal' ? 'WD-' : 'PUR-';
+
+            // Record transaction history
+            CustomerWalletTransaction::create([
+                'customer_id' => $this->id,
+                'type' => $type,
+                'amount' => $amount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => (float) $newBalance,
+                'status' => 'completed',
+                'payment_method' => $type === 'withdrawal' ? 'wallet_withdrawal' : 'ewallet',
+                'transaction_ref' => $refPrefix.strtoupper(Str::random(10)),
+                'notes' => $description ?? ($type === 'withdrawal' ? 'Wallet withdrawal' : 'Purchase payment'),
+                'completed_at' => now(),
+            ]);
+        }
+
+        return $saved;
     }
 
     /**

@@ -29,10 +29,12 @@ export function useFormatter() {
     const getTransactionTypeLabel = (type: string): string => {
         const labels: Record<string, string> = {
             topup: 'Top Up',
+            top_up: 'Top Up',
             withdrawal: 'Penarikan',
             bonus: 'Bonus',
             purchase: 'Pembelian',
             refund: 'Refund',
+            deduct: 'Potongan Admin',
         };
         return labels[type] || type;
     };
