@@ -1071,7 +1071,7 @@ const searchSuggestions = computed(() => {
                                         <p
                                             class="text-xs text-muted-foreground"
                                         >
-                                            {{ page.props.auth?.user?.email }}
+                                            {{ page.props.auth?.user?.username }}
                                         </p>
                                     </div>
                                 </DropdownMenuLabel>

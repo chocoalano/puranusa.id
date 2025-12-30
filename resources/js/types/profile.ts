@@ -35,6 +35,7 @@ export interface Customer {
     id: number;
     name: string;
     username: string | null;
+    level: string | null;
     nik: string | null;
     gender: 'male' | 'female' | 'L' | 'P' | null;
     alamat: string | null;
@@ -61,6 +62,10 @@ export interface Customer {
         left_count: number;
         right_count: number;
         total_downlines: number;
+        omzet_group_left_plana: number;
+        omzet_group_right_plana: number;
+        omzet_group_left_planb: number;
+        omzet_group_right_planb: number;
     };
     bonus_stats: {
         total_released: number;

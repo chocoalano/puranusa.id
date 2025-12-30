@@ -16,6 +16,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ArrowLeft, AlertCircle, CheckCircle2, Info, XCircle } from 'lucide-vue-next';
 import ImageUploadZone from '@/components/admin/ImageUploadZone.vue';
+import TiptapEditor from '@/components/admin/TiptapEditor.vue';
 import type { BreadcrumbItem } from '@/types';
 import { ref, computed, watch } from 'vue';
 
@@ -365,11 +366,8 @@ const submit = () => {
                         </div>
                         <div class="space-y-2">
                             <Label for="long_desc">Deskripsi Lengkap</Label>
-                            <Textarea
-                                id="long_desc"
+                            <TiptapEditor
                                 v-model="form.long_desc"
-                                placeholder="Deskripsi lengkap produk"
-                                rows="4"
                             />
                         </div>
                     </CardContent>

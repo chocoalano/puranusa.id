@@ -270,6 +270,23 @@ class CustomerController extends Controller
     {
         $customer->load(['networkPosition.upline', 'matrixPosition.sponsor']);
 
+        // Get customers for sponsor selection (only needed if customer is Prospek)
+        $customers = [];
+        if ($customer->status === 1) {
+            $customers = Customer::select('id', 'name', 'ewallet_id', 'username')
+                ->where('id', '!=', $customer->id) // Exclude self
+                ->where('status', '>=', 2) // Only Pasif or Aktif members can be sponsor
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($c) => [
+                    'id' => $c->id,
+                    'name' => $c->name,
+                    'ewallet_id' => $c->ewallet_id,
+                    'username' => $c->username,
+                ])
+                ->toArray();
+        }
+
         return Inertia::render('Admin/Customers/Edit', [
             'customer' => [
                 'id' => $customer->id,
@@ -281,11 +298,20 @@ class CustomerController extends Controller
                 'ewallet_saldo' => $customer->ewallet_saldo,
                 'email_verified_at' => $customer->email_verified_at?->format('Y-m-d H:i:s'),
                 'description' => $customer->description,
+                'status' => $customer->status,
+                'package_id' => $customer->package_id,
+                'package_name' => $customer->get_package_name(),
                 'sponsor_id' => $customer->matrixPosition?->sponsor_id,
                 'sponsor_name' => $customer->matrixPosition?->sponsor?->name,
                 'upline_id' => $customer->networkPosition?->upline_id,
                 'upline_name' => $customer->networkPosition?->upline?->name,
                 'position' => $customer->networkPosition?->position,
+            ],
+            'customers' => $customers,
+            'packages' => [
+                ['id' => 1, 'name' => 'ZENNER Plus'],
+                ['id' => 2, 'name' => 'ZENNER Prime'],
+                ['id' => 3, 'name' => 'ZENNER Ultra'],
             ],
         ]);
     }
@@ -300,6 +326,42 @@ class CustomerController extends Controller
 
             if ($request->filled('password')) {
                 $customer->update(['password' => $request->password]);
+            }
+
+            // Update package_id jika customer sudah Aktif (status = 3)
+            if ($request->has('package_id') && $customer->status === 3) {
+                // Re-validate status from database to prevent race condition
+                $freshCustomer = Customer::find($customer->id);
+                if ($freshCustomer && $freshCustomer->status === 3) {
+                    $customer->update(['package_id' => $request->package_id]);
+                }
+            }
+
+            // Update sponsor_id jika customer masih Prospek (status = 1)
+            if ($request->has('sponsor_id') && $customer->status === 1) {
+                // Re-validate status from database to prevent race condition
+                $freshCustomer = Customer::find($customer->id);
+                if ($freshCustomer && $freshCustomer->status === 1) {
+                    $newSponsorId = $request->sponsor_id;
+
+                    // Update or create matrix position
+                    if ($customer->matrixPosition) {
+                        // Hitung level baru berdasarkan sponsor baru
+                        $newLevel = 1;
+                        if ($newSponsorId) {
+                            $sponsorMatrix = \App\Models\Manage\CustomerNetworkMatrix::where('member_id', $newSponsorId)->first();
+                            $newLevel = $sponsorMatrix ? $sponsorMatrix->level + 1 : 1;
+                        }
+
+                        $customer->matrixPosition->update([
+                            'sponsor_id' => $newSponsorId,
+                            'level' => $newLevel,
+                        ]);
+                    } elseif ($newSponsorId) {
+                        // Create new matrix position if doesn't exist and sponsor is provided
+                        \App\Models\Manage\CustomerNetworkMatrix::addToMatrix($customer->id, $newSponsorId);
+                    }
+                }
             }
 
             return redirect()

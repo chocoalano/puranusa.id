@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,9 +13,28 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft } from 'lucide-vue-next';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { ArrowLeft, Search } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { index, update } from '@/actions/App/Http/Controllers/Admin/CustomerController';
+
+interface CustomerOption {
+    id: number;
+    name: string;
+    ewallet_id: string;
+    username: string;
+}
+
+interface PackageOption {
+    id: number;
+    name: string;
+}
 
 interface Customer {
     id: number;
@@ -26,6 +46,9 @@ interface Customer {
     ewallet_saldo: number;
     email_verified_at: string | null;
     description: string | null;
+    status: number;
+    package_id: number | null;
+    package_name: string | null;
     sponsor_id: number | null;
     sponsor_name: string | null;
     upline_id: number | null;
@@ -35,9 +58,33 @@ interface Customer {
 
 interface Props {
     customer: Customer;
+    customers: CustomerOption[];
+    packages: PackageOption[];
 }
 
 const props = defineProps<Props>();
+
+// Check if customer is Prospek (status = 1) or Aktif (status = 3)
+const isProspek = computed(() => props.customer.status === 1);
+const isAktif = computed(() => props.customer.status === 3);
+
+// Sponsor search
+const sponsorSearch = ref('');
+const showSponsorDropdown = ref(false);
+
+const filteredCustomers = computed(() => {
+    if (!sponsorSearch.value) return props.customers;
+    const search = sponsorSearch.value.toLowerCase();
+    return props.customers.filter(c =>
+        (c.name?.toLowerCase().includes(search) ?? false) ||
+        (c.ewallet_id?.toLowerCase().includes(search) ?? false) ||
+        (c.username?.toLowerCase().includes(search) ?? false)
+    );
+});
+
+const selectedSponsor = computed(() => {
+    return props.customers.find(c => c.id === form.sponsor_id);
+});
 
 const form = useForm({
     name: props.customer.name,
@@ -47,7 +94,28 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     description: props.customer.description || '',
+    sponsor_id: props.customer.sponsor_id,
+    package_id: props.customer.package_id,
 });
+
+const selectSponsor = (customer: CustomerOption) => {
+    form.sponsor_id = customer.id;
+    showSponsorDropdown.value = false;
+    sponsorSearch.value = '';
+};
+
+const clearSponsor = () => {
+    form.sponsor_id = null;
+};
+
+const closeSponsorDropdown = () => {
+    // Delay to allow click event on dropdown items
+    if (typeof window !== 'undefined') {
+        window.setTimeout(() => {
+            showSponsorDropdown.value = false;
+        }, 200);
+    }
+};
 
 const submit = () => {
     form.put(update.url(props.customer.id), {
@@ -58,10 +126,7 @@ const submit = () => {
         onError: (errors) => {
             const errorMessages = Object.values(errors);
             if (errorMessages.length > 0) {
-                // Show first error in toast
                 toast.error(errorMessages[0] as string);
-
-                // If there are multiple errors, show summary
                 if (errorMessages.length > 1) {
                     toast.warning(`Terdapat ${errorMessages.length} kesalahan pada form. Silakan periksa kembali.`);
                 }
@@ -202,23 +267,77 @@ const submit = () => {
                     </CardContent>
                 </Card>
 
-                <!-- MLM Network Info (Read Only) -->
+                <!-- MLM Network Info -->
                 <Card>
                     <CardHeader>
                         <CardTitle>Informasi Jaringan MLM</CardTitle>
                         <CardDescription>
-                            Data jaringan tidak dapat diubah
+                            <template v-if="isProspek">
+                                Sponsor dapat diubah untuk member Prospek
+                            </template>
+                            <template v-else>
+                                Data jaringan tidak dapat diubah untuk member aktif/pasif
+                            </template>
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div class="grid gap-4 md:grid-cols-3">
+                            <!-- Sponsor - editable for Prospek -->
                             <div class="space-y-2">
-                                <Label class="text-muted-foreground">Sponsor</Label>
-                                <div class="rounded-md border bg-muted p-3">
-                                    <p class="text-sm font-medium">
-                                        {{ customer.sponsor_name || '-' }}
+                                <Label :class="{ 'text-muted-foreground': !isProspek }">Sponsor</Label>
+                                <template v-if="isProspek">
+                                    <!-- Editable sponsor for Prospek members -->
+                                    <div v-if="selectedSponsor" class="flex items-center justify-between rounded-md border p-3">
+                                        <div>
+                                            <p class="font-medium">{{ selectedSponsor.name }}</p>
+                                            <p class="text-xs text-muted-foreground">{{ selectedSponsor.ewallet_id }}</p>
+                                        </div>
+                                        <Button type="button" variant="ghost" size="sm" @click="clearSponsor">
+                                            Hapus
+                                        </Button>
+                                    </div>
+                                    <div v-else class="relative">
+                                        <div class="relative">
+                                            <Input
+                                                v-model="sponsorSearch"
+                                                @focus="showSponsorDropdown = true"
+                                                @blur="closeSponsorDropdown"
+                                                placeholder="Cari sponsor berdasarkan nama atau ID..."
+                                                :class="{ 'border-destructive': form.errors.sponsor_id }"
+                                            />
+                                            <Search class="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+                                        </div>
+                                        <div
+                                            v-if="showSponsorDropdown && filteredCustomers.length > 0"
+                                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md"
+                                        >
+                                            <button
+                                                v-for="c in filteredCustomers"
+                                                :key="c.id"
+                                                type="button"
+                                                @click="selectSponsor(c)"
+                                                class="w-full rounded px-3 py-2 text-left text-sm hover:bg-accent"
+                                            >
+                                                <div class="font-medium">{{ c.name }}</div>
+                                                <div class="text-xs text-muted-foreground">{{ c.ewallet_id }} (@{{ c.username }})</div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">
+                                        Pilih sponsor baru (opsional). Hanya member Pasif/Aktif yang dapat menjadi sponsor.
                                     </p>
-                                </div>
+                                    <p v-if="form.errors.sponsor_id" class="text-sm text-destructive">
+                                        {{ form.errors.sponsor_id }}
+                                    </p>
+                                </template>
+                                <template v-else>
+                                    <!-- Read-only for non-Prospek members -->
+                                    <div class="rounded-md border bg-muted p-3">
+                                        <p class="text-sm font-medium">
+                                            {{ customer.sponsor_name || '-' }}
+                                        </p>
+                                    </div>
+                                </template>
                             </div>
 
                             <div class="space-y-2">
@@ -237,6 +356,99 @@ const submit = () => {
                                         {{ customer.position === 'left' ? 'Kiri' : 'Kanan' }}
                                     </Badge>
                                     <span v-else class="text-sm">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status indicator -->
+                        <div class="mt-4 rounded-md border p-3" :class="{
+                            'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-900': isProspek,
+                            'bg-muted': !isProspek
+                        }">
+                            <div class="flex items-center gap-2">
+                                <Badge :variant="isProspek ? 'secondary' : 'default'">
+                                    {{ customer.status === 1 ? 'Prospek' : customer.status === 2 ? 'Pasif' : 'Aktif' }}
+                                </Badge>
+                                <span class="text-sm text-muted-foreground">
+                                    <template v-if="isProspek">
+                                        Member ini masih berstatus Prospek, sponsor dapat diubah.
+                                    </template>
+                                    <template v-else>
+                                        Member ini sudah {{ customer.status === 2 ? 'Pasif' : 'Aktif' }}, jaringan tidak dapat diubah.
+                                    </template>
+                                </span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Package Change (Only for Active Members) -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Paket Member</CardTitle>
+                        <CardDescription>
+                            <template v-if="isAktif">
+                                Paket dapat diubah untuk member Aktif
+                            </template>
+                            <template v-else>
+                                Paket hanya dapat diubah untuk member dengan status Aktif
+                            </template>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="space-y-4">
+                            <div class="space-y-2">
+                                <Label :class="{ 'text-muted-foreground': !isAktif }">Paket Saat Ini</Label>
+                                <template v-if="isAktif">
+                                    <!-- Editable package for Active members -->
+                                    <Select v-model="form.package_id">
+                                        <SelectTrigger :class="{ 'border-destructive': form.errors.package_id }">
+                                            <SelectValue placeholder="Pilih paket" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem v-for="pkg in packages" :key="pkg.id" :value="pkg.id">
+                                                {{ pkg.name }}
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p class="text-xs text-muted-foreground">
+                                        Pilih paket untuk member ini: ZENNER Plus, ZENNER Prime, atau ZENNER Ultra
+                                    </p>
+                                    <p v-if="form.errors.package_id" class="text-sm text-destructive">
+                                        {{ form.errors.package_id }}
+                                    </p>
+                                </template>
+                                <template v-else>
+                                    <!-- Read-only for non-Active members -->
+                                    <div class="rounded-md border bg-muted p-3">
+                                        <Badge v-if="customer.package_id" variant="outline">
+                                            {{ customer.package_name }}
+                                        </Badge>
+                                        <span v-else class="text-sm text-muted-foreground">Belum ada paket</span>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">
+                                        Paket akan ditetapkan saat member melakukan pembelian pertama dan menjadi Aktif.
+                                    </p>
+                                </template>
+                            </div>
+
+                            <!-- Status indicator for package -->
+                            <div class="rounded-md border p-3" :class="{
+                                'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900': isAktif,
+                                'bg-muted': !isAktif
+                            }">
+                                <div class="flex items-center gap-2">
+                                    <Badge :variant="isAktif ? 'default' : 'secondary'">
+                                        {{ customer.status === 1 ? 'Prospek' : customer.status === 2 ? 'Pasif' : 'Aktif' }}
+                                    </Badge>
+                                    <span class="text-sm text-muted-foreground">
+                                        <template v-if="isAktif">
+                                            Member Aktif - paket dapat diubah.
+                                        </template>
+                                        <template v-else>
+                                            Member belum Aktif - paket tidak dapat diubah.
+                                        </template>
+                                    </span>
                                 </div>
                             </div>
                         </div>

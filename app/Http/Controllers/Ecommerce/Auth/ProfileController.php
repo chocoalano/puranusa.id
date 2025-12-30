@@ -69,6 +69,10 @@ class ProfileController extends Controller
             'left_count' => $customer->total_left ?? 0,
             'right_count' => $customer->total_right ?? 0,
             'total_downlines' => ($customer->total_left ?? 0) + ($customer->total_right ?? 0),
+            'omzet_group_left_plana' => $customer->omzet_group_left_plana ?? 0,
+            'omzet_group_right_plana' => $customer->omzet_group_right_plana ?? 0,
+            'omzet_group_left_planb' => $customer->omzet_group_left_planb ?? 0,
+            'omzet_group_right_planb' => $customer->omzet_group_right_planb ?? 0,
         ];
 
         // Optimized bonus stats using raw queries
@@ -82,6 +86,7 @@ class ProfileController extends Controller
                 'id' => $customer->id,
                 'name' => $customer->name,
                 'username' => $customer->username,
+                'level' => $customer->level,
                 'nik' => $customer->nik,
                 'gender' => $customer->gender,
                 'alamat' => $customer->alamat,
@@ -762,7 +767,7 @@ class ProfileController extends Controller
                     'id' => $customer->id,
                     'member_id' => $customer->id,
                     'name' => $customer->name,
-                    'email' => $customer->email,
+                    'username' => $customer->username,
                     'package_name' => $customer->package?->name ?? $this->getPackageName($customer->package_id),
                     'total_left' => $totalLeft,
                     'total_right' => $totalRight,
@@ -832,7 +837,7 @@ class ProfileController extends Controller
             ->select(
                 'customers.id',
                 'customers.name',
-                'customers.email',
+                'customers.username',
                 'customers.package_id',
                 'customers.upline_id',
                 'customers.foot_left',
@@ -867,7 +872,7 @@ class ProfileController extends Controller
                 $customerData = (object) [
                     'id' => $customer->id,
                     'name' => $customer->name,
-                    'email' => $customer->email,
+                    'username' => $customer->username,
                     'package_name' => $customer->package?->name ?? $this->getPackageName($customer->package_id),
                     'total_left' => $customer->total_left ?? 0,
                     'total_right' => $customer->total_right ?? 0,
@@ -909,7 +914,7 @@ class ProfileController extends Controller
             'id' => $customerData->id,
             'member_id' => $customerData->id,
             'name' => $customerData->name,
-            'email' => $customerData->email,
+            'username' => $customerData->username,
             'package_name' => $customerData->package_name ?? $this->getPackageName($customerData->package_id ?? null),
             'total_left' => $customerData->total_left ?? 0,
             'total_right' => $customerData->total_right ?? 0,
@@ -945,7 +950,7 @@ class ProfileController extends Controller
             'id' => $member->id,
             'member_id' => $member->id,
             'name' => $member->name,
-            'email' => $member->email,
+            'username' => $member->username,
             'package_name' => $member->package_name ?? $this->getPackageName($member->package_id ?? null),
             'total_left' => $member->total_left ?? 0,
             'total_right' => $member->total_right ?? 0,

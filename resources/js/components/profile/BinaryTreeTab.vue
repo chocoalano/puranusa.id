@@ -23,7 +23,7 @@ interface TreeNode {
     id: number;
     member_id: number;
     name: string;
-    email: string;
+    username: string;
     package_name?: string;
     total_left?: number;
     total_right?: number;
@@ -70,7 +70,7 @@ const showTreeSearchResults = ref(false);
 // Member tree state
 const isViewingMemberTree = ref(false);
 const memberTreeLoading = ref(false);
-const selectedMemberForTree = ref<{ id: number; name: string; email: string } | null>(null);
+const selectedMemberForTree = ref<{ id: number; name: string; email: string; username: string } | null>(null);
 const memberTree = ref<TreeNode | null>(null);
 const memberTreeStats = ref({
     totalDownlines: 0,
@@ -364,7 +364,7 @@ onUnmounted(() => {
                             </CardTitle>
                             <CardDescription class="text-xs sm:text-sm">
                                 <template v-if="isViewingMemberTree && selectedMemberForTree">
-                                    {{ selectedMemberForTree.email }}
+                                    {{ selectedMemberForTree.username }}
                                 </template>
                                 <template v-else>
                                     Visualisasi jaringan MLM binary tree Anda

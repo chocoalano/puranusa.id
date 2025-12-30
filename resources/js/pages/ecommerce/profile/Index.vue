@@ -39,7 +39,7 @@ interface TreeNode {
     id: number;
     member_id: number;
     name: string;
-    email: string;
+    username: string;
     position: string | null;
     level: number;
     status: boolean;
@@ -205,7 +205,6 @@ const activeTab = computed(() => {
                     <BonusStatsCard v-if="isActiveMember" :customer="customer" />
                     <MemberSinceCard :created-at="customer.created_at" />
                 </div>
-
                 <!-- Right Content - Tabs -->
                 <div class="lg:col-span-2">
                     <div class="rounded-xl border bg-card overflow-hidden">

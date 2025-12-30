@@ -91,6 +91,9 @@ const shareReferralLink = async () => {
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {{ customer.username }}
                 </p>
+                <Badge v-if="customer.level" variant="outline" class="mt-2 bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-700">
+                    {{ customer.level }}
+                </Badge>
 
                 <Badge
                     v-if="customer.email_verified_at"

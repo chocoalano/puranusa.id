@@ -8,7 +8,7 @@ interface TreeNode {
     id: number;
     member_id: number;
     name: string;
-    email: string;
+    username: string;
     package_name?: string;
     total_left?: number;
     total_right?: number;
@@ -46,7 +46,7 @@ const convertTreeToModel = (node: TreeNode | null, parentKey: number | null = nu
         const nodeData = {
             key: n.id,
             name: n.name,
-            email: n.email,
+            username: n.username,
             package: n.package_name || 'Tidak ada paket',
             totalLeft: n.total_left || 0,
             totalRight: n.total_right || 0,
@@ -76,7 +76,7 @@ const convertTreeToModel = (node: TreeNode | null, parentKey: number | null = nu
             nodes.push({
                 key: placeholderLeftKey,
                 name: '+ Kiri',
-                email: '',
+                username: '',
                 package: '',
                 isPlaceholder: true,
                 parentId: n.id,
@@ -93,7 +93,7 @@ const convertTreeToModel = (node: TreeNode | null, parentKey: number | null = nu
             nodes.push({
                 key: placeholderRightKey,
                 name: '+ Kanan',
-                email: '',
+                username: '',
                 package: '',
                 isPlaceholder: true,
                 parentId: n.id,
@@ -219,7 +219,7 @@ const initDiagram = () => {
                     return isPlaceholder ? '12px Inter, sans-serif' : 'bold 13px Inter, sans-serif';
                 })
             ),
-            // Email (hidden for placeholders)
+            // Username (hidden for placeholders)
             $(
                 goLib.TextBlock,
                 {
@@ -230,7 +230,7 @@ const initDiagram = () => {
                     margin: new goLib.Margin(2, 0, 0, 0),
                     alignment: goLib.Spot.Center,
                 },
-                new goLib.Binding('text', 'email'),
+                new goLib.Binding('text', 'username'),
                 new goLib.Binding('visible', 'isPlaceholder', (isPlaceholder) => !isPlaceholder)
             ),
             // Package badge

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Manage;
 
+use App\Models\Manage\Customer;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 /**
  * @property string $name
@@ -12,6 +14,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * @property string|null $password
  * @property string|null $password_confirmation
  * @property string|null $description
+ * @property int|null $sponsor_id
  */
 class UpdateCustomerRequest extends FormRequest
 {
@@ -37,7 +40,43 @@ class UpdateCustomerRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'description' => ['nullable', 'string'],
+            'sponsor_id' => ['nullable', 'exists:customers,id'],
+            'package_id' => ['nullable', 'integer', 'in:1,2,3'],
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            /** @var Customer $customer */
+            $customer = $this->route('customer');
+
+            // Re-fetch customer dari database untuk mendapatkan status terbaru
+            $freshCustomer = Customer::find($customer->id);
+
+            // Jika ada perubahan sponsor_id, validasi ulang apakah customer masih Prospek
+            if ($this->has('sponsor_id') && $freshCustomer) {
+                if ($freshCustomer->status !== 1) {
+                    $validator->errors()->add(
+                        'sponsor_id',
+                        'Sponsor hanya dapat diubah untuk member dengan status Prospek. Member ini sudah berstatus aktif/pasif.'
+                    );
+                }
+            }
+
+            // Jika ada perubahan package_id, validasi ulang apakah customer sudah Aktif
+            if ($this->has('package_id') && $freshCustomer) {
+                if ($freshCustomer->status !== 3) {
+                    $validator->errors()->add(
+                        'package_id',
+                        'Paket hanya dapat diubah untuk member dengan status Aktif. Member ini masih berstatus Prospek/Pasif.'
+                    );
+                }
+            }
+        });
     }
 
     /**
@@ -58,6 +97,9 @@ class UpdateCustomerRequest extends FormRequest
             'phone.max' => 'Nomor telepon maksimal 20 karakter',
             'password.min' => 'Password minimal 8 karakter',
             'password.confirmed' => 'Konfirmasi password tidak cocok',
+            'sponsor_id.exists' => 'Sponsor tidak ditemukan',
+            'package_id.integer' => 'Paket harus berupa angka',
+            'package_id.in' => 'Paket tidak valid',
         ];
     }
 }

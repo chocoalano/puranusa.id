@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm, usePage, router } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -22,6 +21,7 @@ import {
     Upload,
     X
 } from 'lucide-vue-next';
+import TiptapEditor from '@/components/admin/TiptapEditor.vue';
 import { ref, computed, watch } from 'vue';
 
 interface Setting {
@@ -43,7 +43,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const page = usePage();
+// const page = usePage();
 
 // Helper to populate form settings from props
 const populateFormSettings = () => {
@@ -251,11 +251,8 @@ const saveSettings = () => {
                             <!-- Site Description -->
                             <div class="space-y-2">
                                 <Label for="site_description">Deskripsi Situs</Label>
-                                <Textarea
-                                    id="site_description"
+                                <TiptapEditor
                                     v-model="form.settings['site_description']!"
-                                    placeholder="Puranusa adalah destinasi belanja online terpercaya..."
-                                    :rows="4"
                                 />
                                 <p class="text-xs text-muted-foreground">
                                     Deskripsi singkat tentang situs yang akan ditampilkan di footer

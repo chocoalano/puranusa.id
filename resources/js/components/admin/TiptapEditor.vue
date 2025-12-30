@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, ref, onMounted, onBeforeUnmount } from 'vue';
+import { watch, ref, shallowRef, onMounted, onBeforeUnmount } from 'vue';
 import { Button } from '@/components/ui/button';
 import {
     Bold,
@@ -32,8 +32,8 @@ const emit = defineEmits<{
 }>();
 
 const isClient = ref(false);
-const editor = ref<any>(null);
-const EditorContentComponent = ref<any>(null);
+const editor = shallowRef<any>(null);
+const EditorContentComponent = shallowRef<any>(null);
 
 onMounted(async () => {
     isClient.value = true;
@@ -53,7 +53,9 @@ onMounted(async () => {
     editor.value = new tiptapVue3.Editor({
         content: props.modelValue || '',
         extensions: [
-            StarterKit.default,
+            StarterKit.default.configure({
+                // Disable extensions that we're adding separately with custom config
+            }),
             Link.default.configure({
                 openOnClick: false,
             }),
