@@ -140,6 +140,12 @@ const openReviewDialog = () => {
                                     : 'Belum ditempatkan'
                             }}
                         </p>
+                        <p v-if="order.type" class="text-xs font-medium" :class="{
+                            'text-blue-600 dark:text-blue-400': order.type === 'planA',
+                            'text-amber-600 dark:text-amber-400': order.type === 'planB',
+                        }">
+                            {{ order.type === 'planA' ? 'Network Builder' : 'Retail' }}
+                        </p>
                     </div>
                 </div>
                 <div class="mt-2 flex items-center gap-2">

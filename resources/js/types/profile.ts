@@ -16,6 +16,7 @@ export interface Order {
     id: number;
     order_no: string;
     status: string;
+    type?: 'planA' | 'planB' | null;
     subtotal_amount: number;
     grand_total: number;
     placed_at: string | null;

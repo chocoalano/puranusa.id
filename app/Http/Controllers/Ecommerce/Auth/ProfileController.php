@@ -198,6 +198,7 @@ class ProfileController extends Controller
                     'id' => $order->id,
                     'order_no' => $order->order_no,
                     'status' => $order->status,
+                    'type' => $order->type,
                     'subtotal_amount' => $order->subtotal_amount,
                     'grand_total' => $order->grand_total,
                     'placed_at' => $order->placed_at,

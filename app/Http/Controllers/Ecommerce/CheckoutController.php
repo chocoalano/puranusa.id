@@ -334,8 +334,6 @@ class CheckoutController extends Controller
                 'new_omzet' => $newOmzet,
             ]);
         }
-
-        $this->processMlmBonuses($order);
         $this->clearCustomerCart($customer->id);
 
         Log::info('Cart checkout with wallet completed', [
@@ -789,8 +787,6 @@ class CheckoutController extends Controller
                 'new_omzet' => $newOmzet,
             ]);
         }
-
-        $this->processMlmBonuses($order);
         $this->clearCustomerCart($customer->id);
 
         Log::info('Wallet payment completed', [
@@ -999,9 +995,6 @@ class CheckoutController extends Controller
                         ]);
                     }
 
-                    // Process MLM bonuses
-                    $this->processMlmBonuses($order);
-
                     $this->clearCustomerCart($order->customer_id);
                 }
             } elseif ($transactionStatus == 'settlement') {
@@ -1038,9 +1031,6 @@ class CheckoutController extends Controller
                         'new_omzet' => $newOmzet,
                     ]);
                 }
-
-                // Process MLM bonuses
-                $this->processMlmBonuses($order);
 
                 $this->clearCustomerCart($order->customer_id);
             } elseif ($transactionStatus == 'pending') {
@@ -1087,152 +1077,6 @@ class CheckoutController extends Controller
             ]);
 
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * Process MLM bonuses untuk order yang sudah dibayar
-     */
-    protected function processMlmBonuses(Order $order): void
-    {
-        try {
-            $customer = $order->customer;
-            if (! $customer) {
-                return;
-            }
-
-            Log::info('Processing MLM bonuses for order', [
-                'order_no' => $order->order_no,
-                'customer_id' => $customer->id,
-                'bv_amount' => $order->bv_amount,
-                'sponsor_amount' => $order->sponsor_amount,
-                'match_amount' => $order->match_amount,
-                'pairing_amount' => $order->pairing_amount,
-                'cashback_amount' => $order->cashback_amount,
-            ]);
-
-            $appliedPromos = $order->applied_promos ?? [];
-            $appliedPromos['mlm_bonuses'] = [];
-
-            // 1. Bonus Sponsor - distribute ke sponsor langsung
-            if ($order->sponsor_amount > 0) {
-                $sponsor = $customer->getSponsor();
-                if ($sponsor) {
-                    $sponsorBonus = CustomerBonusSponsor::create([
-                        'member_id' => $sponsor->id,
-                        'from_member_id' => $customer->id,
-                        'amount' => $order->sponsor_amount,
-                        'type' => 'order_commission',
-                        'status' => 'approved',
-                        'approved_at' => now(),
-                        'notes' => "Bonus sponsor dari order {$order->order_no}",
-                    ]);
-
-                    // Add to sponsor wallet
-                    $sponsor->addBalance(
-                        (float) $order->sponsor_amount,
-                        "Bonus sponsor dari order {$order->order_no} - customer {$customer->name}"
-                    );
-
-                    $appliedPromos['mlm_bonuses']['sponsor'] = [
-                        'bonus_id' => $sponsorBonus->id,
-                        'sponsor_id' => $sponsor->id,
-                        'sponsor_name' => $sponsor->name,
-                        'amount' => (float) $order->sponsor_amount,
-                        'created_at' => now()->toIso8601String(),
-                    ];
-
-                    Log::info('Sponsor bonus distributed', [
-                        'order_no' => $order->order_no,
-                        'sponsor_id' => $sponsor->id,
-                        'amount' => $order->sponsor_amount,
-                    ]);
-                }
-            }
-
-            // 2. Bonus Matching - distribute ke upline matrix (gunakan MLMService)
-            if ($order->match_amount > 0) {
-                $matchingBonuses = $this->mlmService->processMatchingBonus(
-                    fromMemberId: $customer->id,
-                    amount: (float) $order->match_amount,
-                    maxLevel: 5,
-                    levelPercentages: [
-                        1 => 40, // Level 1: 40% dari match_amount
-                        2 => 30, // Level 2: 30%
-                        3 => 15, // Level 3: 15%
-                        4 => 10, // Level 4: 10%
-                        5 => 5,  // Level 5: 5%
-                    ]
-                );
-
-                if (count($matchingBonuses) > 0) {
-                    $appliedPromos['mlm_bonuses']['matching'] = array_map(fn ($bonus) => [
-                        'bonus_id' => $bonus->id,
-                        'member_id' => $bonus->member_id,
-                        'level' => $bonus->level,
-                        'amount' => (float) $bonus->amount,
-                    ], $matchingBonuses);
-
-                    Log::info('Matching bonuses distributed', [
-                        'order_no' => $order->order_no,
-                        'count' => count($matchingBonuses),
-                        'total_amount' => array_sum(array_map(fn ($b) => (float) $b->amount, $matchingBonuses)),
-                    ]);
-                }
-            }
-
-            // 3. Bonus Pairing - distribute ke binary pairing system
-            if ($order->pairing_amount > 0) {
-                // TODO: Implement pairing bonus logic based on binary tree
-                $appliedPromos['mlm_bonuses']['pairing'] = [
-                    'amount' => (float) $order->pairing_amount,
-                    'status' => 'pending',
-                    'note' => 'Will be processed by pairing cron job',
-                ];
-
-                Log::info('Pairing bonus queued', [
-                    'order_no' => $order->order_no,
-                    'amount' => $order->pairing_amount,
-                ]);
-            }
-
-            // 4. Cashback - langsung ke customer
-            if ($order->cashback_amount > 0) {
-                $customer->addBalance(
-                    (float) $order->cashback_amount,
-                    "Cashback dari order {$order->order_no}"
-                );
-
-                $appliedPromos['mlm_bonuses']['cashback'] = [
-                    'customer_id' => $customer->id,
-                    'amount' => (float) $order->cashback_amount,
-                    'created_at' => now()->toIso8601String(),
-                ];
-
-                Log::info('Cashback distributed to customer', [
-                    'order_no' => $order->order_no,
-                    'customer_id' => $customer->id,
-                    'amount' => $order->cashback_amount,
-                ]);
-            }
-
-            $order->update(['applied_promos' => $appliedPromos]);
-
-            Log::info('MLM bonuses processed successfully', [
-                'order_no' => $order->order_no,
-                'total_bonus_distributed' => (
-                    (float) $order->sponsor_amount +
-                    (float) $order->match_amount +
-                    (float) $order->cashback_amount
-                ),
-            ]);
-        } catch (\Exception $e) {
-            // Log error tapi jangan throw exception supaya order tetap berhasil
-            Log::error('Failed to process MLM bonuses', [
-                'order_no' => $order->order_no,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
         }
     }
 
@@ -1423,8 +1267,6 @@ class CheckoutController extends Controller
                 'new_omzet' => $newOmzet,
             ]);
         }
-
-        $this->processMlmBonuses($order);
 
         // Clear cart after successful payment
         $this->clearCustomerCart($customer->id);

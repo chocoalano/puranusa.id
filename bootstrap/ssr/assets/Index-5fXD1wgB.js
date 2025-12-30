@@ -5648,7 +5648,16 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
     return (_ctx, _push, _parent, _attrs) => {
       _push(`<div${ssrRenderAttrs(mergeProps({ class: "rounded-lg border p-4 transition-colors hover:border-primary" }, _attrs))}><div class="flex flex-col justify-between gap-4 md:flex-row md:items-center"><div class="flex-1"><div class="mb-2 flex items-center gap-3">`);
       _push(ssrRenderComponent(unref(Package), { class: "h-5 w-5 text-muted-foreground" }, null, _parent));
-      _push(`<div><p class="text-sm font-semibold">${ssrInterpolate(__props.order.order_no)}</p><p class="text-xs text-muted-foreground">${ssrInterpolate(__props.order.placed_at ? unref(formatDate)(__props.order.placed_at) : "Belum ditempatkan")}</p></div></div><div class="mt-2 flex items-center gap-2">`);
+      _push(`<div><p class="text-sm font-semibold">${ssrInterpolate(__props.order.order_no)}</p><p class="text-xs text-muted-foreground">${ssrInterpolate(__props.order.placed_at ? unref(formatDate)(__props.order.placed_at) : "Belum ditempatkan")}</p>`);
+      if (__props.order.type) {
+        _push(`<p class="${ssrRenderClass([{
+          "text-blue-600 dark:text-blue-400": __props.order.type === "planA",
+          "text-amber-600 dark:text-amber-400": __props.order.type === "planB"
+        }, "text-xs font-medium"])}">${ssrInterpolate(__props.order.type === "planA" ? "Network Builder" : "Retail")}</p>`);
+      } else {
+        _push(`<!---->`);
+      }
+      _push(`</div></div><div class="mt-2 flex items-center gap-2">`);
       _push(ssrRenderComponent(unref(_sfc_main$t), {
         class: {
           "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-100": localStatus.value.toUpperCase() === "PENDING",
