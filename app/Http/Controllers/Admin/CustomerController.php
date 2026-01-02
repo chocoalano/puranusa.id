@@ -136,6 +136,17 @@ class CustomerController extends Controller
 
         return Inertia::render('Admin/Customers/Create', [
             'customers' => $customers,
+            'packages' => [
+                ['id' => 1, 'name' => 'ZENNER Plus'],
+                ['id' => 2, 'name' => 'ZENNER Prime'],
+                ['id' => 3, 'name' => 'ZENNER Ultra'],
+            ],
+            'levels' => [
+                ['value' => 'Associate', 'label' => 'Associate'],
+                ['value' => 'Senior Associate', 'label' => 'Senior Associate'],
+                ['value' => 'Executive', 'label' => 'Executive'],
+                ['value' => 'Director', 'label' => 'Director'],
+            ],
         ]);
     }
 
@@ -148,8 +159,8 @@ class CustomerController extends Controller
             // Generate ewallet_id
             $ewalletId = Customer::generateEwalletId();
 
-            // Create customer with status only (no binary tree placement)
-            $customer = Customer::create([
+            // Prepare customer data
+            $customerData = [
                 'name' => $request->name,
                 'username' => $request->username,
                 'email' => $request->email,
@@ -160,7 +171,16 @@ class CustomerController extends Controller
                 'status' => $request->status,
                 'ewallet_id' => $ewalletId,
                 'ref_code' => strtoupper(substr(md5(uniqid()), 0, 8)),
-            ]);
+            ];
+
+            // Tambahkan level dan package_id jika status Aktif
+            if ($request->status === 3) {
+                $customerData['level'] = $request->level;
+                $customerData['package_id'] = $request->package_id;
+            }
+
+            // Create customer with status only (no binary tree placement)
+            $customer = Customer::create($customerData);
 
             return redirect()
                 ->route('customers.show', $customer)
@@ -301,6 +321,7 @@ class CustomerController extends Controller
                 'status' => $customer->status,
                 'package_id' => $customer->package_id,
                 'package_name' => $customer->get_package_name(),
+                'level' => $customer->level,
                 'sponsor_id' => $customer->matrixPosition?->sponsor_id,
                 'sponsor_name' => $customer->matrixPosition?->sponsor?->name,
                 'upline_id' => $customer->networkPosition?->upline_id,
@@ -312,6 +333,12 @@ class CustomerController extends Controller
                 ['id' => 1, 'name' => 'ZENNER Plus'],
                 ['id' => 2, 'name' => 'ZENNER Prime'],
                 ['id' => 3, 'name' => 'ZENNER Ultra'],
+            ],
+            'levels' => [
+                ['value' => 'Associate', 'label' => 'Associate'],
+                ['value' => 'Senior Associate', 'label' => 'Senior Associate'],
+                ['value' => 'Executive', 'label' => 'Executive'],
+                ['value' => 'Director', 'label' => 'Director'],
             ],
         ]);
     }
@@ -334,6 +361,15 @@ class CustomerController extends Controller
                 $freshCustomer = Customer::find($customer->id);
                 if ($freshCustomer && $freshCustomer->status === 3) {
                     $customer->update(['package_id' => $request->package_id]);
+                }
+            }
+
+            // Update level jika customer sudah Aktif (status = 3)
+            if ($request->has('level') && $customer->status === 3) {
+                // Re-validate status from database to prevent race condition
+                $freshCustomer = Customer::find($customer->id);
+                if ($freshCustomer && $freshCustomer->status === 3) {
+                    $customer->update(['level' => $request->level]);
                 }
             }
 

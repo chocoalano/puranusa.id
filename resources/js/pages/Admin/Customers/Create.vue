@@ -29,8 +29,20 @@ interface Customer {
     ewallet_id: string;
 }
 
+interface LevelOption {
+    value: string;
+    label: string;
+}
+
+interface PackageOption {
+    id: number;
+    name: string;
+}
+
 interface Props {
     customers: Customer[];
+    levels: LevelOption[];
+    packages: PackageOption[];
 }
 
 const props = defineProps<Props>();
@@ -43,9 +55,38 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     sponsor_id: null as number | null,
-    status: 3 as number, // 1 = Aktif, 2 = Pasif, 3 = Prospek
+    status: '1' as string, // 1 = Prospek, 2 = Pasif, 3 = Aktif
     registration_amount: 100000,
     description: '',
+    level: '' as string,
+    package_id: '' as string,
+});
+
+// Check if status is Aktif
+const isAktif = computed(() => form.status === '3');
+
+// Computed property to get the selected level name for display
+const selectedLevelName = computed(() => {
+    if (!form.level) return null;
+    const level = props.levels.find(l => l.value === form.level);
+    return level?.label || null;
+});
+
+// Computed property to get the selected package name for display
+const selectedPackageName = computed(() => {
+    if (!form.package_id) return null;
+    const pkg = props.packages.find(p => p.id.toString() === form.package_id);
+    return pkg?.name || null;
+});
+
+// Get status display text
+const getStatusText = computed(() => {
+    switch (form.status) {
+        case '1': return 'Prospek';
+        case '2': return 'Pasif';
+        case '3': return 'Aktif';
+        default: return 'Pilih status';
+    }
 });
 
 const searchSponsor = ref('');
@@ -80,7 +121,12 @@ const handleSponsorBlur = () => {
 };
 
 const submit = () => {
-    form.post(store.url(), {
+    form.transform((data) => ({
+        ...data,
+        status: parseInt(data.status, 10),
+        package_id: data.package_id ? parseInt(data.package_id, 10) : null,
+        level: data.level || null,
+    })).post(store.url(), {
         preserveScroll: true,
         onSuccess: () => {
             toast.success('Pelanggan berhasil didaftarkan');
@@ -348,19 +394,76 @@ const submit = () => {
                                 <Label for="status">Status *</Label>
                                 <Select v-model="form.status">
                                     <SelectTrigger :class="{ 'border-destructive': form.errors.status }">
-                                        <SelectValue placeholder="Pilih status" />
+                                        <SelectValue placeholder="Pilih status">
+                                            {{ getStatusText }}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem :value="1">Prospek</SelectItem>
-                                        <SelectItem :value="2">Pasif</SelectItem>
+                                        <SelectItem value="1">Prospek</SelectItem>
+                                        <SelectItem value="2">Pasif</SelectItem>
+                                        <SelectItem value="3">Aktif</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <p class="text-xs text-muted-foreground">
                                     <strong>Prospek:</strong> Calon member, belum masuk jaringan MLM<br>
-                                    <strong>Pasif:</strong> Sudah terdaftar tapi belum aktif bertransaksi
+                                    <strong>Pasif:</strong> Sudah terdaftar tapi belum aktif bertransaksi<br>
+                                    <strong>Aktif:</strong> Member aktif dengan paket dan peringkat
                                 </p>
                                 <p v-if="form.errors.status" class="text-sm text-destructive">
                                     {{ form.errors.status }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Package & Level for Active Members -->
+                        <div v-if="isAktif" class="grid gap-4 md:grid-cols-2 mt-4 p-4 border rounded-lg bg-green-50 dark:bg-green-900/20">
+                            <div class="md:col-span-2">
+                                <p class="text-sm font-medium text-green-800 dark:text-green-200 mb-3">Member Aktif - Pilih Paket dan Peringkat</p>
+                            </div>
+
+                            <!-- Package Selection -->
+                            <div class="space-y-2">
+                                <Label for="package_id">Paket *</Label>
+                                <Select v-model="form.package_id">
+                                    <SelectTrigger :class="{ 'border-destructive': form.errors.package_id }">
+                                        <SelectValue placeholder="Pilih paket">
+                                            {{ selectedPackageName || 'Pilih paket' }}
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem v-for="pkg in packages" :key="pkg.id" :value="pkg.id.toString()">
+                                            {{ pkg.name }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p class="text-xs text-muted-foreground">
+                                    Pilih paket: ZENNER Plus, ZENNER Prime, atau ZENNER Ultra
+                                </p>
+                                <p v-if="form.errors.package_id" class="text-sm text-destructive">
+                                    {{ form.errors.package_id }}
+                                </p>
+                            </div>
+
+                            <!-- Level Selection -->
+                            <div class="space-y-2">
+                                <Label for="level">Peringkat</Label>
+                                <Select v-model="form.level">
+                                    <SelectTrigger :class="{ 'border-destructive': form.errors.level }">
+                                        <SelectValue placeholder="Pilih peringkat">
+                                            {{ selectedLevelName || 'Pilih peringkat' }}
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem v-for="lvl in levels" :key="lvl.value" :value="lvl.value">
+                                            {{ lvl.label }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p class="text-xs text-muted-foreground">
+                                    Pilih peringkat: Associate, Senior Associate, Executive, atau Director
+                                </p>
+                                <p v-if="form.errors.level" class="text-sm text-destructive">
+                                    {{ form.errors.level }}
                                 </p>
                             </div>
                         </div>

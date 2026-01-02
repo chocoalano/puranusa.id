@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomerBvReward;
+use App\Models\Manage\CustomerBonusReward;
 use App\Models\Reward;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -251,5 +253,135 @@ class RewardController extends Controller
         $reward->delete();
 
         return back()->with('success', 'Lifetime Cash Reward berhasil dihapus');
+    }
+
+    /**
+     * Display Promotions Rewards Progress for all members
+     */
+    public function promotionsProgress(Request $request)
+    {
+        $now = now()->toDateString();
+
+        // Get active promotions rewards (type=0, status=1, start<=today, end>=today)
+        $activeRewards = Reward::query()
+            ->where('type', 0)
+            ->where('status', 1)
+            ->whereDate('start', '<=', $now)
+            ->whereDate('end', '>=', $now)
+            ->orderBy('end', 'asc')
+            ->get()
+            ->map(function ($reward) {
+                // Get count of members with progress
+                $progressCount = CustomerBvReward::where('reward_id', $reward->id)->count();
+                $achievedCount = CustomerBvReward::where('reward_id', $reward->id)
+                    ->where('status', 1)
+                    ->count();
+
+                return [
+                    'id' => $reward->id,
+                    'name' => $reward->name,
+                    'reward' => $reward->reward,
+                    'bv_left' => $reward->bv,
+                    'bv_right' => $reward->bv,
+                    'start' => $reward->start->format('Y-m-d'),
+                    'end' => $reward->end->format('Y-m-d'),
+                    'progress_count' => $progressCount,
+                    'achieved_count' => $achievedCount,
+                ];
+            });
+
+        // Get progress data with pagination
+        $progressQuery = CustomerBvReward::query()
+            ->with(['member:id,name,username,ewallet_id', 'reward:id,name,reward,bv'])
+            ->whereHas('reward', function ($q) use ($now) {
+                $q->where('type', 0)
+                    ->where('status', 1)
+                    ->whereDate('start', '<=', $now)
+                    ->whereDate('end', '>=', $now);
+            });
+
+        if ($request->filled('reward_id')) {
+            $progressQuery->where('reward_id', $request->reward_id);
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $progressQuery->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $progressQuery->whereHas('member', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('ewallet_id', 'like', "%{$search}%");
+            });
+        }
+
+        $progressData = $progressQuery
+            ->orderBy('created_on', 'desc')
+            ->paginate(15)
+            ->withQueryString()
+            ->through(function ($progress) {
+                return [
+                    'id' => $progress->id,
+                    'member_id' => $progress->member_id,
+                    'member_name' => $progress->member?->name,
+                    'member_username' => $progress->member?->username,
+                    'member_ewallet_id' => $progress->member?->ewallet_id,
+                    'reward_id' => $progress->reward_id,
+                    'reward_name' => $progress->reward?->name,
+                    'reward_prize' => $progress->reward?->reward,
+                    'bv_required' => $progress->reward?->bv ?? 0,
+                    'omzet_left' => $progress->omzet_left,
+                    'omzet_right' => $progress->omzet_right,
+                    'status' => $progress->status, // 0 = Belum tercapai, 1 = Diproses
+                    'created_on' => $progress->created_on?->format('Y-m-d H:i:s'),
+                ];
+            });
+
+        // Get claimed rewards with pagination
+        $claimedQuery = CustomerBonusReward::query()
+            ->with(['member:id,name,username,ewallet_id'])
+            ->where('reward_type', 'promotion');
+
+        if ($request->filled('claimed_search')) {
+            $search = $request->claimed_search;
+            $claimedQuery->whereHas('member', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('ewallet_id', 'like', "%{$search}%");
+            });
+        }
+
+        $claimedRewards = $claimedQuery
+            ->orderBy('created_at', 'desc')
+            ->paginate(15, ['*'], 'claimed_page')
+            ->withQueryString()
+            ->through(function ($bonus) {
+                return [
+                    'id' => $bonus->id,
+                    'member_id' => $bonus->member_id,
+                    'member_name' => $bonus->member?->name,
+                    'member_username' => $bonus->member?->username,
+                    'member_ewallet_id' => $bonus->member?->ewallet_id,
+                    'reward' => $bonus->reward,
+                    'bv' => $bonus->bv,
+                    'amount' => $bonus->amount,
+                    'claimed_at' => $bonus->created_at->format('Y-m-d H:i:s'),
+                    'status' => $bonus->status,
+                ];
+            });
+
+        return Inertia::render('Admin/Rewards/PromotionsProgress/Index', [
+            'activeRewards' => $activeRewards,
+            'progressData' => $progressData,
+            'claimedRewards' => $claimedRewards,
+            'filters' => [
+                'search' => $request->search,
+                'reward_id' => $request->reward_id,
+                'status' => $request->status,
+                'claimed_search' => $request->claimed_search,
+            ],
+        ]);
     }
 }

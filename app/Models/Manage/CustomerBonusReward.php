@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $member_id
  * @property string|null $reward_type
+ * @property string $reward
+ * @property float $bv
  * @property float $amount
  * @property float|null $index_value
  * @property int $status
@@ -27,6 +29,8 @@ class CustomerBonusReward extends Model
     protected $fillable = [
         'member_id',
         'reward_type',
+        'reward',
+        'bv',
         'amount',
         'index_value',
         'status',
@@ -36,6 +40,7 @@ class CustomerBonusReward extends Model
     protected function casts(): array
     {
         return [
+            'bv' => 'decimal:2',
             'amount' => 'float',
             'index_value' => 'float',
             'status' => 'integer',

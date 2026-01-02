@@ -28,7 +28,7 @@ import { index as paymentMethodIndex } from '@/actions/App/Http/Controllers/Admi
 import { index as courierIndex } from '@/actions/App/Http/Controllers/Admin/CourierManagementController';
 import { index as settingIndex } from '@/actions/App/Http/Controllers/Admin/SettingController';
 import { index as memberPackageIndex } from '@/actions/App/Http/Controllers/Admin/MemberPackageController';
-import { promotions as promotionsRewardIndex, lifetime as lifetimeRewardIndex } from '@/actions/App/Http/Controllers/Admin/RewardController';
+import { promotions as promotionsRewardIndex, lifetime as lifetimeRewardIndex, promotionsProgress as promotionsProgressIndex } from '@/actions/App/Http/Controllers/Admin/RewardController';
 
 import { index as documentationIndex } from '@/actions/App/Http/Controllers/DocumentationController';
 
@@ -75,6 +75,7 @@ import {
     FileEdit,
     Gift,
     Infinity,
+    UserCheck2Icon,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -226,6 +227,16 @@ const mainNavItems: NavItem[] = [
                 icon: ShoppingCart,
             },
             {
+                title: 'Promotions Rewards',
+                href: promotionsRewardIndex.url(),
+                icon: Gift,
+            },
+            {
+                title: 'Lifetime Cash Rewards',
+                href: lifetimeRewardIndex.url(),
+                icon: UserCheck2Icon,
+            },
+            {
                 title: 'Lifetime Cash Reward',
                 href: bonusLifetimeCashRewardIndex(),
                 icon: Infinity,
@@ -307,13 +318,13 @@ const mainNavItems: NavItem[] = [
                 icon: FileText,
             },
             {
-                title: 'Promotions Rewards',
-                href: promotionsRewardIndex(),
-                icon: Gift,
+                title: 'Promotions Progress',
+                href: promotionsProgressIndex.url(),
+                icon: TrendingUp,
             },
             {
                 title: 'Lifetime Cash Rewards',
-                href: lifetimeRewardIndex(),
+                href: lifetimeRewardIndex.url(),
                 icon: Infinity,
             },
             {

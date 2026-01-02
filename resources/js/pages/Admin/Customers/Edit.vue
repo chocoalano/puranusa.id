@@ -36,6 +36,11 @@ interface PackageOption {
     name: string;
 }
 
+interface LevelOption {
+    value: string;
+    label: string;
+}
+
 interface Customer {
     id: number;
     name: string;
@@ -49,6 +54,7 @@ interface Customer {
     status: number;
     package_id: number | null;
     package_name: string | null;
+    level: string | null;
     sponsor_id: number | null;
     sponsor_name: string | null;
     upline_id: number | null;
@@ -60,6 +66,7 @@ interface Props {
     customer: Customer;
     customers: CustomerOption[];
     packages: PackageOption[];
+    levels: LevelOption[];
 }
 
 const props = defineProps<Props>();
@@ -95,7 +102,22 @@ const form = useForm({
     password_confirmation: '',
     description: props.customer.description || '',
     sponsor_id: props.customer.sponsor_id,
-    package_id: props.customer.package_id,
+    package_id: props.customer.package_id?.toString() || '',
+    level: props.customer.level || '',
+});
+
+// Computed property to get the selected package name for display
+const selectedPackageName = computed(() => {
+    if (!form.package_id) return null;
+    const pkg = props.packages.find(p => p.id.toString() === form.package_id);
+    return pkg?.name || null;
+});
+
+// Computed property to get the selected level name for display
+const selectedLevelName = computed(() => {
+    if (!form.level) return null;
+    const level = props.levels.find(l => l.value === form.level);
+    return level?.label || null;
 });
 
 const selectSponsor = (customer: CustomerOption) => {
@@ -118,7 +140,11 @@ const closeSponsorDropdown = () => {
 };
 
 const submit = () => {
-    form.put(update.url(props.customer.id), {
+    form.transform((data) => ({
+        ...data,
+        package_id: data.package_id ? parseInt(data.package_id, 10) : null,
+        level: data.level || null,
+    })).put(update.url(props.customer.id), {
         preserveScroll: true,
         onSuccess: () => {
             toast.success('Data pelanggan berhasil diperbarui');
@@ -403,10 +429,12 @@ const submit = () => {
                                     <!-- Editable package for Active members -->
                                     <Select v-model="form.package_id">
                                         <SelectTrigger :class="{ 'border-destructive': form.errors.package_id }">
-                                            <SelectValue placeholder="Pilih paket" />
+                                            <SelectValue placeholder="Pilih paket">
+                                                {{ selectedPackageName || 'Pilih paket' }}
+                                            </SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem v-for="pkg in packages" :key="pkg.id" :value="pkg.id">
+                                            <SelectItem v-for="pkg in packages" :key="pkg.id" :value="pkg.id.toString()">
                                                 {{ pkg.name }}
                                             </SelectItem>
                                         </SelectContent>
@@ -447,6 +475,81 @@ const submit = () => {
                                         </template>
                                         <template v-else>
                                             Member belum Aktif - paket tidak dapat diubah.
+                                        </template>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Level/Rank Change (Only for Active Members) -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Peringkat Member</CardTitle>
+                        <CardDescription>
+                            <template v-if="isAktif">
+                                Peringkat dapat diubah untuk member Aktif
+                            </template>
+                            <template v-else>
+                                Peringkat hanya dapat diubah untuk member dengan status Aktif
+                            </template>
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="space-y-4">
+                            <div class="space-y-2">
+                                <Label :class="{ 'text-muted-foreground': !isAktif }">Peringkat Saat Ini</Label>
+                                <template v-if="isAktif">
+                                    <!-- Editable level for Active members -->
+                                    <Select v-model="form.level">
+                                        <SelectTrigger :class="{ 'border-destructive': form.errors.level }">
+                                            <SelectValue placeholder="Pilih peringkat">
+                                                {{ selectedLevelName || 'Pilih peringkat' }}
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem v-for="lvl in levels" :key="lvl.value" :value="lvl.value">
+                                                {{ lvl.label }}
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p class="text-xs text-muted-foreground">
+                                        Pilih peringkat untuk member ini: Associate, Senior Associate, Executive, atau Director
+                                    </p>
+                                    <p v-if="form.errors.level" class="text-sm text-destructive">
+                                        {{ form.errors.level }}
+                                    </p>
+                                </template>
+                                <template v-else>
+                                    <!-- Read-only for non-Active members -->
+                                    <div class="rounded-md border bg-muted p-3">
+                                        <Badge v-if="customer.level" variant="outline">
+                                            {{ customer.level }}
+                                        </Badge>
+                                        <span v-else class="text-sm text-muted-foreground">Belum ada peringkat</span>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">
+                                        Peringkat akan ditetapkan saat member menjadi Aktif.
+                                    </p>
+                                </template>
+                            </div>
+
+                            <!-- Status indicator for level -->
+                            <div class="rounded-md border p-3" :class="{
+                                'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900': isAktif,
+                                'bg-muted': !isAktif
+                            }">
+                                <div class="flex items-center gap-2">
+                                    <Badge :variant="isAktif ? 'default' : 'secondary'">
+                                        {{ customer.status === 1 ? 'Prospek' : customer.status === 2 ? 'Pasif' : 'Aktif' }}
+                                    </Badge>
+                                    <span class="text-sm text-muted-foreground">
+                                        <template v-if="isAktif">
+                                            Member Aktif - peringkat dapat diubah.
+                                        </template>
+                                        <template v-else>
+                                            Member belum Aktif - peringkat tidak dapat diubah.
                                         </template>
                                     </span>
                                 </div>

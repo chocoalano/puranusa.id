@@ -42,6 +42,7 @@ class UpdateCustomerRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'sponsor_id' => ['nullable', 'exists:customers,id'],
             'package_id' => ['nullable', 'integer', 'in:1,2,3'],
+            'level' => ['nullable', 'string', 'in:Associate,Senior Associate,Executive,Director'],
         ];
     }
 
@@ -56,9 +57,16 @@ class UpdateCustomerRequest extends FormRequest
 
             // Re-fetch customer dari database untuk mendapatkan status terbaru
             $freshCustomer = Customer::find($customer->id);
+            if (! $freshCustomer) {
+                return;
+            }
 
-            // Jika ada perubahan sponsor_id, validasi ulang apakah customer masih Prospek
-            if ($this->has('sponsor_id') && $freshCustomer) {
+            // Load matrix position untuk mendapatkan sponsor_id saat ini
+            $freshCustomer->load('matrixPosition');
+            $currentSponsorId = $freshCustomer->matrixPosition?->sponsor_id;
+
+            // Jika ada perubahan sponsor_id (berbeda dari nilai saat ini), validasi apakah customer masih Prospek
+            if ($this->has('sponsor_id') && $this->sponsor_id != $currentSponsorId) {
                 if ($freshCustomer->status !== 1) {
                     $validator->errors()->add(
                         'sponsor_id',
@@ -67,12 +75,22 @@ class UpdateCustomerRequest extends FormRequest
                 }
             }
 
-            // Jika ada perubahan package_id, validasi ulang apakah customer sudah Aktif
-            if ($this->has('package_id') && $freshCustomer) {
+            // Jika ada perubahan package_id (berbeda dari nilai saat ini), validasi apakah customer sudah Aktif
+            if ($this->has('package_id') && $this->package_id != $freshCustomer->package_id) {
                 if ($freshCustomer->status !== 3) {
                     $validator->errors()->add(
                         'package_id',
                         'Paket hanya dapat diubah untuk member dengan status Aktif. Member ini masih berstatus Prospek/Pasif.'
+                    );
+                }
+            }
+
+            // Jika ada perubahan level (berbeda dari nilai saat ini), validasi apakah customer sudah Aktif
+            if ($this->has('level') && $this->level != $freshCustomer->level) {
+                if ($freshCustomer->status !== 3) {
+                    $validator->errors()->add(
+                        'level',
+                        'Peringkat hanya dapat diubah untuk member dengan status Aktif. Member ini masih berstatus Prospek/Pasif.'
                     );
                 }
             }
@@ -100,6 +118,7 @@ class UpdateCustomerRequest extends FormRequest
             'sponsor_id.exists' => 'Sponsor tidak ditemukan',
             'package_id.integer' => 'Paket harus berupa angka',
             'package_id.in' => 'Paket tidak valid',
+            'level.in' => 'Peringkat tidak valid. Pilih: Associate, Senior Associate, Executive, atau Director',
         ];
     }
 }

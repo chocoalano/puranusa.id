@@ -43,6 +43,8 @@ class StoreCustomerRequest extends FormRequest
             'status' => ['required', 'integer', 'in:1,2,3'],
             'registration_amount' => ['nullable', 'numeric', 'min:0'],
             'description' => ['nullable', 'string'],
+            'level' => ['nullable', 'string', 'in:Associate,Senior Associate,Executive,Director'],
+            'package_id' => ['nullable', 'integer', 'in:1,2,3'],
         ];
     }
 
@@ -70,6 +72,9 @@ class StoreCustomerRequest extends FormRequest
             'status.in' => 'Status tidak valid',
             'registration_amount.numeric' => 'Nominal registrasi harus berupa angka',
             'registration_amount.min' => 'Nominal registrasi minimal 0',
+            'level.in' => 'Peringkat tidak valid. Pilih: Associate, Senior Associate, Executive, atau Director',
+            'package_id.integer' => 'Paket harus berupa angka',
+            'package_id.in' => 'Paket tidak valid',
         ];
     }
 }

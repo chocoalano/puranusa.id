@@ -123,6 +123,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         // Promotions Rewards (type = 0 - periode)
         Route::prefix('promotions-rewards')->name('promotions-rewards.')->group(function () {
             Route::get('/', [RewardController::class, 'promotions'])->name('index');
+            Route::get('/progress', [RewardController::class, 'promotionsProgress'])->name('progress');
             Route::get('/create', [RewardController::class, 'createPromotion'])->name('create');
             Route::post('/', [RewardController::class, 'storePromotion'])->name('store');
             Route::get('/{reward}/edit', [RewardController::class, 'editPromotion'])->name('edit');

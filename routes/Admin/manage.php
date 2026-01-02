@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\CustomerLifetimeRewardController;
+use App\Http\Controllers\Admin\CustomerPromotionsRewardController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MemberPackageController;
 use App\Http\Controllers\Admin\PageController;
@@ -32,6 +34,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Customer Management Routes
     Route::resource('manage/customers', CustomerController::class);
+
+    // Customer Promotions Rewards Progress
+    Route::get('manage/customers/{customer}/promotions-rewards', [CustomerPromotionsRewardController::class, 'index'])
+        ->name('manage.customers.promotions-rewards');
+
+    // Customer Lifetime Cash Rewards
+    Route::get('manage/customers/{customer}/lifetime-rewards', [CustomerLifetimeRewardController::class, 'index'])
+        ->name('manage.customers.lifetime-rewards');
+    Route::post('manage/customers/{customer}/lifetime-rewards/{reward}/claim', [CustomerLifetimeRewardController::class, 'claim'])
+        ->name('manage.customers.lifetime-rewards.claim');
 
     // Stockist Management Routes
     Route::get('admin/stockists/cities', [StockistController::class, 'getCities'])

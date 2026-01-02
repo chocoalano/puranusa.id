@@ -48,6 +48,8 @@ import {
     topUp as topUpAction,
     deduct as deductAction,
 } from '@/actions/App/Http/Controllers/Admin/CustomerController';
+import { index as promotionsRewards } from '@/actions/App/Http/Controllers/Admin/CustomerPromotionsRewardController';
+import { index as lifetimeRewards } from '@/actions/App/Http/Controllers/Admin/CustomerLifetimeRewardController';
 
 interface Address {
     id: number;
@@ -256,6 +258,18 @@ const getBonusStatusBadge = (status: string) => {
                         <Button variant="outline">
                             <ArrowLeft class="mr-2 h-4 w-4" />
                             Kembali
+                        </Button>
+                    </Link>
+                    <Link :href="promotionsRewards.url(customer.id)">
+                        <Button variant="outline">
+                            <Gift class="mr-2 h-4 w-4" />
+                            Promotions Rewards
+                        </Button>
+                    </Link>
+                    <Link :href="lifetimeRewards.url(customer.id)">
+                        <Button variant="outline">
+                            <Gift class="mr-2 h-4 w-4" />
+                            Lifetime Rewards
                         </Button>
                     </Link>
                     <Link :href="edit.url(customer.id)">
