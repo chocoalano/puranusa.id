@@ -2,7 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EcommerceLayout from '@/layouts/store/Ecommerce.vue';
 import { Head, usePage } from '@inertiajs/vue3';
-import { AlertCircle, Lock, Package, User, Wallet, Network, GitBranch, Gift } from 'lucide-vue-next';
+import { AlertCircle, Lock, Package, User, Wallet, Network, GitBranch, Gift, Sparkles, Trophy } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { Customer, Order, WalletTransaction } from '@/types/profile';
 import ProfileCard from '@/components/profile/ProfileCard.vue';
@@ -18,6 +18,8 @@ import NetworkMembersTab from '@/components/profile/NetworkMembersTab.vue';
 import BinaryTreeTab from '@/components/profile/BinaryTreeTab.vue';
 import BonusTab from '@/components/profile/BonusTab.vue';
 import NetworkStatsCard from '@/components/profile/NetworkStatsCard.vue';
+import PromotionsRewardsTab from '@/components/profile/PromotionsRewardsTab.vue';
+import LifetimeCashRewardsTab from '@/components/profile/LifetimeCashRewardsTab.vue';
 
 interface NetworkMember {
     id: number;
@@ -128,6 +130,32 @@ interface Address {
     updated_at: string;
 }
 
+interface PromotionReward {
+    id: number;
+    name: string;
+    reward: string;
+    bv: number;
+    start: string;
+    end: string;
+    claim_status: number | null;
+}
+
+interface ClaimedReward {
+    id: number;
+    reward: string;
+    bv: number;
+    created_at: string;
+}
+
+interface LifetimeReward {
+    id: number;
+    name: string;
+    reward: string;
+    bv: number;
+    can_claim: boolean;
+    is_claimed: boolean;
+}
+
 const props = defineProps<{
     customer: Customer;
     orders: Order[];
@@ -147,6 +175,10 @@ const props = defineProps<{
     bonusRetails: BonusRetail[];
     bonusLifetimeCashRewards: BonusLifetimeCashReward[];
     addresses: Address[];
+    promotionRewards: PromotionReward[];
+    claimedPromotionRewards: ClaimedReward[];
+    lifetimeRewards: LifetimeReward[];
+    claimedLifetimeRewards: ClaimedReward[];
 }>();
 
 const page = usePage();
@@ -251,6 +283,22 @@ const activeTab = computed(() => {
                                             <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Bonus</span>
                                         </TabsTrigger>
                                         <TabsTrigger
+                                            v-if="isActiveMember"
+                                            value="promotions"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <Sparkles class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Promo</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            v-if="isActiveMember"
+                                            value="lifetime"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <Trophy class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Lifetime</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger
                                             value="wallet"
                                             class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                                         >
@@ -320,6 +368,20 @@ const activeTab = computed(() => {
                                         :bonus-rewards="bonusRewards"
                                         :bonus-retails="bonusRetails"
                                         :bonus-lifetime-cash-rewards="bonusLifetimeCashRewards"
+                                    />
+                                </TabsContent>
+
+                                <TabsContent v-if="isActiveMember" value="promotions" class="mt-0">
+                                    <PromotionsRewardsTab
+                                        :promotion-rewards="promotionRewards"
+                                        :claimed-promotion-rewards="claimedPromotionRewards"
+                                    />
+                                </TabsContent>
+
+                                <TabsContent v-if="isActiveMember" value="lifetime" class="mt-0">
+                                    <LifetimeCashRewardsTab
+                                        :lifetime-rewards="lifetimeRewards"
+                                        :claimed-lifetime-rewards="claimedLifetimeRewards"
                                     />
                                 </TabsContent>
 

@@ -7,6 +7,7 @@ use App\Http\Requests\Ecommerce\UpdatePasswordRequest;
 use App\Http\Requests\Ecommerce\UpdateProfileRequest;
 use App\Models\Manage\Customer;
 use App\Models\Order;
+use App\Models\Reward;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -81,6 +82,12 @@ class ProfileController extends Controller
         // Load bonus data with optimized queries
         $bonusData = $this->getBonusData($customer->id);
 
+        // Load promotions rewards data
+        $promotionsRewardsData = $this->getPromotionsRewardsData($customer->id);
+
+        // Load lifetime cash rewards data
+        $lifetimeRewardsData = $this->getLifetimeCashRewardsData($customer);
+
         return Inertia::render('ecommerce/profile/Index', [
             'customer' => [
                 'id' => $customer->id,
@@ -129,7 +136,178 @@ class ProfileController extends Controller
             'bonusRetails' => $bonusData['retails'],
             'bonusLifetimeCashRewards' => $bonusData['lifetimeCashRewards'],
             'addresses' => $customer->addresses,
+            'promotionRewards' => $promotionsRewardsData['rewards'],
+            'claimedPromotionRewards' => $promotionsRewardsData['claimed'],
+            'lifetimeRewards' => $lifetimeRewardsData['rewards'],
+            'claimedLifetimeRewards' => $lifetimeRewardsData['claimed'],
         ]);
+    }
+
+    /**
+     * Get promotions rewards data
+     * - Active rewards from rewards table (type=0, status=1, within active period)
+     * - Claimed rewards from customer_bonus_rewards (reward_type='promotion')
+     */
+    private function getPromotionsRewardsData(int $customerId): array
+    {
+        $today = now()->toDateString();
+
+        // Get active promotion rewards with customer's claim status
+        $rewards = Reward::query()
+            ->where('type', 0)
+            ->where('status', 1)
+            ->whereDate('start', '<=', $today)
+            ->whereDate('end', '>=', $today)
+            ->orderBy('start')
+            ->get()
+            ->map(function ($reward) use ($customerId) {
+                // Check if customer has claimed or is processing this reward
+                $claimStatus = DB::table('customer_bv_rewards')
+                    ->where('member_id', $customerId)
+                    ->where('reward_id', $reward->id)
+                    ->value('status');
+
+                return [
+                    'id' => $reward->id,
+                    'name' => $reward->name,
+                    'reward' => $reward->reward,
+                    'bv' => (float) $reward->bv,
+                    'start' => $reward->start,
+                    'end' => $reward->end,
+                    'claim_status' => $claimStatus,
+                ];
+            });
+
+        // Get claimed promotion rewards from customer_bonus_rewards
+        $claimed = DB::table('customer_bonus_rewards')
+            ->where('member_id', $customerId)
+            ->where('reward_type', 'promotion')
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn ($bonus) => [
+                'id' => $bonus->id,
+                'reward' => $bonus->reward,
+                'bv' => (float) $bonus->bv,
+                'created_at' => $bonus->created_at,
+            ]);
+
+        return [
+            'rewards' => $rewards,
+            'claimed' => $claimed,
+        ];
+    }
+
+    /**
+     * Get lifetime cash rewards data
+     * - Active rewards from rewards table (type=1, status=1)
+     * - Check if customer can claim based on omzet_group_left_planb and omzet_group_right_planb
+     * - Claimed rewards from customer_bonus_rewards (reward_type='lifetime')
+     */
+    private function getLifetimeCashRewardsData(Customer $customer): array
+    {
+        $customerId = $customer->id;
+        $omzetLeft = (float) ($customer->omzet_group_left_planb ?? 0);
+        $omzetRight = (float) ($customer->omzet_group_right_planb ?? 0);
+
+        // Get already claimed reward IDs for this customer
+        $claimedRewardIds = DB::table('customer_bonus_rewards')
+            ->where('member_id', $customerId)
+            ->where('reward_type', 'lifetime')
+            ->pluck('reward')
+            ->toArray();
+
+        // Get active lifetime rewards
+        $rewards = Reward::query()
+            ->where('type', 1)
+            ->where('status', 1)
+            ->orderBy('bv')
+            ->get()
+            ->map(function ($reward) use ($omzetLeft, $omzetRight, $claimedRewardIds) {
+                $requiredBv = (float) $reward->bv;
+                $canClaim = $omzetLeft >= $requiredBv && $omzetRight >= $requiredBv;
+                $isClaimed = in_array($reward->name, $claimedRewardIds);
+
+                return [
+                    'id' => $reward->id,
+                    'name' => $reward->name,
+                    'reward' => $reward->reward,
+                    'bv' => $requiredBv,
+                    'can_claim' => $canClaim && ! $isClaimed,
+                    'is_claimed' => $isClaimed,
+                ];
+            });
+
+        // Get claimed lifetime rewards from customer_bonus_rewards
+        $claimed = DB::table('customer_bonus_rewards')
+            ->where('member_id', $customerId)
+            ->where('reward_type', 'lifetime')
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn ($bonus) => [
+                'id' => $bonus->id,
+                'reward' => $bonus->reward,
+                'bv' => (float) $bonus->bv,
+                'created_at' => $bonus->created_at,
+            ]);
+
+        return [
+            'rewards' => $rewards,
+            'claimed' => $claimed,
+        ];
+    }
+
+    /**
+     * Claim a lifetime cash reward
+     */
+    public function claimLifetimeReward(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'reward_id' => 'required|integer|exists:rewards,id',
+        ]);
+
+        $customer = Customer::find(Auth::guard('client')->id());
+        $reward = Reward::find($request->reward_id);
+
+        if (! $reward || $reward->type !== 1 || $reward->status !== 1) {
+            return back()->withErrors(['reward_id' => 'Reward tidak valid.']);
+        }
+
+        $omzetLeft = (float) ($customer->omzet_group_left_planb ?? 0);
+        $omzetRight = (float) ($customer->omzet_group_right_planb ?? 0);
+        $requiredBv = (float) $reward->bv;
+
+        // Check if customer meets the requirements
+        if ($omzetLeft < $requiredBv || $omzetRight < $requiredBv) {
+            return back()->withErrors(['reward_id' => 'Anda belum memenuhi syarat untuk klaim reward ini.']);
+        }
+
+        // Check if already claimed
+        $alreadyClaimed = DB::table('customer_bonus_rewards')
+            ->where('member_id', $customer->id)
+            ->where('reward_type', 'lifetime')
+            ->where('reward', $reward->name)
+            ->exists();
+
+        if ($alreadyClaimed) {
+            return back()->withErrors(['reward_id' => 'Anda sudah pernah mengklaim reward ini.']);
+        }
+
+        // Create the claim record
+        DB::table('customer_bonus_rewards')->insert([
+            'member_id' => $customer->id,
+            'reward_type' => 'lifetime',
+            'reward' => $reward->name,
+            'bv' => $reward->bv,
+            'amount' => $reward->value ?? 0,
+            'status' => 0, // Pending
+            'description' => 'Klaim Lifetime Cash Reward: '.$reward->reward,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Reward berhasil diklaim! Tim kami akan segera memproses.');
     }
 
     /**
@@ -454,7 +632,7 @@ class ProfileController extends Controller
             ->get()
             ->map(fn ($bonus) => [
                 'id' => $bonus->id,
-                'pair' => $bonus->pair,
+                'pair' => $bonus->pairing_count,
                 'amount' => $bonus->amount,
                 'status' => $bonus->status,
                 'description' => $bonus->description,

@@ -52,6 +52,7 @@ Route::middleware(['client.auth'])->group(function () {
     Route::post('/client/profile/place-member', [ProfileController::class, 'placeMember'])->name('client.profile.place-member');
     Route::get('/client/profile/member-tree/{memberId}', [ProfileController::class, 'getMemberTree'])->name('client.profile.member-tree');
     Route::get('/client/profile/search-member', [ProfileController::class, 'searchMemberInTree'])->name('client.profile.search-member');
+    Route::post('/client/profile/claim-lifetime-reward', [ProfileController::class, 'claimLifetimeReward'])->name('client.profile.claim-lifetime-reward');
 
     // Address Management Routes
     Route::post('/client/profile/addresses', [ProfileController::class, 'storeAddress'])->name('client.profile.addresses.store');

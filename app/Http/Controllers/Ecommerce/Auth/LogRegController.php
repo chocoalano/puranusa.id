@@ -88,6 +88,11 @@ class LogRegController extends Controller
     }
 
     /**
+     * Maximum number of accounts allowed per email or phone
+     */
+    private const MAX_ACCOUNTS_PER_EMAIL_PHONE = 7;
+
+    /**
      * Handle register request
      */
     public function register(Request $request): RedirectResponse
@@ -98,7 +103,7 @@ class LogRegController extends Controller
             // username kolomnya varchar(100) + unique
             'username' => ['required', 'string', 'max:100', 'alpha_dash:ascii', Rule::unique('customers', 'username')],
 
-            // email & phone TIDAK unique (sesuai perubahan kamu)
+            // email & phone boleh digunakan maksimal 7 akun
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
 
@@ -143,6 +148,22 @@ class LogRegController extends Controller
         $validated['phone'] = trim($validated['phone']);
         if (! empty($validated['nik'])) {
             $validated['nik'] = preg_replace('/\D+/', '', $validated['nik']); // buang selain angka
+        }
+
+        // Validasi batas maksimal akun per email (7 akun)
+        $emailCount = Customer::where('email', $validated['email'])->count();
+        if ($emailCount >= self::MAX_ACCOUNTS_PER_EMAIL_PHONE) {
+            throw ValidationException::withMessages([
+                'email' => 'Email ini sudah digunakan untuk '.self::MAX_ACCOUNTS_PER_EMAIL_PHONE.' akun. Silakan gunakan email lain.',
+            ]);
+        }
+
+        // Validasi batas maksimal akun per phone (7 akun)
+        $phoneCount = Customer::where('phone', $validated['phone'])->count();
+        if ($phoneCount >= self::MAX_ACCOUNTS_PER_EMAIL_PHONE) {
+            throw ValidationException::withMessages([
+                'phone' => 'Nomor telepon ini sudah digunakan untuk '.self::MAX_ACCOUNTS_PER_EMAIL_PHONE.' akun. Silakan gunakan nomor lain.',
+            ]);
         }
 
         try {

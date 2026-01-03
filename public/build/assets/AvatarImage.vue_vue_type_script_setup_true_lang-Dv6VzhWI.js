@@ -1,0 +1,1 @@
+import{d as r,c as t,g as o,u as c,bW as l,m as n,w as p,W as i}from"./vendor-flWeloHs.js";const f=r({__name:"AvatarImage",props:{src:{},referrerPolicy:{},crossOrigin:{},asChild:{type:Boolean},as:{}},setup(a){const e=a;return(s,m)=>(o(),t(c(l),n({"data-slot":"avatar-image"},e,{class:"aspect-square size-full"}),{default:p(()=>[i(s.$slots,"default")]),_:3},16))}});export{f as _};
