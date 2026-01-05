@@ -29,9 +29,9 @@ Route::get('/page/{slug}', [PageController::class, 'show'])->name('ecommerce.pag
 // Client Authentication Routes (Guest only)
 Route::middleware(['client.guest'])->group(function () {
     Route::get('/client/login', [LogRegController::class, 'showLogin'])->name('client.login');
-    Route::post('/client/login', [LogRegController::class, 'login'])->name('client.login.store');
+    // Route::post('/client/login', [LogRegController::class, 'login'])->name('client.login.store');
     Route::get('/client/register', [LogRegController::class, 'showRegister'])->name('client.register');
-    Route::post('/client/register', [LogRegController::class, 'register'])->name('client.register.store');
+    // Route::post('/client/register', [LogRegController::class, 'register'])->name('client.register.store');
 
     // Password Reset Routes
     Route::get('/client/forgot-password', [LogRegController::class, 'showForgotPassword'])->name('client.password.request');

@@ -307,7 +307,7 @@ class CheckoutController extends Controller
         ]);
 
         // Execute bonus engine stored procedure only if member is active
-        if ($customer->status == 3) {
+        if ($customer->status == 3 && $order->status === 'PAID') {
             $generate=DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
             Log::info('Executed bonus engine stored procedure for wallet payment', [
                 'customer_id' => $customer->id,
@@ -768,7 +768,7 @@ class CheckoutController extends Controller
         ]);
 
         // Execute bonus engine stored procedure only if member is active
-        if ($customer->status == 3) {
+        if ($customer->status == 3 && $order->status === 'PAID') {
             DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
         }
 
@@ -969,7 +969,7 @@ class CheckoutController extends Controller
 
                     // Execute bonus engine stored procedure only if member is active
                     $customerForBonus = Customer::find($order->customer_id);
-                    if ($customerForBonus && $customerForBonus->status == 3) {
+                    if ($customerForBonus && $customerForBonus->status == 3 && $order->status === 'PAID') {
                         DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
                     }
 
@@ -1005,8 +1005,8 @@ class CheckoutController extends Controller
                 ]);
 
                 // Execute bonus engine stored procedure only if member is active
-                $customerForBonus = Customer::find($order->customer_id);
-                if ($customerForBonus && $customerForBonus->status == 3) {
+                $customerForBonus = Customer::find($order->customer_id );
+                if ($customerForBonus && $customerForBonus->status == 3 && $order->status === 'PAID') {
                     DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
                 }
 
@@ -1250,7 +1250,7 @@ class CheckoutController extends Controller
         ]);
 
         // Execute bonus engine stored procedure only if member is active
-        if ($customer->status == 3) {
+        if ($customer->status == 3 && $order->status === 'PAID') {
             DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
         }
 
