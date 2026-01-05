@@ -872,14 +872,16 @@ class ProfileController extends Controller
 
         // Search members in the current user's downline network
         $members = Customer::query()
-            ->where('upline_id', $customer->id)
+            ->select('customers.id', 'customers.name', 'customers.email', 'customers.username', 'customers.package_id')
+            ->join('customer_networks', 'customers.id', '=', 'customer_networks.member_id')
+            ->where('customer_networks.upline_id', $customer->id) // ID member login
             ->where(function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('email', 'like', "%{$query}%")
-                    ->orWhere('username', 'like', "%{$query}%");
+                $q->where('customers.name', 'like', "%{$query}%")
+                    ->orWhere('customers.email', 'like', "%{$query}%")
+                    ->orWhere('customers.username', 'like', "%{$query}%");
             })
             ->limit(10)
-            ->get(['id', 'name', 'email', 'username', 'package_id']);
+            ->get();
 
         return response()->json([
             'success' => true,
