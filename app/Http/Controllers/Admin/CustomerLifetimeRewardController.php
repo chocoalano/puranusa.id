@@ -63,7 +63,7 @@ class CustomerLifetimeRewardController extends Controller
                     'reward' => $bonus->reward,
                     'bv' => $bonus->bv,
                     'amount' => $bonus->amount,
-                    'claimed_at' => $bonus->created_at->format('Y-m-d H:i:s'),
+                    'claimed_at' => $bonus->created_at?->format('Y-m-d H:i:s'),
                     'status' => $bonus->status,
                 ];
             });

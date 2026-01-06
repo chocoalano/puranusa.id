@@ -87,6 +87,8 @@ class Customer extends Authenticatable
         'email_verified_at',
         'ewallet_id',
         'ewallet_saldo',
+        'bank_name',
+        'bank_account',
         'description',
         'package_id',
         'foot_left',

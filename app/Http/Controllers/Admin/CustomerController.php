@@ -97,7 +97,7 @@ class CustomerController extends Controller
                     'ewallet_id' => $customer->ewallet_id,
                     'ewallet_saldo' => $customer->ewallet_saldo,
                     'email_verified_at' => $customer->email_verified_at?->format('Y-m-d H:i:s'),
-                    'created_at' => $customer->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => $customer->created_at?->format('Y-m-d H:i:s'),
                     'sponsor_id' => $customer->matrixPosition?->sponsor_id,
                     'sponsor_name' => $customer->sponsor?->name,
                     'sponsor_username' => $customer->sponsor?->username,
@@ -221,7 +221,7 @@ class CustomerController extends Controller
                     'description' => $bonus->description,
                     'status' => $bonus->status,
                     'released_at' => $bonus->released_at?->format('Y-m-d H:i:s'),
-                    'created_at' => $bonus->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => $bonus->created_at?->format('Y-m-d H:i:s'),
                 ];
             }),
             'matching' => $customer->bonusMatchings()->latest()->limit(5)->get()->map(function ($bonus) {
@@ -231,7 +231,7 @@ class CustomerController extends Controller
                     'description' => $bonus->description,
                     'status' => $bonus->status,
                     'released_at' => $bonus->released_at?->format('Y-m-d H:i:s'),
-                    'created_at' => $bonus->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => $bonus->created_at?->format('Y-m-d H:i:s'),
                 ];
             }),
             'pairing' => $customer->bonusPairings()->latest()->limit(5)->get()->map(function ($bonus) {
@@ -241,7 +241,7 @@ class CustomerController extends Controller
                     'description' => $bonus->description,
                     'status' => $bonus->status,
                     'released_at' => $bonus->released_at?->format('Y-m-d H:i:s'),
-                    'created_at' => $bonus->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => $bonus->created_at?->format('Y-m-d H:i:s'),
                 ];
             }),
             'sponsor' => $customer->bonusSponsors()->latest()->limit(5)->get()->map(function ($bonus) {
@@ -251,7 +251,7 @@ class CustomerController extends Controller
                     'description' => $bonus->description,
                     'status' => $bonus->status,
                     'released_at' => $bonus->released_at?->format('Y-m-d H:i:s'),
-                    'created_at' => $bonus->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => $bonus->created_at?->format('Y-m-d H:i:s'),
                 ];
             }),
         ];
@@ -269,8 +269,8 @@ class CustomerController extends Controller
                 'ewallet_saldo' => $customer->ewallet_saldo,
                 'email_verified_at' => $customer->email_verified_at?->format('Y-m-d H:i:s'),
                 'description' => $customer->description,
-                'created_at' => $customer->created_at->format('Y-m-d H:i:s'),
-                'updated_at' => $customer->updated_at->format('Y-m-d H:i:s'),
+                'created_at' => $customer->created_at?->format('Y-m-d H:i:s'),
+                'updated_at' => $customer->updated_at?->format('Y-m-d H:i:s'),
                 'upline' => $customer->networkPosition?->upline?->only(['id', 'name', 'email', 'ewallet_id']),
                 'sponsor' => $customer->matrixPosition?->sponsor?->only(['id', 'name', 'email', 'ewallet_id']),
                 'position' => $customer->networkPosition?->position,

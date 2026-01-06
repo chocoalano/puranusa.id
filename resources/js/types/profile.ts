@@ -44,6 +44,8 @@ export interface Customer {
     status: number;
     ewallet_id: string;
     ewallet_saldo: number;
+    bank_name: string | null;
+    bank_account: string | null;
     description: string | null;
     email_verified_at: string | null;
     created_at: string;

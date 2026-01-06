@@ -42,7 +42,7 @@ class ProfileController extends Controller
         // Load recent wallet transactions
         $walletTransactions = DB::table('customer_wallet_transactions')
             ->where('customer_id', $customer->id)
-            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->limit(20)
             ->get()
             ->map(fn ($transaction) => [
@@ -58,6 +58,13 @@ class ProfileController extends Controller
                 'balance_after' => $transaction->balance_after,
                 'created_at' => $transaction->created_at,
             ]);
+
+        // Check if customer has pending withdrawal
+        $hasPendingWithdrawal = DB::table('customer_wallet_transactions')
+            ->where('customer_id', $customer->id)
+            ->where('type', 'withdrawal')
+            ->where('status', 'pending')
+            ->exists();
 
         // Get sponsored members with optimized queries
         [$activeMembers, $passiveMembers, $prospectMembers] = $this->getSponsoredMembers($customer);
@@ -103,6 +110,8 @@ class ProfileController extends Controller
                 'ref_code' => $customer->ref_code,
                 'ewallet_id' => $customer->ewallet_id,
                 'ewallet_saldo' => $customer->ewallet_saldo,
+                'bank_name' => $customer->bank_name,
+                'bank_account' => $customer->bank_account,
                 'description' => $customer->description,
                 'email_verified_at' => $customer->email_verified_at,
                 'created_at' => $customer->created_at,
@@ -121,6 +130,8 @@ class ProfileController extends Controller
             ],
             'orders' => $orders,
             'walletTransactions' => $walletTransactions,
+            'hasPendingWithdrawal' => $hasPendingWithdrawal,
+            'isProfileIncomplete' => empty($customer->nik) || empty($customer->bank_name) || empty($customer->bank_account),
             'activeMembers' => $activeMembers,
             'passiveMembers' => $passiveMembers,
             'prospectMembers' => $prospectMembers,
@@ -162,10 +173,10 @@ class ProfileController extends Controller
             ->get()
             ->map(function ($reward) use ($customerId) {
                 // Check if customer has claimed or is processing this reward
-                $claimStatus = DB::table('customer_bv_rewards')
+                $bvReward = DB::table('customer_bv_rewards')
                     ->where('member_id', $customerId)
                     ->where('reward_id', $reward->id)
-                    ->value('status');
+                    ->first();
 
                 return [
                     'id' => $reward->id,
@@ -174,7 +185,9 @@ class ProfileController extends Controller
                     'bv' => (float) $reward->bv,
                     'start' => $reward->start,
                     'end' => $reward->end,
-                    'claim_status' => $claimStatus,
+                    'claim_status' => $bvReward?->status,
+                    'accumulated_left' => (float) ($bvReward?->omzet_left ?? 0),
+                    'accumulated_right' => (float) ($bvReward?->omzet_right ?? 0),
                 ];
             });
 
@@ -235,6 +248,8 @@ class ProfileController extends Controller
                     'bv' => $requiredBv,
                     'can_claim' => $canClaim && ! $isClaimed,
                     'is_claimed' => $isClaimed,
+                    'accumulated_left' => $omzetLeft,
+                    'accumulated_right' => $omzetRight,
                 ];
             });
 

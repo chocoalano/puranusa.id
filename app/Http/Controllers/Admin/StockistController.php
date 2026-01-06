@@ -58,7 +58,7 @@ class StockistController extends Controller
                     'stockist_province_id' => $customer->stockist_province_id,
                     'stockist_province_name' => $customer->stockist_province_name,
                     'status' => $customer->status,
-                    'created_at' => $customer->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => $customer->created_at?->format('Y-m-d H:i:s'),
                 ];
             });
 

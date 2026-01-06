@@ -1,0 +1,1 @@
+function i(r,n="Rp 0"){if(r==null||r==="")return n;const t=typeof r=="number"?r:parseFloat(String(r));return isNaN(t)?n:new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",minimumFractionDigits:0}).format(t)}function e(r){if(r==null||r==="")return 0;const n=typeof r=="number"?r:parseFloat(String(r));return isNaN(n)?0:n}export{i as f,e as s};

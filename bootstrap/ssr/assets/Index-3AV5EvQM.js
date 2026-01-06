@@ -6,6 +6,7 @@ import { _ as _sfc_main$p } from "./ConfirmDialog-CTU0x0KG.js";
 import { _ as _sfc_main$o } from "./Pagination-DAUeA01Y.js";
 import { _ as _sfc_main$2, a as _sfc_main$3, b as _sfc_main$4, c as _sfc_main$5 } from "./CardTitle-sqUG0LTw.js";
 import { Clock, CheckCircle, XCircle, DollarSign, Search, ChevronDown, ArrowUpDown, Check, X } from "lucide-vue-next";
+import { f as formatCurrency } from "./currency-BxbHkR_F.js";
 import { _ as _sfc_main$q } from "./index-BpQimeTM.js";
 import { v as valueUpdater, _ as _sfc_main$f } from "./index-SN_CnQ_F.js";
 import { _ as _sfc_main$d, a as _sfc_main$e, b as _sfc_main$g, d as _sfc_main$h } from "./DropdownMenuTrigger-B1v6pHML.js";
@@ -32,13 +33,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     statistics: {}
   },
   setup(__props) {
-    const formatCurrency = (amount) => {
-      return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        minimumFractionDigits: 0
-      }).format(amount);
-    };
     return (_ctx, _push, _parent, _attrs) => {
       _push(`<div${ssrRenderAttrs(mergeProps({ class: "grid gap-4 md:grid-cols-4" }, _attrs))}>`);
       _push(ssrRenderComponent(unref(_sfc_main$2), null, {
@@ -293,10 +287,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$5), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-2xl font-bold"${_scopeId2}>${ssrInterpolate(formatCurrency(__props.statistics.total_amount))}</div><p class="text-xs text-muted-foreground"${_scopeId2}>Total withdrawal berhasil</p>`);
+                  _push3(`<div class="text-2xl font-bold"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(__props.statistics.total_amount))}</div><p class="text-xs text-muted-foreground"${_scopeId2}>Total withdrawal berhasil</p>`);
                 } else {
                   return [
-                    createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(formatCurrency(__props.statistics.total_amount)), 1),
+                    createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(unref(formatCurrency)(__props.statistics.total_amount)), 1),
                     createVNode("p", { class: "text-xs text-muted-foreground" }, "Total withdrawal berhasil")
                   ];
                 }
@@ -319,7 +313,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$5), null, {
                 default: withCtx(() => [
-                  createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(formatCurrency(__props.statistics.total_amount)), 1),
+                  createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(unref(formatCurrency)(__props.statistics.total_amount)), 1),
                   createVNode("p", { class: "text-xs text-muted-foreground" }, "Total withdrawal berhasil")
                 ]),
                 _: 1
@@ -367,7 +361,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       open: false,
       withdrawal: null
     });
-    const formatCurrency = (amount) => {
+    const formatCurrency2 = (amount) => {
       return new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
@@ -465,14 +459,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         accessorKey: "customer.ewallet_saldo",
         header: () => "Saldo",
         cell: ({ row }) => {
-          return h("div", formatCurrency(row.original.customer.ewallet_saldo));
+          return h("div", formatCurrency2(row.original.customer.ewallet_saldo));
         }
       },
       {
         accessorKey: "amount",
         header: () => "Penarikan",
         cell: ({ row }) => {
-          return h("div", { class: "font-bold text-red-600" }, formatCurrency(row.getValue("amount")));
+          return h("div", { class: "font-bold text-red-600" }, formatCurrency2(row.getValue("amount")));
         }
       },
       {
@@ -1226,7 +1220,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               open: approveDialog.value.open,
               "onUpdate:open": ($event) => approveDialog.value.open = $event,
               title: "Setujui Withdrawal?",
-              description: `Apakah Anda yakin ingin menyetujui permintaan withdrawal sebesar ${approveDialog.value.withdrawal ? formatCurrency(approveDialog.value.withdrawal.amount) : ""} untuk ${approveDialog.value.withdrawal?.customer.name}? Dana akan ditransfer via Midtrans ke rekening tujuan.`,
+              description: `Apakah Anda yakin ingin menyetujui permintaan withdrawal sebesar ${approveDialog.value.withdrawal ? formatCurrency2(approveDialog.value.withdrawal.amount) : ""} untuk ${approveDialog.value.withdrawal?.customer.name}? Dana akan ditransfer via Midtrans ke rekening tujuan.`,
               "confirm-text": "Setujui & Transfer",
               "cancel-text": "Batal",
               onConfirm: handleApprove
@@ -1235,7 +1229,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               open: rejectDialog.value.open,
               "onUpdate:open": ($event) => rejectDialog.value.open = $event,
               title: "Tolak Withdrawal?",
-              description: `Apakah Anda yakin ingin menolak permintaan withdrawal sebesar ${rejectDialog.value.withdrawal ? formatCurrency(rejectDialog.value.withdrawal.amount) : ""} dari ${rejectDialog.value.withdrawal?.customer.name}?`,
+              description: `Apakah Anda yakin ingin menolak permintaan withdrawal sebesar ${rejectDialog.value.withdrawal ? formatCurrency2(rejectDialog.value.withdrawal.amount) : ""} dari ${rejectDialog.value.withdrawal?.customer.name}?`,
               "confirm-text": "Tolak",
               "cancel-text": "Batal",
               variant: "destructive",
@@ -1443,7 +1437,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 open: approveDialog.value.open,
                 "onUpdate:open": ($event) => approveDialog.value.open = $event,
                 title: "Setujui Withdrawal?",
-                description: `Apakah Anda yakin ingin menyetujui permintaan withdrawal sebesar ${approveDialog.value.withdrawal ? formatCurrency(approveDialog.value.withdrawal.amount) : ""} untuk ${approveDialog.value.withdrawal?.customer.name}? Dana akan ditransfer via Midtrans ke rekening tujuan.`,
+                description: `Apakah Anda yakin ingin menyetujui permintaan withdrawal sebesar ${approveDialog.value.withdrawal ? formatCurrency2(approveDialog.value.withdrawal.amount) : ""} untuk ${approveDialog.value.withdrawal?.customer.name}? Dana akan ditransfer via Midtrans ke rekening tujuan.`,
                 "confirm-text": "Setujui & Transfer",
                 "cancel-text": "Batal",
                 onConfirm: handleApprove
@@ -1452,7 +1446,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 open: rejectDialog.value.open,
                 "onUpdate:open": ($event) => rejectDialog.value.open = $event,
                 title: "Tolak Withdrawal?",
-                description: `Apakah Anda yakin ingin menolak permintaan withdrawal sebesar ${rejectDialog.value.withdrawal ? formatCurrency(rejectDialog.value.withdrawal.amount) : ""} dari ${rejectDialog.value.withdrawal?.customer.name}?`,
+                description: `Apakah Anda yakin ingin menolak permintaan withdrawal sebesar ${rejectDialog.value.withdrawal ? formatCurrency2(rejectDialog.value.withdrawal.amount) : ""} dari ${rejectDialog.value.withdrawal?.customer.name}?`,
                 "confirm-text": "Tolak",
                 "cancel-text": "Batal",
                 variant: "destructive",

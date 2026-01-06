@@ -64,7 +64,7 @@ class BonusMatchingController extends Controller
                     'status' => $bonus->status,
                     'status_text' => $bonus->status === 1 ? 'Released' : 'Pending',
                     'description' => $bonus->description,
-                    'created_at' => $bonus->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => $bonus->created_at?->format('Y-m-d H:i:s'),
                 ];
             });
 
@@ -159,8 +159,8 @@ class BonusMatchingController extends Controller
                 'status' => $bonusMatching->status,
                 'status_text' => $bonusMatching->status === 1 ? 'Released' : 'Pending',
                 'description' => $bonusMatching->description,
-                'created_at' => $bonusMatching->created_at->format('Y-m-d H:i:s'),
-                'updated_at' => $bonusMatching->updated_at->format('Y-m-d H:i:s'),
+                'created_at' => $bonusMatching->created_at?->format('Y-m-d H:i:s'),
+                'updated_at' => $bonusMatching->updated_at?->format('Y-m-d H:i:s'),
             ],
         ]);
     }

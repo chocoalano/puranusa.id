@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, CheckCircle, XCircle, DollarSign } from 'lucide-vue-next';
+import { formatCurrency } from '@/utils/currency';
 
 interface Statistics {
     total_pending: number;
@@ -14,14 +15,6 @@ interface Props {
 }
 
 defineProps<Props>();
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-    }).format(amount);
-};
 </script>
 
 <template>

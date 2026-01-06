@@ -12,6 +12,8 @@ interface PromotionReward {
     start: string;
     end: string;
     claim_status: number | null; // null = belum tercapai, 0 = belum tercapai, 1 = diproses
+    accumulated_left: number;
+    accumulated_right: number;
 }
 
 interface ClaimedReward {
@@ -87,8 +89,9 @@ const getStatusVariant = (status: number | null): 'secondary' | 'default' | 'out
                             <TableRow>
                                 <TableHead class="min-w-[150px]">Nama</TableHead>
                                 <TableHead class="min-w-[150px]">Reward</TableHead>
-                                <TableHead class="text-right min-w-[150px]">Syarat Omset Grup Kiri (BV)</TableHead>
-                                <TableHead class="text-right min-w-[150px]">Syarat Omset Grup Kanan (BV)</TableHead>
+                                <TableHead class="text-right min-w-[180px]">Syarat Omset Grup Kiri & Kanan (BV)</TableHead>
+                                <TableHead class="text-right min-w-[180px]">Akumulasi Omset Grup Kiri (BV)</TableHead>
+                                <TableHead class="text-right min-w-[180px]">Akumulasi Omset Grup Kanan (BV)</TableHead>
                                 <TableHead class="min-w-[120px]">Periode Awal</TableHead>
                                 <TableHead class="min-w-[120px]">Periode Akhir</TableHead>
                                 <TableHead class="text-center min-w-[120px]">Status</TableHead>
@@ -107,7 +110,10 @@ const getStatusVariant = (status: number | null): 'secondary' | 'default' | 'out
                                     {{ formatNumber(reward.bv) }}
                                 </TableCell>
                                 <TableCell class="text-right font-mono">
-                                    {{ formatNumber(reward.bv) }}
+                                    {{ formatNumber(reward.accumulated_left) }}
+                                </TableCell>
+                                <TableCell class="text-right font-mono">
+                                    {{ formatNumber(reward.accumulated_right) }}
                                 </TableCell>
                                 <TableCell>{{ formatDate(reward.start) }}</TableCell>
                                 <TableCell>{{ formatDate(reward.end) }}</TableCell>

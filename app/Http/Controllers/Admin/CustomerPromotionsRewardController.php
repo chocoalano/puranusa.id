@@ -39,8 +39,8 @@ class CustomerPromotionsRewardController extends Controller
                     'name' => $reward->name,
                     'reward' => $reward->reward,
                     'bv_required' => $reward->bv,
-                    'start' => $reward->start->format('Y-m-d'),
-                    'end' => $reward->end->format('Y-m-d'),
+                    'start' => $reward->start?->format('Y-m-d'),
+                    'end' => $reward->end?->format('Y-m-d'),
                     'omzet_left' => $progress?->omzet_left ?? 0,
                     'omzet_right' => $progress?->omzet_right ?? 0,
                     'status' => $progress?->status ?? 0, // 0 = Belum tercapai, 1 = Diproses
@@ -61,7 +61,7 @@ class CustomerPromotionsRewardController extends Controller
                     'reward' => $bonus->reward,
                     'bv' => $bonus->bv,
                     'amount' => $bonus->amount,
-                    'claimed_at' => $bonus->created_at->format('Y-m-d H:i:s'),
+                    'claimed_at' => $bonus->created_at?->format('Y-m-d H:i:s'),
                     'status' => $bonus->status,
                 ];
             });

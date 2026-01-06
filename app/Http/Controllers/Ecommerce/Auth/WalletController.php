@@ -285,12 +285,36 @@ class WalletController extends Controller
     {
         $request->validate([
             'amount' => ['required', 'numeric', 'min:50000'],
-            'bank_name' => ['required', 'string', 'max:100'],
-            'bank_account' => ['required', 'string', 'max:50'],
-            'bank_holder' => ['required', 'string', 'max:100'],
+            'password' => ['required', 'string'],
         ]);
 
         $customer = Auth::guard('client')->user();
+
+        // Check if profile is complete (NIK and bank info required)
+        if (empty($customer->nik) || empty($customer->bank_name) || empty($customer->bank_account)) {
+            throw ValidationException::withMessages([
+                'profile' => 'Lengkapi NIK dan informasi bank di profil Anda terlebih dahulu.',
+            ]);
+        }
+
+        // Validate password
+        if (! \Hash::check($request->password, $customer->password)) {
+            throw ValidationException::withMessages([
+                'password' => 'Password yang Anda masukkan salah.',
+            ]);
+        }
+
+        // Check if there's any pending withdrawal
+        $hasPendingWithdrawal = CustomerWalletTransaction::where('customer_id', $customer->id)
+            ->where('type', 'withdrawal')
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($hasPendingWithdrawal) {
+            throw ValidationException::withMessages([
+                'pending' => 'Anda masih memiliki permintaan penarikan yang belum diproses. Silakan tunggu hingga permintaan sebelumnya selesai.',
+            ]);
+        }
 
         // Check if balance is sufficient
         if ($customer->ewallet_saldo < $request->amount) {
@@ -302,7 +326,7 @@ class WalletController extends Controller
         try {
             DB::beginTransaction();
 
-            // Create withdrawal transaction
+            // Create withdrawal transaction using customer's stored bank info
             $transaction = CustomerWalletTransaction::create([
                 'customer_id' => $customer->id,
                 'type' => 'withdrawal',
@@ -312,9 +336,9 @@ class WalletController extends Controller
                 'status' => 'pending',
                 'transaction_ref' => 'WD-'.date('YmdHis').'-'.strtoupper(Str::random(6)),
                 'notes' => json_encode([
-                    'bank_name' => $request->bank_name,
-                    'bank_account' => $request->bank_account,
-                    'bank_holder' => $request->bank_holder,
+                    'bank_name' => $customer->bank_name,
+                    'bank_account' => $customer->bank_account,
+                    'bank_holder' => $customer->name,
                 ]),
             ]);
 

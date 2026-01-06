@@ -1,10 +1,8 @@
+import { formatCurrency as formatCurrencyUtil } from '@/utils/currency';
+
 export function useFormatter() {
-    const formatCurrency = (amount: number): string => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-        }).format(amount);
+    const formatCurrency = (amount: number | string | null | undefined): string => {
+        return formatCurrencyUtil(amount);
     };
 
     const formatDate = (date: string): string => {

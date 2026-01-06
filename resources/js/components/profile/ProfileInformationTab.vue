@@ -5,10 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { useForm } from '@inertiajs/vue3';
-import { CheckCircle, Mail, Phone, User, CreditCard, MapPin, UserCircle } from 'lucide-vue-next';
+import { AlertTriangle, Building2, CheckCircle, CreditCard, Mail, MapPin, Phone, User, UserCircle, Wallet } from 'lucide-vue-next';
 import type { Customer } from '@/types/profile';
 import { toast } from 'vue-sonner';
+import { computed } from 'vue';
 
 const props = defineProps<{
     customer: Customer;
@@ -22,7 +24,14 @@ const form = useForm({
     alamat: props.customer.alamat || '',
     email: props.customer.email,
     phone: props.customer.phone,
+    bank_name: props.customer.bank_name || '',
+    bank_account: props.customer.bank_account || '',
     description: props.customer.description || '',
+});
+
+// Check if profile is incomplete (NIK or bank account missing)
+const isProfileIncomplete = computed(() => {
+    return !props.customer.nik || !props.customer.bank_name || !props.customer.bank_account;
 });
 
 const submitForm = () => {
@@ -45,6 +54,19 @@ const submitForm = () => {
             </CardDescription>
         </CardHeader>
         <CardContent>
+            <!-- Warning jika profil belum lengkap -->
+            <div v-if="isProfileIncomplete" class="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg">
+                <div class="flex items-start gap-3">
+                    <AlertTriangle class="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                        <p class="font-medium text-amber-700 dark:text-amber-300">Profil Belum Lengkap</p>
+                        <p class="text-sm text-amber-600 dark:text-amber-400 mt-1">
+                            Mohon lengkapi NIK dan informasi rekening bank Anda untuk dapat melakukan penarikan dana.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <form @submit.prevent="submitForm" class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Username -->
@@ -189,6 +211,73 @@ const submitForm = () => {
                         {{ form.errors.alamat }}
                     </p>
                 </div>
+
+                <Separator />
+
+                <!-- Section Rekening Bank -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <Wallet class="h-5 w-5 text-primary" />
+                        <h4 class="font-semibold">Informasi Rekening Bank</h4>
+                    </div>
+                    <p class="text-sm text-muted-foreground">
+                        Informasi rekening ini akan digunakan untuk penarikan dana dari e-wallet Anda.
+                        Pastikan nama pemilik rekening sama dengan nama yang terdaftar.
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Nama Bank -->
+                        <div class="space-y-2">
+                            <Label for="bank_name">
+                                Nama Bank
+                                <span class="text-red-500">*</span>
+                            </Label>
+                            <div class="relative">
+                                <Building2 class="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Input
+                                    id="bank_name"
+                                    v-model="form.bank_name"
+                                    type="text"
+                                    placeholder="e.g., BCA, Mandiri, BNI"
+                                    class="pl-10"
+                                />
+                            </div>
+                            <p v-if="form.errors.bank_name" class="text-sm text-red-500">
+                                {{ form.errors.bank_name }}
+                            </p>
+                        </div>
+
+                        <!-- Nomor Rekening -->
+                        <div class="space-y-2">
+                            <Label for="bank_account">
+                                Nomor Rekening
+                                <span class="text-red-500">*</span>
+                            </Label>
+                            <div class="relative">
+                                <Wallet class="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Input
+                                    id="bank_account"
+                                    v-model="form.bank_account"
+                                    type="text"
+                                    placeholder="Nomor rekening bank"
+                                    class="pl-10"
+                                />
+                            </div>
+                            <p v-if="form.errors.bank_account" class="text-sm text-red-500">
+                                {{ form.errors.bank_account }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-lg">
+                        <p class="text-sm text-blue-700 dark:text-blue-300">
+                            <strong>Penting:</strong> Nama pemilik rekening harus sama dengan nama Anda yang terdaftar (<strong>{{ customer.name }}</strong>).
+                            Dana akan ditransfer ke rekening atas nama tersebut.
+                        </p>
+                    </div>
+                </div>
+
+                <Separator />
 
                 <!-- Deskripsi -->
                 <div class="space-y-2">

@@ -63,7 +63,7 @@ class BonusController extends Controller
                     'status' => $bonus->status,
                     'status_text' => $bonus->status === 1 ? 'Released' : 'Pending',
                     'description' => $bonus->description,
-                    'created_at' => $bonus->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => $bonus->created_at?->format('Y-m-d H:i:s'),
                 ];
             });
 
@@ -158,8 +158,8 @@ class BonusController extends Controller
                 'status' => $bonus->status,
                 'status_text' => $bonus->status === 1 ? 'Released' : 'Pending',
                 'description' => $bonus->description,
-                'created_at' => $bonus->created_at->format('Y-m-d H:i:s'),
-                'updated_at' => $bonus->updated_at->format('Y-m-d H:i:s'),
+                'created_at' => $bonus->created_at?->format('Y-m-d H:i:s'),
+                'updated_at' => $bonus->updated_at?->format('Y-m-d H:i:s'),
             ],
         ]);
     }

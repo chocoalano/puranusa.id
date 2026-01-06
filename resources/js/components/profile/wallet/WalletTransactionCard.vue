@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowDownLeft, ArrowUpRight, CreditCard, RefreshCw } from 'lucide-vue-next';
 import type { WalletTransaction } from '@/types/profile';
 import { useFormatter } from '@/composables/useFormatter';
+import { formatCurrency } from '@/utils/currency';
 import { ref, computed } from 'vue';
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
@@ -18,15 +19,20 @@ const emit = defineEmits<{
     (e: 'status-updated', data: { transactionRef: string; status: string; newBalance?: number }): void;
 }>();
 
-const { formatCurrency, formatDate, getTransactionTypeLabel, getTransactionStatusLabel } = useFormatter();
+const { formatDate, getTransactionTypeLabel, getTransactionStatusLabel } = useFormatter();
 
 const checkingStatus = ref(false);
 const localStatus = ref(props.transaction.status);
 
 // Kredit = uang masuk (topup, bonus, refund)
-// Debit = uang keluar (withdrawal, purchase, deduct)
+// Debit = uang keluar (withdrawal, purchase, tax, deduct)
 const creditTypes = ['topup', 'top_up', 'bonus', 'refund'];
 const isCredit = computed(() => creditTypes.includes(props.transaction.type));
+
+// Helper untuk format currency dengan fallback '-' untuk wallet transactions
+const safeFormatCurrency = (value: number | string | null | undefined): string => {
+    return formatCurrency(value, '-');
+};
 
 const checkPaymentStatus = async (transactionRef: string) => {
     if (checkingStatus.value) return;
@@ -111,19 +117,19 @@ const checkPaymentStatus = async (transactionRef: string) => {
             <div class="text-center">
                 <p class="text-muted-foreground mb-0.5">Debit</p>
                 <p class="font-semibold text-red-600 dark:text-red-400">
-                    {{ !isCredit && localStatus === 'completed' ? formatCurrency(transaction.amount) : '-' }}
+                    {{ !isCredit && localStatus === 'completed' ? safeFormatCurrency(transaction.amount) : '-' }}
                 </p>
             </div>
             <div class="text-center border-x">
                 <p class="text-muted-foreground mb-0.5">Kredit</p>
                 <p class="font-semibold text-emerald-600 dark:text-emerald-400">
-                    {{ isCredit && localStatus === 'completed' ? formatCurrency(transaction.amount) : '-' }}
+                    {{ isCredit && localStatus === 'completed' ? safeFormatCurrency(transaction.amount) : '-' }}
                 </p>
             </div>
             <div class="text-center">
                 <p class="text-muted-foreground mb-0.5">Saldo</p>
                 <p class="font-semibold">
-                    {{ transaction.balance_after !== null && transaction.balance_after !== undefined ? formatCurrency(transaction.balance_after) : '-' }}
+                    {{ safeFormatCurrency(transaction.balance_after) }}
                 </p>
             </div>
         </div>

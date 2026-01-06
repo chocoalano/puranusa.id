@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DollarSign, Gift, Handshake, Percent, Trophy, Users, ShoppingCart, Star } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { formatCurrency, safeNumber } from '@/utils/currency';
 
 interface BonusSponsor {
     id: number;
@@ -96,14 +97,6 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-    }).format(amount);
-};
-
 const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('id-ID', {
         day: 'numeric',
@@ -114,90 +107,90 @@ const formatDate = (date: string) => {
 
 // Calculate totals
 const totalSponsor = computed(() =>
-    props.bonusSponsors.reduce((sum, bonus) => sum + bonus.amount, 0)
+    props.bonusSponsors.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
 );
 
 const totalMatching = computed(() =>
-    props.bonusMatchings.reduce((sum, bonus) => sum + bonus.amount, 0)
+    props.bonusMatchings.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
 );
 
 const totalPairing = computed(() =>
-    props.bonusPairings.reduce((sum, bonus) => sum + bonus.amount, 0)
+    props.bonusPairings.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
 );
 
 const totalCashback = computed(() =>
-    props.bonusCashbacks.reduce((sum, bonus) => sum + bonus.amount, 0)
+    props.bonusCashbacks.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
 );
 
 const totalReward = computed(() =>
-    props.bonusRewards.reduce((sum, bonus) => sum + bonus.amount, 0)
+    props.bonusRewards.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
 );
 
 // Pending and released totals
 const pendingSponsor = computed(() =>
-    props.bonusSponsors.filter(b => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusSponsors.filter(b => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const releasedSponsor = computed(() =>
-    props.bonusSponsors.filter(b => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusSponsors.filter(b => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const pendingMatching = computed(() =>
-    props.bonusMatchings.filter(b => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusMatchings.filter(b => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const releasedMatching = computed(() =>
-    props.bonusMatchings.filter(b => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusMatchings.filter(b => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const pendingPairing = computed(() =>
-    props.bonusPairings.filter(b => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusPairings.filter(b => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const releasedPairing = computed(() =>
-    props.bonusPairings.filter(b => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusPairings.filter(b => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const pendingCashback = computed(() =>
-    props.bonusCashbacks.filter(b => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusCashbacks.filter(b => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const releasedCashback = computed(() =>
-    props.bonusCashbacks.filter(b => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusCashbacks.filter(b => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const pendingReward = computed(() =>
-    props.bonusRewards.filter(b => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusRewards.filter(b => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const releasedReward = computed(() =>
-    props.bonusRewards.filter(b => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusRewards.filter(b => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 // Retail Commission totals
 const totalRetail = computed(() =>
-    props.bonusRetails.reduce((sum, bonus) => sum + bonus.amount, 0)
+    props.bonusRetails.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
 );
 
 const pendingRetail = computed(() =>
-    props.bonusRetails.filter(b => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusRetails.filter(b => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const releasedRetail = computed(() =>
-    props.bonusRetails.filter(b => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusRetails.filter(b => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 // Lifetime Cash Rewards totals
 const totalLifetimeCashReward = computed(() =>
-    props.bonusLifetimeCashRewards.reduce((sum, bonus) => sum + bonus.amount, 0)
+    props.bonusLifetimeCashRewards.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
 );
 
 const pendingLifetimeCashReward = computed(() =>
-    props.bonusLifetimeCashRewards.filter(b => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusLifetimeCashRewards.filter(b => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const releasedLifetimeCashReward = computed(() =>
-    props.bonusLifetimeCashRewards.filter(b => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+    props.bonusLifetimeCashRewards.filter(b => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
 );
 
 const grandTotal = computed(() =>
@@ -221,12 +214,12 @@ const grandTotal = computed(() =>
                     <p class="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {{ bonusSponsors.length }} transaksi
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2">
-                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Pending: {{ formatCurrency(pendingSponsor) }}
+                    <div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2">
+                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center truncate">
+                            P: {{ formatCurrency(pendingSponsor) }}
                         </Badge>
-                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Released: {{ formatCurrency(releasedSponsor) }}
+                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center truncate">
+                            R: {{ formatCurrency(releasedSponsor) }}
                         </Badge>
                     </div>
                 </CardContent>
@@ -244,12 +237,12 @@ const grandTotal = computed(() =>
                     <p class="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {{ bonusMatchings.length }} transaksi
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2">
-                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Pending: {{ formatCurrency(pendingMatching) }}
+                    <div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2">
+                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center truncate">
+                            P: {{ formatCurrency(pendingMatching) }}
                         </Badge>
-                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Released: {{ formatCurrency(releasedMatching) }}
+                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center truncate">
+                            R: {{ formatCurrency(releasedMatching) }}
                         </Badge>
                     </div>
                 </CardContent>
@@ -267,12 +260,12 @@ const grandTotal = computed(() =>
                     <p class="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {{ bonusPairings.length }} transaksi
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2">
-                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Pending: {{ formatCurrency(pendingPairing) }}
+                    <div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2">
+                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center truncate">
+                            P: {{ formatCurrency(pendingPairing) }}
                         </Badge>
-                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Released: {{ formatCurrency(releasedPairing) }}
+                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center truncate">
+                            R: {{ formatCurrency(releasedPairing) }}
                         </Badge>
                     </div>
                 </CardContent>
@@ -290,12 +283,12 @@ const grandTotal = computed(() =>
                     <p class="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {{ bonusCashbacks.length }} transaksi
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2">
-                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Pending: {{ formatCurrency(pendingCashback) }}
+                    <div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2">
+                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center truncate">
+                            P: {{ formatCurrency(pendingCashback) }}
                         </Badge>
-                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Released: {{ formatCurrency(releasedCashback) }}
+                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center truncate">
+                            R: {{ formatCurrency(releasedCashback) }}
                         </Badge>
                     </div>
                 </CardContent>
@@ -313,12 +306,12 @@ const grandTotal = computed(() =>
                     <p class="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {{ bonusRewards.length }} transaksi
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2">
-                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Pending: {{ formatCurrency(pendingReward) }}
+                    <div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2">
+                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center truncate">
+                            P: {{ formatCurrency(pendingReward) }}
                         </Badge>
-                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Released: {{ formatCurrency(releasedReward) }}
+                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center truncate">
+                            R: {{ formatCurrency(releasedReward) }}
                         </Badge>
                     </div>
                 </CardContent>
@@ -336,12 +329,12 @@ const grandTotal = computed(() =>
                     <p class="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {{ bonusRetails.length }} transaksi
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2">
-                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Pending: {{ formatCurrency(pendingRetail) }}
+                    <div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2">
+                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center truncate">
+                            P: {{ formatCurrency(pendingRetail) }}
                         </Badge>
-                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Released: {{ formatCurrency(releasedRetail) }}
+                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center truncate">
+                            R: {{ formatCurrency(releasedRetail) }}
                         </Badge>
                     </div>
                 </CardContent>
@@ -359,12 +352,12 @@ const grandTotal = computed(() =>
                     <p class="text-[10px] sm:text-xs text-muted-foreground mt-1">
                         {{ bonusLifetimeCashRewards.length }} transaksi
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2">
-                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Pending: {{ formatCurrency(pendingLifetimeCashReward) }}
+                    <div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2">
+                        <Badge variant="outline" class="text-[10px] sm:text-xs justify-center truncate">
+                            P: {{ formatCurrency(pendingLifetimeCashReward) }}
                         </Badge>
-                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center sm:justify-start">
-                            Released: {{ formatCurrency(releasedLifetimeCashReward) }}
+                        <Badge variant="secondary" class="text-[10px] sm:text-xs justify-center truncate">
+                            R: {{ formatCurrency(releasedLifetimeCashReward) }}
                         </Badge>
                     </div>
                 </CardContent>

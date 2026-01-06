@@ -10,6 +10,7 @@ import WalletStatusBanner from './wallet/WalletStatusBanner.vue';
 defineProps<{
     customer: Customer;
     transactions: WalletTransaction[];
+    hasPendingWithdrawal?: boolean;
 }>();
 
 const walletView = ref<string>('wallet');
@@ -35,7 +36,9 @@ const walletView = ref<string>('wallet');
 
         <WalletWithdrawalForm
             v-if="walletView === 'wallet-withdrawal'"
+            :customer="customer"
             :max-amount="Number(customer.ewallet_saldo) || 0"
+            :has-pending-withdrawal="hasPendingWithdrawal"
             @cancel="walletView = 'wallet'"
         />
 

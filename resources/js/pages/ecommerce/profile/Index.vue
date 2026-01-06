@@ -138,6 +138,8 @@ interface PromotionReward {
     start: string;
     end: string;
     claim_status: number | null;
+    accumulated_left: number;
+    accumulated_right: number;
 }
 
 interface ClaimedReward {
@@ -154,12 +156,16 @@ interface LifetimeReward {
     bv: number;
     can_claim: boolean;
     is_claimed: boolean;
+    accumulated_left: number;
+    accumulated_right: number;
 }
 
 const props = defineProps<{
     customer: Customer;
     orders: Order[];
     walletTransactions: WalletTransaction[];
+    hasPendingWithdrawal?: boolean;
+    isProfileIncomplete?: boolean;
     activeMembers: NetworkMember[];
     passiveMembers: NetworkMember[];
     prospectMembers: NetworkMember[];
@@ -228,6 +234,19 @@ const activeTab = computed(() => {
         </div>
 
         <div class="container mx-auto px-3 py-4 sm:px-4 sm:py-8 max-w-7xl">
+            <!-- Profile Incomplete Warning Banner -->
+            <div v-if="isProfileIncomplete && isActiveMember" class="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg">
+                <div class="flex items-start gap-3">
+                    <AlertCircle class="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div class="flex-1">
+                        <p class="font-medium text-amber-700 dark:text-amber-300">Lengkapi Data Profil Anda</p>
+                        <p class="text-sm text-amber-600 dark:text-amber-400 mt-1">
+                            Untuk dapat melakukan penarikan bonus, Anda harus melengkapi NIK dan informasi rekening bank di tab Profil.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid gap-4 sm:gap-6 lg:grid-cols-3">
                 <!-- Left Sidebar - Profile Summary -->
                 <div class="lg:col-span-1 space-y-4 sm:space-y-6">
@@ -386,7 +405,11 @@ const activeTab = computed(() => {
                                 </TabsContent>
 
                                 <TabsContent value="wallet" class="mt-0">
-                                    <WalletTab :customer="customer" :transactions="walletTransactions" />
+                                    <WalletTab
+                                        :customer="customer"
+                                        :transactions="walletTransactions"
+                                        :has-pending-withdrawal="hasPendingWithdrawal"
+                                    />
                                 </TabsContent>
 
                                 <TabsContent value="security" class="mt-0">

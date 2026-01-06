@@ -1,13 +1,14 @@
-import { defineComponent, ref, computed, unref, withCtx, createTextVNode, toDisplayString, createVNode, createBlock, openBlock, createCommentVNode, useSSRContext, watch, resolveDynamicComponent, Fragment, renderList, withModifiers, watchEffect, onUnmounted, mergeProps, onMounted } from "vue";
+import { defineComponent, ref, computed, unref, withCtx, createTextVNode, toDisplayString, createVNode, createBlock, openBlock, createCommentVNode, useSSRContext, watch, resolveDynamicComponent, Fragment, renderList, withModifiers, watchEffect, onUnmounted, mergeProps, onMounted, withKeys } from "vue";
 import { ssrRenderComponent, ssrInterpolate, ssrRenderList, ssrRenderClass, ssrRenderVNode, ssrRenderAttr, ssrRenderAttrs, ssrIncludeBooleanAttr, ssrRenderStyle } from "vue/server-renderer";
-import { _ as _sfc_main$_, a as _sfc_main$$, b as _sfc_main$10, c as _sfc_main$11 } from "./TabsTrigger-Bvg0QZyC.js";
-import { b as _sfc_main$V, c as _sfc_main$W, _ as _sfc_main$18 } from "./Ecommerce-CCwufmLs.js";
+import { _ as _sfc_main$16, a as _sfc_main$17, b as _sfc_main$18, c as _sfc_main$19 } from "./TabsTrigger-Bvg0QZyC.js";
+import { b as _sfc_main$V, c as _sfc_main$W, _ as _sfc_main$1g } from "./Ecommerce-CCwufmLs.js";
 import { router, useForm, usePage, Link, Head } from "@inertiajs/vue3";
-import { CheckCircle, AlertCircle, Check, Copy, Share2, MapPin, Plus, Pencil, Trash2, Home, Building2, Trophy, Calendar, UserCircle, User, CreditCard, Mail, Phone, Loader2, Package, Truck, Wallet, CheckCircle2, Star, RefreshCw, PackageCheck, ArrowDownLeft, ArrowUpRight, Lock, Eye, EyeOff, ShieldCheck, Clock, UserPlus, GitBranch, Users, TrendingUp, ArrowLeft, Search, ZoomOut, ZoomIn, RotateCcw, Handshake, DollarSign, Percent, ShoppingCart, Gift, Network, Award, Sparkles } from "lucide-vue-next";
+import { CheckCircle, AlertCircle, Check, Copy, Share2, MapPin, Plus, Pencil, Trash2, Home, Building2, Trophy, Calendar, AlertTriangle, UserCircle, User, CreditCard, Mail, Phone, Wallet, Loader2, Package, Truck, CheckCircle2, Star, RefreshCw, PackageCheck, ArrowDownLeft, ArrowUpRight, Info, Lock, Eye, EyeOff, ShieldCheck, Clock, UserPlus, GitBranch, Users, TrendingUp, ArrowLeft, Search, ZoomOut, ZoomIn, RotateCcw, Handshake, DollarSign, Percent, ShoppingCart, Gift, Network, Award, Sparkles } from "lucide-vue-next";
 import { _ as _sfc_main$s, a as _sfc_main$t, b as _sfc_main$u } from "./AvatarImage-DWFQMckn.js";
 import { _ as _sfc_main$v } from "./index-BpQimeTM.js";
 import { _ as _sfc_main$q, c as _sfc_main$r, a as _sfc_main$x, b as _sfc_main$y, d as _sfc_main$P } from "./CardTitle-sqUG0LTw.js";
 import { _ as _sfc_main$w } from "./index-SN_CnQ_F.js";
+import { f as formatCurrency, s as safeNumber } from "./currency-BxbHkR_F.js";
 import { toast } from "vue-sonner";
 import axios from "axios";
 import { _ as _sfc_main$A, a as _sfc_main$B, b as _sfc_main$C, c as _sfc_main$D, d as _sfc_main$E, e as _sfc_main$O } from "./DialogTrigger-DpE8BjOt.js";
@@ -18,8 +19,9 @@ import { _ as _sfc_main$H } from "./Switch-DQcz5w_A.js";
 import { e as _sfc_main$z, h as _sfc_main$Q, i as _sfc_main$R, j as _sfc_main$S, k as _sfc_main$T, l as _sfc_main$U } from "./DropdownMenuTrigger-B1v6pHML.js";
 import { _ as _sfc_main$J, a as _sfc_main$K, b as _sfc_main$L, c as _sfc_main$M, d as _sfc_main$N } from "./SelectValue-BUnv4mQg.js";
 import { _ as _sfc_main$X, a as _sfc_main$Y, b as _sfc_main$Z } from "./index-D3PKcwoM.js";
+import { _ as _sfc_main$_, b as _sfc_main$$, c as _sfc_main$10, d as _sfc_main$11, e as _sfc_main$12, f as _sfc_main$13, g as _sfc_main$14, h as _sfc_main$15 } from "./AlertDialogTrigger-DIWb7xue.js";
 import { q as queryParams, a as applyUrlDefaults } from "./index--D7ld9AJ.js";
-import { _ as _sfc_main$12, a as _sfc_main$13, b as _sfc_main$14, c as _sfc_main$15, d as _sfc_main$16, e as _sfc_main$17 } from "./TableHeader-emcE6QAC.js";
+import { _ as _sfc_main$1a, a as _sfc_main$1b, b as _sfc_main$1c, c as _sfc_main$1d, d as _sfc_main$1e, e as _sfc_main$1f } from "./TableHeader-emcE6QAC.js";
 import "reka-ui";
 import "@vueuse/core";
 import "./Checkbox-CIOQa2-J.js";
@@ -28,12 +30,8 @@ import "class-variance-authority";
 import "clsx";
 import "tailwind-merge";
 function useFormatter() {
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0
-    }).format(amount);
+  const formatCurrency$1 = (amount) => {
+    return formatCurrency(amount);
   };
   const formatDate = (date) => {
     return new Intl.DateTimeFormat("id-ID", {
@@ -74,7 +72,7 @@ function useFormatter() {
     return labels[status] || status;
   };
   return {
-    formatCurrency,
+    formatCurrency: formatCurrency$1,
     formatDate,
     getStatusLabel,
     getTransactionTypeLabel,
@@ -89,7 +87,7 @@ const _sfc_main$p = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     const props = __props;
-    const { formatCurrency } = useFormatter();
+    const { formatCurrency: formatCurrency2 } = useFormatter();
     const copied = ref(false);
     const initials = computed(() => {
       return props.customer.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
@@ -282,7 +280,7 @@ const _sfc_main$p = /* @__PURE__ */ defineComponent({
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  _push3(`</div></div><div class="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"${_scopeId2}><div class="flex items-center justify-between"${_scopeId2}><span class="text-gray-600 dark:text-gray-400"${_scopeId2}>Kode Referral</span><span class="font-mono font-semibold"${_scopeId2}>${ssrInterpolate(__props.customer.ref_code)}</span></div><p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 break-all"${_scopeId2}>${ssrInterpolate(referralLink.value)}</p></div></div><div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"${_scopeId2}><span class="text-gray-600 dark:text-gray-400"${_scopeId2}>E-Wallet ID</span><span class="font-mono font-semibold"${_scopeId2}>${ssrInterpolate(__props.customer.ewallet_id)}</span></div><div class="flex items-center justify-between p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg"${_scopeId2}><span class="text-emerald-700 dark:text-emerald-400"${_scopeId2}>Saldo</span><span class="font-semibold text-emerald-700 dark:text-emerald-400"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(__props.customer.ewallet_saldo))}</span></div></div></div>`);
+                  _push3(`</div></div><div class="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"${_scopeId2}><div class="flex items-center justify-between"${_scopeId2}><span class="text-gray-600 dark:text-gray-400"${_scopeId2}>Kode Referral</span><span class="font-mono font-semibold"${_scopeId2}>${ssrInterpolate(__props.customer.ref_code)}</span></div><p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 break-all"${_scopeId2}>${ssrInterpolate(referralLink.value)}</p></div></div><div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"${_scopeId2}><span class="text-gray-600 dark:text-gray-400"${_scopeId2}>E-Wallet ID</span><span class="font-mono font-semibold"${_scopeId2}>${ssrInterpolate(__props.customer.ewallet_id)}</span></div><div class="flex items-center justify-between p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg"${_scopeId2}><span class="text-emerald-700 dark:text-emerald-400"${_scopeId2}>Saldo</span><span class="font-semibold text-emerald-700 dark:text-emerald-400"${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(__props.customer.ewallet_saldo))}</span></div></div></div>`);
                 } else {
                   return [
                     createVNode("div", { class: "flex flex-col items-center text-center" }, [
@@ -383,7 +381,7 @@ const _sfc_main$p = /* @__PURE__ */ defineComponent({
                         ]),
                         createVNode("div", { class: "flex items-center justify-between p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg" }, [
                           createVNode("span", { class: "text-emerald-700 dark:text-emerald-400" }, "Saldo"),
-                          createVNode("span", { class: "font-semibold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency)(__props.customer.ewallet_saldo)), 1)
+                          createVNode("span", { class: "font-semibold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency2)(__props.customer.ewallet_saldo)), 1)
                         ])
                       ])
                     ])
@@ -494,7 +492,7 @@ const _sfc_main$p = /* @__PURE__ */ defineComponent({
                       ]),
                       createVNode("div", { class: "flex items-center justify-between p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg" }, [
                         createVNode("span", { class: "text-emerald-700 dark:text-emerald-400" }, "Saldo"),
-                        createVNode("span", { class: "font-semibold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency)(__props.customer.ewallet_saldo)), 1)
+                        createVNode("span", { class: "font-semibold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency2)(__props.customer.ewallet_saldo)), 1)
                       ])
                     ])
                   ])
@@ -2225,7 +2223,7 @@ const _sfc_main$n = /* @__PURE__ */ defineComponent({
     customer: {}
   },
   setup(__props) {
-    const { formatCurrency } = useFormatter();
+    const { formatCurrency: formatCurrency2 } = useFormatter();
     return (_ctx, _push, _parent, _attrs) => {
       _push(ssrRenderComponent(unref(_sfc_main$q), _attrs, {
         default: withCtx((_, _push2, _parent2, _scopeId) => {
@@ -2264,16 +2262,16 @@ const _sfc_main$n = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), { class: "space-y-3" }, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg"${_scopeId2}><p class="text-xs text-emerald-700 dark:text-emerald-400 mb-1"${_scopeId2}>Total Dirilis</p><p class="text-xl font-bold text-emerald-700 dark:text-emerald-400"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(__props.customer.bonus_stats.total_released))}</p></div><div class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg"${_scopeId2}><p class="text-xs text-amber-700 dark:text-amber-400 mb-1"${_scopeId2}>Total Pending</p><p class="text-xl font-bold text-amber-700 dark:text-amber-400"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(__props.customer.bonus_stats.total_pending))}</p></div>`);
+                  _push3(`<div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg"${_scopeId2}><p class="text-xs text-emerald-700 dark:text-emerald-400 mb-1"${_scopeId2}>Total Dirilis</p><p class="text-xl font-bold text-emerald-700 dark:text-emerald-400"${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(__props.customer.bonus_stats.total_released))}</p></div><div class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg"${_scopeId2}><p class="text-xs text-amber-700 dark:text-amber-400 mb-1"${_scopeId2}>Total Pending</p><p class="text-xl font-bold text-amber-700 dark:text-amber-400"${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(__props.customer.bonus_stats.total_pending))}</p></div>`);
                 } else {
                   return [
                     createVNode("div", { class: "p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg" }, [
                       createVNode("p", { class: "text-xs text-emerald-700 dark:text-emerald-400 mb-1" }, "Total Dirilis"),
-                      createVNode("p", { class: "text-xl font-bold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency)(__props.customer.bonus_stats.total_released)), 1)
+                      createVNode("p", { class: "text-xl font-bold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency2)(__props.customer.bonus_stats.total_released)), 1)
                     ]),
                     createVNode("div", { class: "p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg" }, [
                       createVNode("p", { class: "text-xs text-amber-700 dark:text-amber-400 mb-1" }, "Total Pending"),
-                      createVNode("p", { class: "text-xl font-bold text-amber-700 dark:text-amber-400" }, toDisplayString(unref(formatCurrency)(__props.customer.bonus_stats.total_pending)), 1)
+                      createVNode("p", { class: "text-xl font-bold text-amber-700 dark:text-amber-400" }, toDisplayString(unref(formatCurrency2)(__props.customer.bonus_stats.total_pending)), 1)
                     ])
                   ];
                 }
@@ -2298,11 +2296,11 @@ const _sfc_main$n = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode("div", { class: "p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg" }, [
                     createVNode("p", { class: "text-xs text-emerald-700 dark:text-emerald-400 mb-1" }, "Total Dirilis"),
-                    createVNode("p", { class: "text-xl font-bold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency)(__props.customer.bonus_stats.total_released)), 1)
+                    createVNode("p", { class: "text-xl font-bold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency2)(__props.customer.bonus_stats.total_released)), 1)
                   ]),
                   createVNode("div", { class: "p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg" }, [
                     createVNode("p", { class: "text-xs text-amber-700 dark:text-amber-400 mb-1" }, "Total Pending"),
-                    createVNode("p", { class: "text-xl font-bold text-amber-700 dark:text-amber-400" }, toDisplayString(unref(formatCurrency)(__props.customer.bonus_stats.total_pending)), 1)
+                    createVNode("p", { class: "text-xl font-bold text-amber-700 dark:text-amber-400" }, toDisplayString(unref(formatCurrency2)(__props.customer.bonus_stats.total_pending)), 1)
                   ])
                 ]),
                 _: 1
@@ -2401,7 +2399,12 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
       alamat: props.customer.alamat || "",
       email: props.customer.email,
       phone: props.customer.phone,
+      bank_name: props.customer.bank_name || "",
+      bank_account: props.customer.bank_account || "",
       description: props.customer.description || ""
+    });
+    const isProfileIncomplete = computed(() => {
+      return !props.customer.nik || !props.customer.bank_name || !props.customer.bank_account;
     });
     const submitForm = () => {
       form.patch("/client/profile", {
@@ -2464,6 +2467,13 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
+                  if (isProfileIncomplete.value) {
+                    _push3(`<div class="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"${_scopeId2}><div class="flex items-start gap-3"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(AlertTriangle), { class: "h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" }, null, _parent3, _scopeId2));
+                    _push3(`<div${_scopeId2}><p class="font-medium text-amber-700 dark:text-amber-300"${_scopeId2}>Profil Belum Lengkap</p><p class="text-sm text-amber-600 dark:text-amber-400 mt-1"${_scopeId2}> Mohon lengkapi NIK dan informasi rekening bank Anda untuk dapat melakukan penarikan dana. </p></div></div></div>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
                   _push3(`<form class="space-y-6"${_scopeId2}><div class="grid grid-cols-1 md:grid-cols-2 gap-6"${_scopeId2}><div class="space-y-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$F), { for: "username" }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
@@ -2759,7 +2769,73 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
                   } else {
                     _push3(`<!---->`);
                   }
+                  _push3(`</div>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
+                  _push3(`<div class="space-y-4"${_scopeId2}><div class="flex items-center gap-2"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Wallet), { class: "h-5 w-5 text-primary" }, null, _parent3, _scopeId2));
+                  _push3(`<h4 class="font-semibold"${_scopeId2}>Informasi Rekening Bank</h4></div><p class="text-sm text-muted-foreground"${_scopeId2}> Informasi rekening ini akan digunakan untuk penarikan dana dari e-wallet Anda. Pastikan nama pemilik rekening sama dengan nama yang terdaftar. </p><div class="grid grid-cols-1 md:grid-cols-2 gap-6"${_scopeId2}><div class="space-y-2"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$F), { for: "bank_name" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(` Nama Bank <span class="text-red-500"${_scopeId3}>*</span>`);
+                      } else {
+                        return [
+                          createTextVNode(" Nama Bank "),
+                          createVNode("span", { class: "text-red-500" }, "*")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="relative"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Building2), { class: "absolute left-3 top-3 h-4 w-4 text-gray-400" }, null, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$G), {
+                    id: "bank_name",
+                    modelValue: unref(form).bank_name,
+                    "onUpdate:modelValue": ($event) => unref(form).bank_name = $event,
+                    type: "text",
+                    placeholder: "e.g., BCA, Mandiri, BNI",
+                    class: "pl-10"
+                  }, null, _parent3, _scopeId2));
+                  _push3(`</div>`);
+                  if (unref(form).errors.bank_name) {
+                    _push3(`<p class="text-sm text-red-500"${_scopeId2}>${ssrInterpolate(unref(form).errors.bank_name)}</p>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
                   _push3(`</div><div class="space-y-2"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$F), { for: "bank_account" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(` Nomor Rekening <span class="text-red-500"${_scopeId3}>*</span>`);
+                      } else {
+                        return [
+                          createTextVNode(" Nomor Rekening "),
+                          createVNode("span", { class: "text-red-500" }, "*")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="relative"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Wallet), { class: "absolute left-3 top-3 h-4 w-4 text-gray-400" }, null, _parent3, _scopeId2));
+                  _push3(ssrRenderComponent(unref(_sfc_main$G), {
+                    id: "bank_account",
+                    modelValue: unref(form).bank_account,
+                    "onUpdate:modelValue": ($event) => unref(form).bank_account = $event,
+                    type: "text",
+                    placeholder: "Nomor rekening bank",
+                    class: "pl-10"
+                  }, null, _parent3, _scopeId2));
+                  _push3(`</div>`);
+                  if (unref(form).errors.bank_account) {
+                    _push3(`<p class="text-sm text-red-500"${_scopeId2}>${ssrInterpolate(unref(form).errors.bank_account)}</p>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`</div></div><div class="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-lg"${_scopeId2}><p class="text-sm text-blue-700 dark:text-blue-300"${_scopeId2}><strong${_scopeId2}>Penting:</strong> Nama pemilik rekening harus sama dengan nama Anda yang terdaftar (<strong${_scopeId2}>${ssrInterpolate(__props.customer.name)}</strong>). Dana akan ditransfer ke rekening atas nama tersebut. </p></div></div>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
+                  _push3(`<div class="space-y-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$F), { for: "description" }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
@@ -2830,6 +2906,18 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
                   _push3(`</div></form>`);
                 } else {
                   return [
+                    isProfileIncomplete.value ? (openBlock(), createBlock("div", {
+                      key: 0,
+                      class: "mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"
+                    }, [
+                      createVNode("div", { class: "flex items-start gap-3" }, [
+                        createVNode(unref(AlertTriangle), { class: "h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" }),
+                        createVNode("div", null, [
+                          createVNode("p", { class: "font-medium text-amber-700 dark:text-amber-300" }, "Profil Belum Lengkap"),
+                          createVNode("p", { class: "text-sm text-amber-600 dark:text-amber-400 mt-1" }, " Mohon lengkapi NIK dan informasi rekening bank Anda untuk dapat melakukan penarikan dana. ")
+                        ])
+                      ])
+                    ])) : createCommentVNode("", true),
                     createVNode("form", {
                       onSubmit: withModifiers(submitForm, ["prevent"]),
                       class: "space-y-6"
@@ -3026,6 +3114,73 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
                           class: "text-sm text-red-500"
                         }, toDisplayString(unref(form).errors.alamat), 1)) : createCommentVNode("", true)
                       ]),
+                      createVNode(unref(_sfc_main$z)),
+                      createVNode("div", { class: "space-y-4" }, [
+                        createVNode("div", { class: "flex items-center gap-2" }, [
+                          createVNode(unref(Wallet), { class: "h-5 w-5 text-primary" }),
+                          createVNode("h4", { class: "font-semibold" }, "Informasi Rekening Bank")
+                        ]),
+                        createVNode("p", { class: "text-sm text-muted-foreground" }, " Informasi rekening ini akan digunakan untuk penarikan dana dari e-wallet Anda. Pastikan nama pemilik rekening sama dengan nama yang terdaftar. "),
+                        createVNode("div", { class: "grid grid-cols-1 md:grid-cols-2 gap-6" }, [
+                          createVNode("div", { class: "space-y-2" }, [
+                            createVNode(unref(_sfc_main$F), { for: "bank_name" }, {
+                              default: withCtx(() => [
+                                createTextVNode(" Nama Bank "),
+                                createVNode("span", { class: "text-red-500" }, "*")
+                              ]),
+                              _: 1
+                            }),
+                            createVNode("div", { class: "relative" }, [
+                              createVNode(unref(Building2), { class: "absolute left-3 top-3 h-4 w-4 text-gray-400" }),
+                              createVNode(unref(_sfc_main$G), {
+                                id: "bank_name",
+                                modelValue: unref(form).bank_name,
+                                "onUpdate:modelValue": ($event) => unref(form).bank_name = $event,
+                                type: "text",
+                                placeholder: "e.g., BCA, Mandiri, BNI",
+                                class: "pl-10"
+                              }, null, 8, ["modelValue", "onUpdate:modelValue"])
+                            ]),
+                            unref(form).errors.bank_name ? (openBlock(), createBlock("p", {
+                              key: 0,
+                              class: "text-sm text-red-500"
+                            }, toDisplayString(unref(form).errors.bank_name), 1)) : createCommentVNode("", true)
+                          ]),
+                          createVNode("div", { class: "space-y-2" }, [
+                            createVNode(unref(_sfc_main$F), { for: "bank_account" }, {
+                              default: withCtx(() => [
+                                createTextVNode(" Nomor Rekening "),
+                                createVNode("span", { class: "text-red-500" }, "*")
+                              ]),
+                              _: 1
+                            }),
+                            createVNode("div", { class: "relative" }, [
+                              createVNode(unref(Wallet), { class: "absolute left-3 top-3 h-4 w-4 text-gray-400" }),
+                              createVNode(unref(_sfc_main$G), {
+                                id: "bank_account",
+                                modelValue: unref(form).bank_account,
+                                "onUpdate:modelValue": ($event) => unref(form).bank_account = $event,
+                                type: "text",
+                                placeholder: "Nomor rekening bank",
+                                class: "pl-10"
+                              }, null, 8, ["modelValue", "onUpdate:modelValue"])
+                            ]),
+                            unref(form).errors.bank_account ? (openBlock(), createBlock("p", {
+                              key: 0,
+                              class: "text-sm text-red-500"
+                            }, toDisplayString(unref(form).errors.bank_account), 1)) : createCommentVNode("", true)
+                          ])
+                        ]),
+                        createVNode("div", { class: "p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-lg" }, [
+                          createVNode("p", { class: "text-sm text-blue-700 dark:text-blue-300" }, [
+                            createVNode("strong", null, "Penting:"),
+                            createTextVNode(" Nama pemilik rekening harus sama dengan nama Anda yang terdaftar ("),
+                            createVNode("strong", null, toDisplayString(__props.customer.name), 1),
+                            createTextVNode("). Dana akan ditransfer ke rekening atas nama tersebut. ")
+                          ])
+                        ])
+                      ]),
+                      createVNode(unref(_sfc_main$z)),
                       createVNode("div", { class: "space-y-2" }, [
                         createVNode(unref(_sfc_main$F), { for: "description" }, {
                           default: withCtx(() => [
@@ -3099,6 +3254,18 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
+                  isProfileIncomplete.value ? (openBlock(), createBlock("div", {
+                    key: 0,
+                    class: "mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"
+                  }, [
+                    createVNode("div", { class: "flex items-start gap-3" }, [
+                      createVNode(unref(AlertTriangle), { class: "h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" }),
+                      createVNode("div", null, [
+                        createVNode("p", { class: "font-medium text-amber-700 dark:text-amber-300" }, "Profil Belum Lengkap"),
+                        createVNode("p", { class: "text-sm text-amber-600 dark:text-amber-400 mt-1" }, " Mohon lengkapi NIK dan informasi rekening bank Anda untuk dapat melakukan penarikan dana. ")
+                      ])
+                    ])
+                  ])) : createCommentVNode("", true),
                   createVNode("form", {
                     onSubmit: withModifiers(submitForm, ["prevent"]),
                     class: "space-y-6"
@@ -3295,6 +3462,73 @@ const _sfc_main$l = /* @__PURE__ */ defineComponent({
                         class: "text-sm text-red-500"
                       }, toDisplayString(unref(form).errors.alamat), 1)) : createCommentVNode("", true)
                     ]),
+                    createVNode(unref(_sfc_main$z)),
+                    createVNode("div", { class: "space-y-4" }, [
+                      createVNode("div", { class: "flex items-center gap-2" }, [
+                        createVNode(unref(Wallet), { class: "h-5 w-5 text-primary" }),
+                        createVNode("h4", { class: "font-semibold" }, "Informasi Rekening Bank")
+                      ]),
+                      createVNode("p", { class: "text-sm text-muted-foreground" }, " Informasi rekening ini akan digunakan untuk penarikan dana dari e-wallet Anda. Pastikan nama pemilik rekening sama dengan nama yang terdaftar. "),
+                      createVNode("div", { class: "grid grid-cols-1 md:grid-cols-2 gap-6" }, [
+                        createVNode("div", { class: "space-y-2" }, [
+                          createVNode(unref(_sfc_main$F), { for: "bank_name" }, {
+                            default: withCtx(() => [
+                              createTextVNode(" Nama Bank "),
+                              createVNode("span", { class: "text-red-500" }, "*")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode("div", { class: "relative" }, [
+                            createVNode(unref(Building2), { class: "absolute left-3 top-3 h-4 w-4 text-gray-400" }),
+                            createVNode(unref(_sfc_main$G), {
+                              id: "bank_name",
+                              modelValue: unref(form).bank_name,
+                              "onUpdate:modelValue": ($event) => unref(form).bank_name = $event,
+                              type: "text",
+                              placeholder: "e.g., BCA, Mandiri, BNI",
+                              class: "pl-10"
+                            }, null, 8, ["modelValue", "onUpdate:modelValue"])
+                          ]),
+                          unref(form).errors.bank_name ? (openBlock(), createBlock("p", {
+                            key: 0,
+                            class: "text-sm text-red-500"
+                          }, toDisplayString(unref(form).errors.bank_name), 1)) : createCommentVNode("", true)
+                        ]),
+                        createVNode("div", { class: "space-y-2" }, [
+                          createVNode(unref(_sfc_main$F), { for: "bank_account" }, {
+                            default: withCtx(() => [
+                              createTextVNode(" Nomor Rekening "),
+                              createVNode("span", { class: "text-red-500" }, "*")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode("div", { class: "relative" }, [
+                            createVNode(unref(Wallet), { class: "absolute left-3 top-3 h-4 w-4 text-gray-400" }),
+                            createVNode(unref(_sfc_main$G), {
+                              id: "bank_account",
+                              modelValue: unref(form).bank_account,
+                              "onUpdate:modelValue": ($event) => unref(form).bank_account = $event,
+                              type: "text",
+                              placeholder: "Nomor rekening bank",
+                              class: "pl-10"
+                            }, null, 8, ["modelValue", "onUpdate:modelValue"])
+                          ]),
+                          unref(form).errors.bank_account ? (openBlock(), createBlock("p", {
+                            key: 0,
+                            class: "text-sm text-red-500"
+                          }, toDisplayString(unref(form).errors.bank_account), 1)) : createCommentVNode("", true)
+                        ])
+                      ]),
+                      createVNode("div", { class: "p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-lg" }, [
+                        createVNode("p", { class: "text-sm text-blue-700 dark:text-blue-300" }, [
+                          createVNode("strong", null, "Penting:"),
+                          createTextVNode(" Nama pemilik rekening harus sama dengan nama Anda yang terdaftar ("),
+                          createVNode("strong", null, toDisplayString(__props.customer.name), 1),
+                          createTextVNode("). Dana akan ditransfer ke rekening atas nama tersebut. ")
+                        ])
+                      ])
+                    ]),
+                    createVNode(unref(_sfc_main$z)),
                     createVNode("div", { class: "space-y-2" }, [
                       createVNode(unref(_sfc_main$F), { for: "description" }, {
                         default: withCtx(() => [
@@ -3370,7 +3604,7 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
   setup(__props, { emit: __emit }) {
     const props = __props;
     const emit = __emit;
-    const { formatCurrency, formatDate, getStatusLabel } = useFormatter();
+    const { formatCurrency: formatCurrency2, formatDate, getStatusLabel } = useFormatter();
     const page = usePage();
     const userWalletBalance = computed(() => {
       return page.props.auth?.user?.ewallet_saldo ?? 0;
@@ -3656,7 +3890,7 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                       } else {
                         _push3(`<!---->`);
                       }
-                      _push3(`<div class="flex-1"${_scopeId2}><h4 class="font-medium text-sm"${_scopeId2}>${ssrInterpolate(item.name)}</h4><p class="text-xs text-muted-foreground"${_scopeId2}>SKU: ${ssrInterpolate(item.sku)}</p><p class="text-xs text-muted-foreground"${_scopeId2}>${ssrInterpolate(item.qty)}x ${ssrInterpolate(unref(formatCurrency)(item.unit_price))}</p></div><div class="text-right"${_scopeId2}><p class="font-semibold text-sm"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(item.row_total))}</p></div></div>`);
+                      _push3(`<div class="flex-1"${_scopeId2}><h4 class="font-medium text-sm"${_scopeId2}>${ssrInterpolate(item.name)}</h4><p class="text-xs text-muted-foreground"${_scopeId2}>SKU: ${ssrInterpolate(item.sku)}</p><p class="text-xs text-muted-foreground"${_scopeId2}>${ssrInterpolate(item.qty)}x ${ssrInterpolate(unref(formatCurrency2)(item.unit_price))}</p></div><div class="text-right"${_scopeId2}><p class="font-semibold text-sm"${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(item.row_total))}</p></div></div>`);
                     });
                     _push3(`<!--]--></div></div>`);
                     _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
@@ -3678,20 +3912,20 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                     _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
                     _push3(`<div class="space-y-3"${_scopeId2}><div class="flex items-center gap-2 text-sm font-medium"${_scopeId2}>`);
                     _push3(ssrRenderComponent(unref(CreditCard), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
-                    _push3(`<span${_scopeId2}>Ringkasan Pembayaran</span></div><div class="space-y-2 text-sm"${_scopeId2}><div class="flex justify-between"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Subtotal</span><span${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(orderDetail.value.subtotal_amount))}</span></div>`);
+                    _push3(`<span${_scopeId2}>Ringkasan Pembayaran</span></div><div class="space-y-2 text-sm"${_scopeId2}><div class="flex justify-between"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Subtotal</span><span${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(orderDetail.value.subtotal_amount))}</span></div>`);
                     if (orderDetail.value.discount_amount > 0) {
-                      _push3(`<div class="flex justify-between"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Diskon</span><span class="text-red-600"${_scopeId2}>-${ssrInterpolate(unref(formatCurrency)(orderDetail.value.discount_amount))}</span></div>`);
+                      _push3(`<div class="flex justify-between"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Diskon</span><span class="text-red-600"${_scopeId2}>-${ssrInterpolate(unref(formatCurrency2)(orderDetail.value.discount_amount))}</span></div>`);
                     } else {
                       _push3(`<!---->`);
                     }
-                    _push3(`<div class="flex justify-between"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Ongkos Kirim</span><span${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(orderDetail.value.shipping_amount))}</span></div>`);
+                    _push3(`<div class="flex justify-between"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Ongkos Kirim</span><span${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(orderDetail.value.shipping_amount))}</span></div>`);
                     if (orderDetail.value.tax_amount > 0) {
-                      _push3(`<div class="flex justify-between"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Pajak</span><span${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(orderDetail.value.tax_amount))}</span></div>`);
+                      _push3(`<div class="flex justify-between"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Pajak</span><span${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(orderDetail.value.tax_amount))}</span></div>`);
                     } else {
                       _push3(`<!---->`);
                     }
                     _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
-                    _push3(`<div class="flex justify-between font-semibold text-base"${_scopeId2}><span${_scopeId2}>Total</span><span class="text-primary"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(orderDetail.value.grand_total))}</span></div></div></div>`);
+                    _push3(`<div class="flex justify-between font-semibold text-base"${_scopeId2}><span${_scopeId2}>Total</span><span class="text-primary"${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(orderDetail.value.grand_total))}</span></div></div></div>`);
                     if (orderDetail.value.notes) {
                       _push3(`<div class="space-y-2"${_scopeId2}>`);
                       _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
@@ -3730,9 +3964,9 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                                 if (_push5) {
                                   _push5(`<div class="flex items-start justify-between"${_scopeId4}><div${_scopeId4}><div class="flex items-center gap-2 font-medium text-sm"${_scopeId4}>`);
                                   _push5(ssrRenderComponent(unref(Wallet), { class: "h-4 w-4" }, null, _parent5, _scopeId4));
-                                  _push5(` E-Wallet </div><div class="text-xs text-muted-foreground"${_scopeId4}> Saldo: ${ssrInterpolate(unref(formatCurrency)(userWalletBalance.value))}</div>`);
+                                  _push5(` E-Wallet </div><div class="text-xs text-muted-foreground"${_scopeId4}> Saldo: ${ssrInterpolate(unref(formatCurrency2)(userWalletBalance.value))}</div>`);
                                   if (!isWalletSufficient.value) {
-                                    _push5(`<div class="mt-1 text-xs text-destructive"${_scopeId4}> Saldo tidak mencukupi (kurang ${ssrInterpolate(unref(formatCurrency)(orderDetail.value.grand_total - userWalletBalance.value))}) </div>`);
+                                    _push5(`<div class="mt-1 text-xs text-destructive"${_scopeId4}> Saldo tidak mencukupi (kurang ${ssrInterpolate(unref(formatCurrency2)(orderDetail.value.grand_total - userWalletBalance.value))}) </div>`);
                                   } else {
                                     _push5(`<!---->`);
                                   }
@@ -3745,11 +3979,11 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                                           createVNode(unref(Wallet), { class: "h-4 w-4" }),
                                           createTextVNode(" E-Wallet ")
                                         ]),
-                                        createVNode("div", { class: "text-xs text-muted-foreground" }, " Saldo: " + toDisplayString(unref(formatCurrency)(userWalletBalance.value)), 1),
+                                        createVNode("div", { class: "text-xs text-muted-foreground" }, " Saldo: " + toDisplayString(unref(formatCurrency2)(userWalletBalance.value)), 1),
                                         !isWalletSufficient.value ? (openBlock(), createBlock("div", {
                                           key: 0,
                                           class: "mt-1 text-xs text-destructive"
-                                        }, " Saldo tidak mencukupi (kurang " + toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total - userWalletBalance.value)) + ") ", 1)) : createCommentVNode("", true)
+                                        }, " Saldo tidak mencukupi (kurang " + toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total - userWalletBalance.value)) + ") ", 1)) : createCommentVNode("", true)
                                       ])
                                     ])
                                   ];
@@ -3817,11 +4051,11 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                                           createVNode(unref(Wallet), { class: "h-4 w-4" }),
                                           createTextVNode(" E-Wallet ")
                                         ]),
-                                        createVNode("div", { class: "text-xs text-muted-foreground" }, " Saldo: " + toDisplayString(unref(formatCurrency)(userWalletBalance.value)), 1),
+                                        createVNode("div", { class: "text-xs text-muted-foreground" }, " Saldo: " + toDisplayString(unref(formatCurrency2)(userWalletBalance.value)), 1),
                                         !isWalletSufficient.value ? (openBlock(), createBlock("div", {
                                           key: 0,
                                           class: "mt-1 text-xs text-destructive"
-                                        }, " Saldo tidak mencukupi (kurang " + toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total - userWalletBalance.value)) + ") ", 1)) : createCommentVNode("", true)
+                                        }, " Saldo tidak mencukupi (kurang " + toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total - userWalletBalance.value)) + ") ", 1)) : createCommentVNode("", true)
                                       ])
                                     ])
                                   ]),
@@ -3879,9 +4113,9 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                               _push4(ssrRenderComponent(unref(CreditCard), { class: "h-4 w-4 mr-2" }, null, _parent4, _scopeId3));
                             }
                             if (paymentMethod.value === "wallet") {
-                              _push4(`<span${_scopeId3}> Bayar dengan E-Wallet ${ssrInterpolate(unref(formatCurrency)(orderDetail.value.grand_total))}</span>`);
+                              _push4(`<span${_scopeId3}> Bayar dengan E-Wallet ${ssrInterpolate(unref(formatCurrency2)(orderDetail.value.grand_total))}</span>`);
                             } else {
-                              _push4(`<span${_scopeId3}> Bayar ${ssrInterpolate(unref(formatCurrency)(orderDetail.value.grand_total))}</span>`);
+                              _push4(`<span${_scopeId3}> Bayar ${ssrInterpolate(unref(formatCurrency2)(orderDetail.value.grand_total))}</span>`);
                             }
                           } else {
                             return [
@@ -3895,7 +4129,7 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                                 key: 2,
                                 class: "h-4 w-4 mr-2"
                               })),
-                              paymentMethod.value === "wallet" ? (openBlock(), createBlock("span", { key: 3 }, " Bayar dengan E-Wallet " + toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total)), 1)) : (openBlock(), createBlock("span", { key: 4 }, " Bayar " + toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total)), 1))
+                              paymentMethod.value === "wallet" ? (openBlock(), createBlock("span", { key: 3 }, " Bayar dengan E-Wallet " + toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total)), 1)) : (openBlock(), createBlock("span", { key: 4 }, " Bayar " + toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total)), 1))
                             ];
                           }
                         }),
@@ -4034,10 +4268,10 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                               createVNode("div", { class: "flex-1" }, [
                                 createVNode("h4", { class: "font-medium text-sm" }, toDisplayString(item.name), 1),
                                 createVNode("p", { class: "text-xs text-muted-foreground" }, "SKU: " + toDisplayString(item.sku), 1),
-                                createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString(item.qty) + "x " + toDisplayString(unref(formatCurrency)(item.unit_price)), 1)
+                                createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString(item.qty) + "x " + toDisplayString(unref(formatCurrency2)(item.unit_price)), 1)
                               ]),
                               createVNode("div", { class: "text-right" }, [
-                                createVNode("p", { class: "font-semibold text-sm" }, toDisplayString(unref(formatCurrency)(item.row_total)), 1)
+                                createVNode("p", { class: "font-semibold text-sm" }, toDisplayString(unref(formatCurrency2)(item.row_total)), 1)
                               ])
                             ]);
                           }), 128))
@@ -4092,30 +4326,30 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                         createVNode("div", { class: "space-y-2 text-sm" }, [
                           createVNode("div", { class: "flex justify-between" }, [
                             createVNode("span", { class: "text-muted-foreground" }, "Subtotal"),
-                            createVNode("span", null, toDisplayString(unref(formatCurrency)(orderDetail.value.subtotal_amount)), 1)
+                            createVNode("span", null, toDisplayString(unref(formatCurrency2)(orderDetail.value.subtotal_amount)), 1)
                           ]),
                           orderDetail.value.discount_amount > 0 ? (openBlock(), createBlock("div", {
                             key: 0,
                             class: "flex justify-between"
                           }, [
                             createVNode("span", { class: "text-muted-foreground" }, "Diskon"),
-                            createVNode("span", { class: "text-red-600" }, "-" + toDisplayString(unref(formatCurrency)(orderDetail.value.discount_amount)), 1)
+                            createVNode("span", { class: "text-red-600" }, "-" + toDisplayString(unref(formatCurrency2)(orderDetail.value.discount_amount)), 1)
                           ])) : createCommentVNode("", true),
                           createVNode("div", { class: "flex justify-between" }, [
                             createVNode("span", { class: "text-muted-foreground" }, "Ongkos Kirim"),
-                            createVNode("span", null, toDisplayString(unref(formatCurrency)(orderDetail.value.shipping_amount)), 1)
+                            createVNode("span", null, toDisplayString(unref(formatCurrency2)(orderDetail.value.shipping_amount)), 1)
                           ]),
                           orderDetail.value.tax_amount > 0 ? (openBlock(), createBlock("div", {
                             key: 1,
                             class: "flex justify-between"
                           }, [
                             createVNode("span", { class: "text-muted-foreground" }, "Pajak"),
-                            createVNode("span", null, toDisplayString(unref(formatCurrency)(orderDetail.value.tax_amount)), 1)
+                            createVNode("span", null, toDisplayString(unref(formatCurrency2)(orderDetail.value.tax_amount)), 1)
                           ])) : createCommentVNode("", true),
                           createVNode(unref(_sfc_main$z)),
                           createVNode("div", { class: "flex justify-between font-semibold text-base" }, [
                             createVNode("span", null, "Total"),
-                            createVNode("span", { class: "text-primary" }, toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total)), 1)
+                            createVNode("span", { class: "text-primary" }, toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total)), 1)
                           ])
                         ])
                       ]),
@@ -4169,11 +4403,11 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                                           createVNode(unref(Wallet), { class: "h-4 w-4" }),
                                           createTextVNode(" E-Wallet ")
                                         ]),
-                                        createVNode("div", { class: "text-xs text-muted-foreground" }, " Saldo: " + toDisplayString(unref(formatCurrency)(userWalletBalance.value)), 1),
+                                        createVNode("div", { class: "text-xs text-muted-foreground" }, " Saldo: " + toDisplayString(unref(formatCurrency2)(userWalletBalance.value)), 1),
                                         !isWalletSufficient.value ? (openBlock(), createBlock("div", {
                                           key: 0,
                                           class: "mt-1 text-xs text-destructive"
-                                        }, " Saldo tidak mencukupi (kurang " + toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total - userWalletBalance.value)) + ") ", 1)) : createCommentVNode("", true)
+                                        }, " Saldo tidak mencukupi (kurang " + toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total - userWalletBalance.value)) + ") ", 1)) : createCommentVNode("", true)
                                       ])
                                     ])
                                   ]),
@@ -4230,7 +4464,7 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                               key: 2,
                               class: "h-4 w-4 mr-2"
                             })),
-                            paymentMethod.value === "wallet" ? (openBlock(), createBlock("span", { key: 3 }, " Bayar dengan E-Wallet " + toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total)), 1)) : (openBlock(), createBlock("span", { key: 4 }, " Bayar " + toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total)), 1))
+                            paymentMethod.value === "wallet" ? (openBlock(), createBlock("span", { key: 3 }, " Bayar dengan E-Wallet " + toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total)), 1)) : (openBlock(), createBlock("span", { key: 4 }, " Bayar " + toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total)), 1))
                           ]),
                           _: 1
                         }, 8, ["disabled"])
@@ -4362,10 +4596,10 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                             createVNode("div", { class: "flex-1" }, [
                               createVNode("h4", { class: "font-medium text-sm" }, toDisplayString(item.name), 1),
                               createVNode("p", { class: "text-xs text-muted-foreground" }, "SKU: " + toDisplayString(item.sku), 1),
-                              createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString(item.qty) + "x " + toDisplayString(unref(formatCurrency)(item.unit_price)), 1)
+                              createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString(item.qty) + "x " + toDisplayString(unref(formatCurrency2)(item.unit_price)), 1)
                             ]),
                             createVNode("div", { class: "text-right" }, [
-                              createVNode("p", { class: "font-semibold text-sm" }, toDisplayString(unref(formatCurrency)(item.row_total)), 1)
+                              createVNode("p", { class: "font-semibold text-sm" }, toDisplayString(unref(formatCurrency2)(item.row_total)), 1)
                             ])
                           ]);
                         }), 128))
@@ -4420,30 +4654,30 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                       createVNode("div", { class: "space-y-2 text-sm" }, [
                         createVNode("div", { class: "flex justify-between" }, [
                           createVNode("span", { class: "text-muted-foreground" }, "Subtotal"),
-                          createVNode("span", null, toDisplayString(unref(formatCurrency)(orderDetail.value.subtotal_amount)), 1)
+                          createVNode("span", null, toDisplayString(unref(formatCurrency2)(orderDetail.value.subtotal_amount)), 1)
                         ]),
                         orderDetail.value.discount_amount > 0 ? (openBlock(), createBlock("div", {
                           key: 0,
                           class: "flex justify-between"
                         }, [
                           createVNode("span", { class: "text-muted-foreground" }, "Diskon"),
-                          createVNode("span", { class: "text-red-600" }, "-" + toDisplayString(unref(formatCurrency)(orderDetail.value.discount_amount)), 1)
+                          createVNode("span", { class: "text-red-600" }, "-" + toDisplayString(unref(formatCurrency2)(orderDetail.value.discount_amount)), 1)
                         ])) : createCommentVNode("", true),
                         createVNode("div", { class: "flex justify-between" }, [
                           createVNode("span", { class: "text-muted-foreground" }, "Ongkos Kirim"),
-                          createVNode("span", null, toDisplayString(unref(formatCurrency)(orderDetail.value.shipping_amount)), 1)
+                          createVNode("span", null, toDisplayString(unref(formatCurrency2)(orderDetail.value.shipping_amount)), 1)
                         ]),
                         orderDetail.value.tax_amount > 0 ? (openBlock(), createBlock("div", {
                           key: 1,
                           class: "flex justify-between"
                         }, [
                           createVNode("span", { class: "text-muted-foreground" }, "Pajak"),
-                          createVNode("span", null, toDisplayString(unref(formatCurrency)(orderDetail.value.tax_amount)), 1)
+                          createVNode("span", null, toDisplayString(unref(formatCurrency2)(orderDetail.value.tax_amount)), 1)
                         ])) : createCommentVNode("", true),
                         createVNode(unref(_sfc_main$z)),
                         createVNode("div", { class: "flex justify-between font-semibold text-base" }, [
                           createVNode("span", null, "Total"),
-                          createVNode("span", { class: "text-primary" }, toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total)), 1)
+                          createVNode("span", { class: "text-primary" }, toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total)), 1)
                         ])
                       ])
                     ]),
@@ -4497,11 +4731,11 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                                         createVNode(unref(Wallet), { class: "h-4 w-4" }),
                                         createTextVNode(" E-Wallet ")
                                       ]),
-                                      createVNode("div", { class: "text-xs text-muted-foreground" }, " Saldo: " + toDisplayString(unref(formatCurrency)(userWalletBalance.value)), 1),
+                                      createVNode("div", { class: "text-xs text-muted-foreground" }, " Saldo: " + toDisplayString(unref(formatCurrency2)(userWalletBalance.value)), 1),
                                       !isWalletSufficient.value ? (openBlock(), createBlock("div", {
                                         key: 0,
                                         class: "mt-1 text-xs text-destructive"
-                                      }, " Saldo tidak mencukupi (kurang " + toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total - userWalletBalance.value)) + ") ", 1)) : createCommentVNode("", true)
+                                      }, " Saldo tidak mencukupi (kurang " + toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total - userWalletBalance.value)) + ") ", 1)) : createCommentVNode("", true)
                                     ])
                                   ])
                                 ]),
@@ -4558,7 +4792,7 @@ const _sfc_main$k = /* @__PURE__ */ defineComponent({
                             key: 2,
                             class: "h-4 w-4 mr-2"
                           })),
-                          paymentMethod.value === "wallet" ? (openBlock(), createBlock("span", { key: 3 }, " Bayar dengan E-Wallet " + toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total)), 1)) : (openBlock(), createBlock("span", { key: 4 }, " Bayar " + toDisplayString(unref(formatCurrency)(orderDetail.value.grand_total)), 1))
+                          paymentMethod.value === "wallet" ? (openBlock(), createBlock("span", { key: 3 }, " Bayar dengan E-Wallet " + toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total)), 1)) : (openBlock(), createBlock("span", { key: 4 }, " Bayar " + toDisplayString(unref(formatCurrency2)(orderDetail.value.grand_total)), 1))
                         ]),
                         _: 1
                       }, 8, ["disabled"])
@@ -5608,7 +5842,7 @@ const _sfc_main$i = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     const props = __props;
-    const { formatCurrency, formatDate, getStatusLabel } = useFormatter();
+    const { formatCurrency: formatCurrency2, formatDate, getStatusLabel } = useFormatter();
     const sheetOpen = ref(false);
     const reviewDialogOpen = ref(false);
     const checkingStatus = ref(false);
@@ -5736,7 +5970,7 @@ const _sfc_main$i = /* @__PURE__ */ defineComponent({
       } else {
         _push(`<!---->`);
       }
-      _push(`</div></div><div class="flex flex-col gap-2 md:items-end"><p class="text-lg font-bold text-primary">${ssrInterpolate(unref(formatCurrency)(__props.order.grand_total))}</p><div class="flex flex-wrap gap-2">`);
+      _push(`</div></div><div class="flex flex-col gap-2 md:items-end"><p class="text-lg font-bold text-primary">${ssrInterpolate(unref(formatCurrency2)(__props.order.grand_total))}</p><div class="flex flex-wrap gap-2">`);
       if (localStatus.value.toUpperCase() === "PENDING" && !localPaidAt.value) {
         _push(ssrRenderComponent(unref(_sfc_main$w), {
           variant: "outline",
@@ -6061,7 +6295,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
   emits: ["topup", "withdrawal"],
   setup(__props, { emit: __emit }) {
     const emit = __emit;
-    const { formatCurrency } = useFormatter();
+    const { formatCurrency: formatCurrency2 } = useFormatter();
     return (_ctx, _push, _parent, _attrs) => {
       _push(ssrRenderComponent(unref(_sfc_main$q), _attrs, {
         default: withCtx((_, _push2, _parent2, _scopeId) => {
@@ -6069,7 +6303,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), { class: "pt-6" }, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-center"${_scopeId2}><p class="text-sm text-muted-foreground mb-2"${_scopeId2}>Saldo E-Wallet</p><p class="text-4xl font-bold text-primary mb-4"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(__props.balance))}</p><div class="flex gap-3 justify-center"${_scopeId2}>`);
+                  _push3(`<div class="text-center"${_scopeId2}><p class="text-sm text-muted-foreground mb-2"${_scopeId2}>Saldo E-Wallet</p><p class="text-4xl font-bold text-primary mb-4"${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(__props.balance))}</p><div class="flex gap-3 justify-center"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$w), {
                     onClick: ($event) => emit("topup"),
                     size: "sm"
@@ -6110,7 +6344,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
                   return [
                     createVNode("div", { class: "text-center" }, [
                       createVNode("p", { class: "text-sm text-muted-foreground mb-2" }, "Saldo E-Wallet"),
-                      createVNode("p", { class: "text-4xl font-bold text-primary mb-4" }, toDisplayString(unref(formatCurrency)(__props.balance)), 1),
+                      createVNode("p", { class: "text-4xl font-bold text-primary mb-4" }, toDisplayString(unref(formatCurrency2)(__props.balance)), 1),
                       createVNode("div", { class: "flex gap-3 justify-center" }, [
                         createVNode(unref(_sfc_main$w), {
                           onClick: ($event) => emit("topup"),
@@ -6146,7 +6380,7 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode("div", { class: "text-center" }, [
                     createVNode("p", { class: "text-sm text-muted-foreground mb-2" }, "Saldo E-Wallet"),
-                    createVNode("p", { class: "text-4xl font-bold text-primary mb-4" }, toDisplayString(unref(formatCurrency)(__props.balance)), 1),
+                    createVNode("p", { class: "text-4xl font-bold text-primary mb-4" }, toDisplayString(unref(formatCurrency2)(__props.balance)), 1),
                     createVNode("div", { class: "flex gap-3 justify-center" }, [
                       createVNode(unref(_sfc_main$w), {
                         onClick: ($event) => emit("topup"),
@@ -6705,29 +6939,88 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
   __name: "WalletWithdrawalForm",
   __ssrInlineRender: true,
   props: {
-    maxAmount: {}
+    customer: {},
+    maxAmount: {},
+    hasPendingWithdrawal: { type: Boolean }
   },
   emits: ["cancel"],
   setup(__props, { emit: __emit }) {
+    const props = __props;
     const emit = __emit;
+    const isProfileComplete = computed(() => {
+      return !!props.customer.nik && !!props.customer.bank_name && !!props.customer.bank_account;
+    });
+    const showConfirmDialog = ref(false);
+    const showPasswordDialog = ref(false);
+    const showPassword = ref(false);
+    const passwordError = ref("");
     const form = useForm({
       amount: "",
-      bank_name: "",
-      bank_account: "",
-      bank_holder: ""
+      password: ""
     });
-    const submitForm = () => {
+    const withdrawalSummary = computed(() => {
+      const amount = parseFloat(form.amount) || 0;
+      return {
+        amount,
+        formattedAmount: amount.toLocaleString("id-ID")
+      };
+    });
+    const handleSubmit = () => {
+      if (!isProfileComplete.value) {
+        toast.error("Lengkapi NIK dan informasi bank di profil Anda terlebih dahulu");
+        return;
+      }
+      if (!form.amount || parseFloat(form.amount) < 5e4) {
+        toast.error("Jumlah penarikan minimal Rp 50.000");
+        return;
+      }
+      if (parseFloat(form.amount) > props.maxAmount) {
+        toast.error("Jumlah penarikan melebihi saldo yang tersedia");
+        return;
+      }
+      showConfirmDialog.value = true;
+    };
+    const proceedToPassword = () => {
+      showConfirmDialog.value = false;
+      showPasswordDialog.value = true;
+      form.password = "";
+      passwordError.value = "";
+    };
+    const submitWithPassword = () => {
+      if (!form.password) {
+        passwordError.value = "Password wajib diisi";
+        return;
+      }
+      passwordError.value = "";
       form.post("/client/wallet/withdrawal", {
         preserveScroll: true,
         onSuccess: () => {
+          showPasswordDialog.value = false;
           form.reset();
           emit("cancel");
           toast.success("Permintaan penarikan berhasil diajukan.");
+        },
+        onError: (errors) => {
+          if (errors.password) {
+            passwordError.value = errors.password;
+          } else if (errors.pending) {
+            showPasswordDialog.value = false;
+            toast.error(errors.pending);
+          } else if (errors.profile) {
+            showPasswordDialog.value = false;
+            toast.error(errors.profile);
+          }
         }
       });
     };
+    const cancelPasswordDialog = () => {
+      showPasswordDialog.value = false;
+      form.password = "";
+      passwordError.value = "";
+    };
     return (_ctx, _push, _parent, _attrs) => {
-      _push(ssrRenderComponent(unref(_sfc_main$q), _attrs, {
+      _push(`<!--[-->`);
+      _push(ssrRenderComponent(unref(_sfc_main$q), null, {
         default: withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
             _push2(ssrRenderComponent(unref(_sfc_main$x), null, {
@@ -6779,6 +7072,36 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
+                  if (!isProfileComplete.value) {
+                    _push3(`<div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-lg"${_scopeId2}><div class="flex items-start gap-3"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(AlertTriangle), { class: "h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" }, null, _parent3, _scopeId2));
+                    _push3(`<div${_scopeId2}><p class="font-medium text-red-700 dark:text-red-300"${_scopeId2}>Profil Belum Lengkap</p><p class="text-sm text-red-600 dark:text-red-400 mt-1"${_scopeId2}> Untuk melakukan penarikan, Anda harus melengkapi NIK dan informasi rekening bank di profil Anda. </p>`);
+                    _push3(ssrRenderComponent(unref(Link), {
+                      href: "/client/profile",
+                      class: "inline-flex items-center gap-1 text-sm font-medium text-red-700 dark:text-red-300 hover:underline mt-2"
+                    }, {
+                      default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                        if (_push4) {
+                          _push4(` Lengkapi Profil Sekarang → `);
+                        } else {
+                          return [
+                            createTextVNode(" Lengkapi Profil Sekarang → ")
+                          ];
+                        }
+                      }),
+                      _: 1
+                    }, _parent3, _scopeId2));
+                    _push3(`</div></div></div>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  if (__props.hasPendingWithdrawal) {
+                    _push3(`<div class="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"${_scopeId2}><div class="flex items-start gap-3"${_scopeId2}>`);
+                    _push3(ssrRenderComponent(unref(AlertTriangle), { class: "h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" }, null, _parent3, _scopeId2));
+                    _push3(`<div${_scopeId2}><p class="font-medium text-amber-700 dark:text-amber-300"${_scopeId2}>Permintaan Pending</p><p class="text-sm text-amber-600 dark:text-amber-400 mt-1"${_scopeId2}> Anda masih memiliki permintaan penarikan yang belum diproses. Silakan tunggu hingga permintaan sebelumnya selesai diproses. </p></div></div></div>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
                   _push3(`<form class="space-y-6"${_scopeId2}><div class="space-y-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$F), { for: "withdrawal_amount" }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
@@ -6804,6 +7127,7 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                     class: "pl-10",
                     min: "50000",
                     max: __props.maxAmount,
+                    disabled: __props.hasPendingWithdrawal || !isProfileComplete.value,
                     required: ""
                   }, null, _parent3, _scopeId2));
                   _push3(`</div><p class="text-xs text-muted-foreground"${_scopeId2}> Minimum Rp 50.000 - Maksimal Rp ${ssrInterpolate(__props.maxAmount.toLocaleString("id-ID"))}</p>`);
@@ -6814,88 +7138,31 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                   }
                   _push3(`</div>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
-                  _push3(`<div class="space-y-4"${_scopeId2}><h4 class="font-semibold"${_scopeId2}>Informasi Rekening</h4><div class="space-y-2"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$F), { for: "bank_name" }, {
+                  _push3(`<div class="space-y-4"${_scopeId2}><div class="flex items-center justify-between"${_scopeId2}><h4 class="font-semibold"${_scopeId2}>Informasi Rekening</h4>`);
+                  _push3(ssrRenderComponent(unref(Link), {
+                    href: "/client/profile",
+                    class: "text-sm text-primary hover:underline"
+                  }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Nama Bank <span class="text-red-500"${_scopeId3}>*</span>`);
+                        _push4(` Ubah di Profil `);
                       } else {
                         return [
-                          createTextVNode(" Nama Bank "),
-                          createVNode("span", { class: "text-red-500" }, "*")
+                          createTextVNode(" Ubah di Profil ")
                         ];
                       }
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$G), {
-                    id: "bank_name",
-                    modelValue: unref(form).bank_name,
-                    "onUpdate:modelValue": ($event) => unref(form).bank_name = $event,
-                    type: "text",
-                    placeholder: "e.g., BCA, Mandiri, BNI",
-                    required: ""
-                  }, null, _parent3, _scopeId2));
-                  if (unref(form).errors.bank_name) {
-                    _push3(`<p class="text-sm text-red-500"${_scopeId2}>${ssrInterpolate(unref(form).errors.bank_name)}</p>`);
+                  _push3(`</div>`);
+                  if (isProfileComplete.value) {
+                    _push3(`<div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-3"${_scopeId2}><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Nama Bank:</span><span class="font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.bank_name)}</span></div><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>No. Rekening:</span><span class="font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.bank_account)}</span></div><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Atas Nama:</span><span class="font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.name)}</span></div></div>`);
                   } else {
-                    _push3(`<!---->`);
+                    _push3(`<div class="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-center text-sm text-muted-foreground"${_scopeId2}> Informasi rekening belum diisi </div>`);
                   }
-                  _push3(`</div><div class="space-y-2"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$F), { for: "bank_account" }, {
-                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                      if (_push4) {
-                        _push4(` Nomor Rekening <span class="text-red-500"${_scopeId3}>*</span>`);
-                      } else {
-                        return [
-                          createTextVNode(" Nomor Rekening "),
-                          createVNode("span", { class: "text-red-500" }, "*")
-                        ];
-                      }
-                    }),
-                    _: 1
-                  }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$G), {
-                    id: "bank_account",
-                    modelValue: unref(form).bank_account,
-                    "onUpdate:modelValue": ($event) => unref(form).bank_account = $event,
-                    type: "text",
-                    placeholder: "Nomor rekening bank",
-                    required: ""
-                  }, null, _parent3, _scopeId2));
-                  if (unref(form).errors.bank_account) {
-                    _push3(`<p class="text-sm text-red-500"${_scopeId2}>${ssrInterpolate(unref(form).errors.bank_account)}</p>`);
-                  } else {
-                    _push3(`<!---->`);
-                  }
-                  _push3(`</div><div class="space-y-2"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$F), { for: "bank_holder" }, {
-                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
-                      if (_push4) {
-                        _push4(` Nama Pemilik Rekening <span class="text-red-500"${_scopeId3}>*</span>`);
-                      } else {
-                        return [
-                          createTextVNode(" Nama Pemilik Rekening "),
-                          createVNode("span", { class: "text-red-500" }, "*")
-                        ];
-                      }
-                    }),
-                    _: 1
-                  }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$G), {
-                    id: "bank_holder",
-                    modelValue: unref(form).bank_holder,
-                    "onUpdate:modelValue": ($event) => unref(form).bank_holder = $event,
-                    type: "text",
-                    placeholder: "Nama sesuai rekening bank",
-                    required: ""
-                  }, null, _parent3, _scopeId2));
-                  if (unref(form).errors.bank_holder) {
-                    _push3(`<p class="text-sm text-red-500"${_scopeId2}>${ssrInterpolate(unref(form).errors.bank_holder)}</p>`);
-                  } else {
-                    _push3(`<!---->`);
-                  }
-                  _push3(`</div></div><div class="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"${_scopeId2}><p class="text-sm text-amber-700 dark:text-amber-300"${_scopeId2}><strong${_scopeId2}>Catatan:</strong> Penarikan akan diproses dalam 1-3 hari kerja. Pastikan data rekening sudah benar. </p></div><div class="flex items-center justify-end gap-3"${_scopeId2}>`);
+                  _push3(`<div class="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(Info), { class: "h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" }, null, _parent3, _scopeId2));
+                  _push3(`<p class="text-xs text-blue-700 dark:text-blue-300"${_scopeId2}> Nama pemilik rekening harus sama dengan nama yang terdaftar sebagai member. </p></div></div><div class="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"${_scopeId2}><p class="text-sm text-amber-700 dark:text-amber-300"${_scopeId2}><strong${_scopeId2}>Catatan:</strong> Penarikan akan diproses dalam 1-3 hari kerja. Pastikan data rekening sudah benar. </p></div><div class="flex items-center justify-end gap-3"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$w), {
                     type: "button",
                     variant: "outline",
@@ -6918,7 +7185,7 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                   _push3(ssrRenderComponent(unref(_sfc_main$w), {
                     type: "submit",
-                    disabled: unref(form).processing
+                    disabled: unref(form).processing || __props.hasPendingWithdrawal || !isProfileComplete.value
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
@@ -6934,8 +7201,41 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                   _push3(`</div></form>`);
                 } else {
                   return [
+                    !isProfileComplete.value ? (openBlock(), createBlock("div", {
+                      key: 0,
+                      class: "mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-lg"
+                    }, [
+                      createVNode("div", { class: "flex items-start gap-3" }, [
+                        createVNode(unref(AlertTriangle), { class: "h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" }),
+                        createVNode("div", null, [
+                          createVNode("p", { class: "font-medium text-red-700 dark:text-red-300" }, "Profil Belum Lengkap"),
+                          createVNode("p", { class: "text-sm text-red-600 dark:text-red-400 mt-1" }, " Untuk melakukan penarikan, Anda harus melengkapi NIK dan informasi rekening bank di profil Anda. "),
+                          createVNode(unref(Link), {
+                            href: "/client/profile",
+                            class: "inline-flex items-center gap-1 text-sm font-medium text-red-700 dark:text-red-300 hover:underline mt-2"
+                          }, {
+                            default: withCtx(() => [
+                              createTextVNode(" Lengkapi Profil Sekarang → ")
+                            ]),
+                            _: 1
+                          })
+                        ])
+                      ])
+                    ])) : createCommentVNode("", true),
+                    __props.hasPendingWithdrawal ? (openBlock(), createBlock("div", {
+                      key: 1,
+                      class: "mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"
+                    }, [
+                      createVNode("div", { class: "flex items-start gap-3" }, [
+                        createVNode(unref(AlertTriangle), { class: "h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" }),
+                        createVNode("div", null, [
+                          createVNode("p", { class: "font-medium text-amber-700 dark:text-amber-300" }, "Permintaan Pending"),
+                          createVNode("p", { class: "text-sm text-amber-600 dark:text-amber-400 mt-1" }, " Anda masih memiliki permintaan penarikan yang belum diproses. Silakan tunggu hingga permintaan sebelumnya selesai diproses. ")
+                        ])
+                      ])
+                    ])) : createCommentVNode("", true),
                     createVNode("form", {
-                      onSubmit: withModifiers(submitForm, ["prevent"]),
+                      onSubmit: withModifiers(handleSubmit, ["prevent"]),
                       class: "space-y-6"
                     }, [
                       createVNode("div", { class: "space-y-2" }, [
@@ -6957,8 +7257,9 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                             class: "pl-10",
                             min: "50000",
                             max: __props.maxAmount,
+                            disabled: __props.hasPendingWithdrawal || !isProfileComplete.value,
                             required: ""
-                          }, null, 8, ["modelValue", "onUpdate:modelValue", "max"])
+                          }, null, 8, ["modelValue", "onUpdate:modelValue", "max", "disabled"])
                         ]),
                         createVNode("p", { class: "text-xs text-muted-foreground" }, " Minimum Rp 50.000 - Maksimal Rp " + toDisplayString(__props.maxAmount.toLocaleString("id-ID")), 1),
                         unref(form).errors.amount ? (openBlock(), createBlock("p", {
@@ -6968,69 +7269,41 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                       ]),
                       createVNode(unref(_sfc_main$z)),
                       createVNode("div", { class: "space-y-4" }, [
-                        createVNode("h4", { class: "font-semibold" }, "Informasi Rekening"),
-                        createVNode("div", { class: "space-y-2" }, [
-                          createVNode(unref(_sfc_main$F), { for: "bank_name" }, {
+                        createVNode("div", { class: "flex items-center justify-between" }, [
+                          createVNode("h4", { class: "font-semibold" }, "Informasi Rekening"),
+                          createVNode(unref(Link), {
+                            href: "/client/profile",
+                            class: "text-sm text-primary hover:underline"
+                          }, {
                             default: withCtx(() => [
-                              createTextVNode(" Nama Bank "),
-                              createVNode("span", { class: "text-red-500" }, "*")
+                              createTextVNode(" Ubah di Profil ")
                             ]),
                             _: 1
-                          }),
-                          createVNode(unref(_sfc_main$G), {
-                            id: "bank_name",
-                            modelValue: unref(form).bank_name,
-                            "onUpdate:modelValue": ($event) => unref(form).bank_name = $event,
-                            type: "text",
-                            placeholder: "e.g., BCA, Mandiri, BNI",
-                            required: ""
-                          }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                          unref(form).errors.bank_name ? (openBlock(), createBlock("p", {
-                            key: 0,
-                            class: "text-sm text-red-500"
-                          }, toDisplayString(unref(form).errors.bank_name), 1)) : createCommentVNode("", true)
+                          })
                         ]),
-                        createVNode("div", { class: "space-y-2" }, [
-                          createVNode(unref(_sfc_main$F), { for: "bank_account" }, {
-                            default: withCtx(() => [
-                              createTextVNode(" Nomor Rekening "),
-                              createVNode("span", { class: "text-red-500" }, "*")
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(_sfc_main$G), {
-                            id: "bank_account",
-                            modelValue: unref(form).bank_account,
-                            "onUpdate:modelValue": ($event) => unref(form).bank_account = $event,
-                            type: "text",
-                            placeholder: "Nomor rekening bank",
-                            required: ""
-                          }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                          unref(form).errors.bank_account ? (openBlock(), createBlock("p", {
-                            key: 0,
-                            class: "text-sm text-red-500"
-                          }, toDisplayString(unref(form).errors.bank_account), 1)) : createCommentVNode("", true)
-                        ]),
-                        createVNode("div", { class: "space-y-2" }, [
-                          createVNode(unref(_sfc_main$F), { for: "bank_holder" }, {
-                            default: withCtx(() => [
-                              createTextVNode(" Nama Pemilik Rekening "),
-                              createVNode("span", { class: "text-red-500" }, "*")
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(_sfc_main$G), {
-                            id: "bank_holder",
-                            modelValue: unref(form).bank_holder,
-                            "onUpdate:modelValue": ($event) => unref(form).bank_holder = $event,
-                            type: "text",
-                            placeholder: "Nama sesuai rekening bank",
-                            required: ""
-                          }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                          unref(form).errors.bank_holder ? (openBlock(), createBlock("p", {
-                            key: 0,
-                            class: "text-sm text-red-500"
-                          }, toDisplayString(unref(form).errors.bank_holder), 1)) : createCommentVNode("", true)
+                        isProfileComplete.value ? (openBlock(), createBlock("div", {
+                          key: 0,
+                          class: "p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-3"
+                        }, [
+                          createVNode("div", { class: "flex justify-between text-sm" }, [
+                            createVNode("span", { class: "text-muted-foreground" }, "Nama Bank:"),
+                            createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.bank_name), 1)
+                          ]),
+                          createVNode("div", { class: "flex justify-between text-sm" }, [
+                            createVNode("span", { class: "text-muted-foreground" }, "No. Rekening:"),
+                            createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.bank_account), 1)
+                          ]),
+                          createVNode("div", { class: "flex justify-between text-sm" }, [
+                            createVNode("span", { class: "text-muted-foreground" }, "Atas Nama:"),
+                            createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.name), 1)
+                          ])
+                        ])) : (openBlock(), createBlock("div", {
+                          key: 1,
+                          class: "p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-center text-sm text-muted-foreground"
+                        }, " Informasi rekening belum diisi ")),
+                        createVNode("div", { class: "flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg" }, [
+                          createVNode(unref(Info), { class: "h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" }),
+                          createVNode("p", { class: "text-xs text-blue-700 dark:text-blue-300" }, " Nama pemilik rekening harus sama dengan nama yang terdaftar sebagai member. ")
                         ])
                       ]),
                       createVNode("div", { class: "p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg" }, [
@@ -7056,7 +7329,7 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                         }, 8, ["onClick", "disabled"]),
                         createVNode(unref(_sfc_main$w), {
                           type: "submit",
-                          disabled: unref(form).processing
+                          disabled: unref(form).processing || __props.hasPendingWithdrawal || !isProfileComplete.value
                         }, {
                           default: withCtx(() => [
                             createTextVNode(toDisplayString(unref(form).processing ? "Memproses..." : "Ajukan Penarikan"), 1)
@@ -7091,8 +7364,41 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
+                  !isProfileComplete.value ? (openBlock(), createBlock("div", {
+                    key: 0,
+                    class: "mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-lg"
+                  }, [
+                    createVNode("div", { class: "flex items-start gap-3" }, [
+                      createVNode(unref(AlertTriangle), { class: "h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" }),
+                      createVNode("div", null, [
+                        createVNode("p", { class: "font-medium text-red-700 dark:text-red-300" }, "Profil Belum Lengkap"),
+                        createVNode("p", { class: "text-sm text-red-600 dark:text-red-400 mt-1" }, " Untuk melakukan penarikan, Anda harus melengkapi NIK dan informasi rekening bank di profil Anda. "),
+                        createVNode(unref(Link), {
+                          href: "/client/profile",
+                          class: "inline-flex items-center gap-1 text-sm font-medium text-red-700 dark:text-red-300 hover:underline mt-2"
+                        }, {
+                          default: withCtx(() => [
+                            createTextVNode(" Lengkapi Profil Sekarang → ")
+                          ]),
+                          _: 1
+                        })
+                      ])
+                    ])
+                  ])) : createCommentVNode("", true),
+                  __props.hasPendingWithdrawal ? (openBlock(), createBlock("div", {
+                    key: 1,
+                    class: "mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"
+                  }, [
+                    createVNode("div", { class: "flex items-start gap-3" }, [
+                      createVNode(unref(AlertTriangle), { class: "h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" }),
+                      createVNode("div", null, [
+                        createVNode("p", { class: "font-medium text-amber-700 dark:text-amber-300" }, "Permintaan Pending"),
+                        createVNode("p", { class: "text-sm text-amber-600 dark:text-amber-400 mt-1" }, " Anda masih memiliki permintaan penarikan yang belum diproses. Silakan tunggu hingga permintaan sebelumnya selesai diproses. ")
+                      ])
+                    ])
+                  ])) : createCommentVNode("", true),
                   createVNode("form", {
-                    onSubmit: withModifiers(submitForm, ["prevent"]),
+                    onSubmit: withModifiers(handleSubmit, ["prevent"]),
                     class: "space-y-6"
                   }, [
                     createVNode("div", { class: "space-y-2" }, [
@@ -7114,8 +7420,9 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                           class: "pl-10",
                           min: "50000",
                           max: __props.maxAmount,
+                          disabled: __props.hasPendingWithdrawal || !isProfileComplete.value,
                           required: ""
-                        }, null, 8, ["modelValue", "onUpdate:modelValue", "max"])
+                        }, null, 8, ["modelValue", "onUpdate:modelValue", "max", "disabled"])
                       ]),
                       createVNode("p", { class: "text-xs text-muted-foreground" }, " Minimum Rp 50.000 - Maksimal Rp " + toDisplayString(__props.maxAmount.toLocaleString("id-ID")), 1),
                       unref(form).errors.amount ? (openBlock(), createBlock("p", {
@@ -7125,69 +7432,41 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                     ]),
                     createVNode(unref(_sfc_main$z)),
                     createVNode("div", { class: "space-y-4" }, [
-                      createVNode("h4", { class: "font-semibold" }, "Informasi Rekening"),
-                      createVNode("div", { class: "space-y-2" }, [
-                        createVNode(unref(_sfc_main$F), { for: "bank_name" }, {
+                      createVNode("div", { class: "flex items-center justify-between" }, [
+                        createVNode("h4", { class: "font-semibold" }, "Informasi Rekening"),
+                        createVNode(unref(Link), {
+                          href: "/client/profile",
+                          class: "text-sm text-primary hover:underline"
+                        }, {
                           default: withCtx(() => [
-                            createTextVNode(" Nama Bank "),
-                            createVNode("span", { class: "text-red-500" }, "*")
+                            createTextVNode(" Ubah di Profil ")
                           ]),
                           _: 1
-                        }),
-                        createVNode(unref(_sfc_main$G), {
-                          id: "bank_name",
-                          modelValue: unref(form).bank_name,
-                          "onUpdate:modelValue": ($event) => unref(form).bank_name = $event,
-                          type: "text",
-                          placeholder: "e.g., BCA, Mandiri, BNI",
-                          required: ""
-                        }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                        unref(form).errors.bank_name ? (openBlock(), createBlock("p", {
-                          key: 0,
-                          class: "text-sm text-red-500"
-                        }, toDisplayString(unref(form).errors.bank_name), 1)) : createCommentVNode("", true)
+                        })
                       ]),
-                      createVNode("div", { class: "space-y-2" }, [
-                        createVNode(unref(_sfc_main$F), { for: "bank_account" }, {
-                          default: withCtx(() => [
-                            createTextVNode(" Nomor Rekening "),
-                            createVNode("span", { class: "text-red-500" }, "*")
-                          ]),
-                          _: 1
-                        }),
-                        createVNode(unref(_sfc_main$G), {
-                          id: "bank_account",
-                          modelValue: unref(form).bank_account,
-                          "onUpdate:modelValue": ($event) => unref(form).bank_account = $event,
-                          type: "text",
-                          placeholder: "Nomor rekening bank",
-                          required: ""
-                        }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                        unref(form).errors.bank_account ? (openBlock(), createBlock("p", {
-                          key: 0,
-                          class: "text-sm text-red-500"
-                        }, toDisplayString(unref(form).errors.bank_account), 1)) : createCommentVNode("", true)
-                      ]),
-                      createVNode("div", { class: "space-y-2" }, [
-                        createVNode(unref(_sfc_main$F), { for: "bank_holder" }, {
-                          default: withCtx(() => [
-                            createTextVNode(" Nama Pemilik Rekening "),
-                            createVNode("span", { class: "text-red-500" }, "*")
-                          ]),
-                          _: 1
-                        }),
-                        createVNode(unref(_sfc_main$G), {
-                          id: "bank_holder",
-                          modelValue: unref(form).bank_holder,
-                          "onUpdate:modelValue": ($event) => unref(form).bank_holder = $event,
-                          type: "text",
-                          placeholder: "Nama sesuai rekening bank",
-                          required: ""
-                        }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                        unref(form).errors.bank_holder ? (openBlock(), createBlock("p", {
-                          key: 0,
-                          class: "text-sm text-red-500"
-                        }, toDisplayString(unref(form).errors.bank_holder), 1)) : createCommentVNode("", true)
+                      isProfileComplete.value ? (openBlock(), createBlock("div", {
+                        key: 0,
+                        class: "p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-3"
+                      }, [
+                        createVNode("div", { class: "flex justify-between text-sm" }, [
+                          createVNode("span", { class: "text-muted-foreground" }, "Nama Bank:"),
+                          createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.bank_name), 1)
+                        ]),
+                        createVNode("div", { class: "flex justify-between text-sm" }, [
+                          createVNode("span", { class: "text-muted-foreground" }, "No. Rekening:"),
+                          createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.bank_account), 1)
+                        ]),
+                        createVNode("div", { class: "flex justify-between text-sm" }, [
+                          createVNode("span", { class: "text-muted-foreground" }, "Atas Nama:"),
+                          createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.name), 1)
+                        ])
+                      ])) : (openBlock(), createBlock("div", {
+                        key: 1,
+                        class: "p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-center text-sm text-muted-foreground"
+                      }, " Informasi rekening belum diisi ")),
+                      createVNode("div", { class: "flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg" }, [
+                        createVNode(unref(Info), { class: "h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" }),
+                        createVNode("p", { class: "text-xs text-blue-700 dark:text-blue-300" }, " Nama pemilik rekening harus sama dengan nama yang terdaftar sebagai member. ")
                       ])
                     ]),
                     createVNode("div", { class: "p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg" }, [
@@ -7213,7 +7492,7 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                       }, 8, ["onClick", "disabled"]),
                       createVNode(unref(_sfc_main$w), {
                         type: "submit",
-                        disabled: unref(form).processing
+                        disabled: unref(form).processing || __props.hasPendingWithdrawal || !isProfileComplete.value
                       }, {
                         default: withCtx(() => [
                           createTextVNode(toDisplayString(unref(form).processing ? "Memproses..." : "Ajukan Penarikan"), 1)
@@ -7230,6 +7509,598 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
         }),
         _: 1
       }, _parent));
+      _push(ssrRenderComponent(unref(_sfc_main$_), {
+        open: showConfirmDialog.value,
+        "onUpdate:open": ($event) => showConfirmDialog.value = $event
+      }, {
+        default: withCtx((_, _push2, _parent2, _scopeId) => {
+          if (_push2) {
+            _push2(ssrRenderComponent(unref(_sfc_main$$), null, {
+              default: withCtx((_2, _push3, _parent3, _scopeId2) => {
+                if (_push3) {
+                  _push3(ssrRenderComponent(unref(_sfc_main$10), null, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(ssrRenderComponent(unref(_sfc_main$11), null, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              _push5(`Konfirmasi Penarikan`);
+                            } else {
+                              return [
+                                createTextVNode("Konfirmasi Penarikan")
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                        _push4(ssrRenderComponent(unref(_sfc_main$12), null, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              _push5(` Apakah Anda yakin ingin menarik dana dengan detail berikut? `);
+                            } else {
+                              return [
+                                createTextVNode(" Apakah Anda yakin ingin menarik dana dengan detail berikut? ")
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                      } else {
+                        return [
+                          createVNode(unref(_sfc_main$11), null, {
+                            default: withCtx(() => [
+                              createTextVNode("Konfirmasi Penarikan")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(_sfc_main$12), null, {
+                            default: withCtx(() => [
+                              createTextVNode(" Apakah Anda yakin ingin menarik dana dengan detail berikut? ")
+                            ]),
+                            _: 1
+                          })
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="space-y-3 py-4"${_scopeId2}><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Jumlah Penarikan:</span><span class="font-semibold"${_scopeId2}>Rp ${ssrInterpolate(withdrawalSummary.value.formattedAmount)}</span></div>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
+                  _push3(`<div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Bank:</span><span class="font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.bank_name)}</span></div><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>No. Rekening:</span><span class="font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.bank_account)}</span></div><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Atas Nama:</span><span class="font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.name)}</span></div></div>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$13), null, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(ssrRenderComponent(unref(_sfc_main$14), null, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              _push5(`Batal`);
+                            } else {
+                              return [
+                                createTextVNode("Batal")
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                        _push4(ssrRenderComponent(unref(_sfc_main$15), { onClick: proceedToPassword }, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              _push5(` Lanjutkan `);
+                            } else {
+                              return [
+                                createTextVNode(" Lanjutkan ")
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                      } else {
+                        return [
+                          createVNode(unref(_sfc_main$14), null, {
+                            default: withCtx(() => [
+                              createTextVNode("Batal")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(_sfc_main$15), { onClick: proceedToPassword }, {
+                            default: withCtx(() => [
+                              createTextVNode(" Lanjutkan ")
+                            ]),
+                            _: 1
+                          })
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                } else {
+                  return [
+                    createVNode(unref(_sfc_main$10), null, {
+                      default: withCtx(() => [
+                        createVNode(unref(_sfc_main$11), null, {
+                          default: withCtx(() => [
+                            createTextVNode("Konfirmasi Penarikan")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode(unref(_sfc_main$12), null, {
+                          default: withCtx(() => [
+                            createTextVNode(" Apakah Anda yakin ingin menarik dana dengan detail berikut? ")
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    }),
+                    createVNode("div", { class: "space-y-3 py-4" }, [
+                      createVNode("div", { class: "flex justify-between text-sm" }, [
+                        createVNode("span", { class: "text-muted-foreground" }, "Jumlah Penarikan:"),
+                        createVNode("span", { class: "font-semibold" }, "Rp " + toDisplayString(withdrawalSummary.value.formattedAmount), 1)
+                      ]),
+                      createVNode(unref(_sfc_main$z)),
+                      createVNode("div", { class: "flex justify-between text-sm" }, [
+                        createVNode("span", { class: "text-muted-foreground" }, "Bank:"),
+                        createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.bank_name), 1)
+                      ]),
+                      createVNode("div", { class: "flex justify-between text-sm" }, [
+                        createVNode("span", { class: "text-muted-foreground" }, "No. Rekening:"),
+                        createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.bank_account), 1)
+                      ]),
+                      createVNode("div", { class: "flex justify-between text-sm" }, [
+                        createVNode("span", { class: "text-muted-foreground" }, "Atas Nama:"),
+                        createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.name), 1)
+                      ])
+                    ]),
+                    createVNode(unref(_sfc_main$13), null, {
+                      default: withCtx(() => [
+                        createVNode(unref(_sfc_main$14), null, {
+                          default: withCtx(() => [
+                            createTextVNode("Batal")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode(unref(_sfc_main$15), { onClick: proceedToPassword }, {
+                          default: withCtx(() => [
+                            createTextVNode(" Lanjutkan ")
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    })
+                  ];
+                }
+              }),
+              _: 1
+            }, _parent2, _scopeId));
+          } else {
+            return [
+              createVNode(unref(_sfc_main$$), null, {
+                default: withCtx(() => [
+                  createVNode(unref(_sfc_main$10), null, {
+                    default: withCtx(() => [
+                      createVNode(unref(_sfc_main$11), null, {
+                        default: withCtx(() => [
+                          createTextVNode("Konfirmasi Penarikan")
+                        ]),
+                        _: 1
+                      }),
+                      createVNode(unref(_sfc_main$12), null, {
+                        default: withCtx(() => [
+                          createTextVNode(" Apakah Anda yakin ingin menarik dana dengan detail berikut? ")
+                        ]),
+                        _: 1
+                      })
+                    ]),
+                    _: 1
+                  }),
+                  createVNode("div", { class: "space-y-3 py-4" }, [
+                    createVNode("div", { class: "flex justify-between text-sm" }, [
+                      createVNode("span", { class: "text-muted-foreground" }, "Jumlah Penarikan:"),
+                      createVNode("span", { class: "font-semibold" }, "Rp " + toDisplayString(withdrawalSummary.value.formattedAmount), 1)
+                    ]),
+                    createVNode(unref(_sfc_main$z)),
+                    createVNode("div", { class: "flex justify-between text-sm" }, [
+                      createVNode("span", { class: "text-muted-foreground" }, "Bank:"),
+                      createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.bank_name), 1)
+                    ]),
+                    createVNode("div", { class: "flex justify-between text-sm" }, [
+                      createVNode("span", { class: "text-muted-foreground" }, "No. Rekening:"),
+                      createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.bank_account), 1)
+                    ]),
+                    createVNode("div", { class: "flex justify-between text-sm" }, [
+                      createVNode("span", { class: "text-muted-foreground" }, "Atas Nama:"),
+                      createVNode("span", { class: "font-medium" }, toDisplayString(__props.customer.name), 1)
+                    ])
+                  ]),
+                  createVNode(unref(_sfc_main$13), null, {
+                    default: withCtx(() => [
+                      createVNode(unref(_sfc_main$14), null, {
+                        default: withCtx(() => [
+                          createTextVNode("Batal")
+                        ]),
+                        _: 1
+                      }),
+                      createVNode(unref(_sfc_main$15), { onClick: proceedToPassword }, {
+                        default: withCtx(() => [
+                          createTextVNode(" Lanjutkan ")
+                        ]),
+                        _: 1
+                      })
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ];
+          }
+        }),
+        _: 1
+      }, _parent));
+      _push(ssrRenderComponent(unref(_sfc_main$A), {
+        open: showPasswordDialog.value,
+        "onUpdate:open": ($event) => showPasswordDialog.value = $event
+      }, {
+        default: withCtx((_, _push2, _parent2, _scopeId) => {
+          if (_push2) {
+            _push2(ssrRenderComponent(unref(_sfc_main$B), { class: "sm:max-w-md" }, {
+              default: withCtx((_2, _push3, _parent3, _scopeId2) => {
+                if (_push3) {
+                  _push3(ssrRenderComponent(unref(_sfc_main$C), null, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(ssrRenderComponent(unref(_sfc_main$D), { class: "flex items-center gap-2" }, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              _push5(ssrRenderComponent(unref(Lock), { class: "h-5 w-5" }, null, _parent5, _scopeId4));
+                              _push5(` Konfirmasi Password `);
+                            } else {
+                              return [
+                                createVNode(unref(Lock), { class: "h-5 w-5" }),
+                                createTextVNode(" Konfirmasi Password ")
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                        _push4(ssrRenderComponent(unref(_sfc_main$E), null, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              _push5(` Masukkan password akun Anda untuk melanjutkan penarikan dana. `);
+                            } else {
+                              return [
+                                createTextVNode(" Masukkan password akun Anda untuk melanjutkan penarikan dana. ")
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                      } else {
+                        return [
+                          createVNode(unref(_sfc_main$D), { class: "flex items-center gap-2" }, {
+                            default: withCtx(() => [
+                              createVNode(unref(Lock), { class: "h-5 w-5" }),
+                              createTextVNode(" Konfirmasi Password ")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(_sfc_main$E), null, {
+                            default: withCtx(() => [
+                              createTextVNode(" Masukkan password akun Anda untuk melanjutkan penarikan dana. ")
+                            ]),
+                            _: 1
+                          })
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="space-y-4 py-4"${_scopeId2}><div class="space-y-2"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$F), { for: "confirm_password" }, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(`Password`);
+                      } else {
+                        return [
+                          createTextVNode("Password")
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                  _push3(`<div class="relative"${_scopeId2}>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$G), {
+                    id: "confirm_password",
+                    modelValue: unref(form).password,
+                    "onUpdate:modelValue": ($event) => unref(form).password = $event,
+                    type: showPassword.value ? "text" : "password",
+                    placeholder: "Masukkan password Anda",
+                    class: "pr-10",
+                    onKeyup: submitWithPassword
+                  }, null, _parent3, _scopeId2));
+                  _push3(`<button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"${_scopeId2}>`);
+                  if (!showPassword.value) {
+                    _push3(ssrRenderComponent(unref(Eye), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
+                  } else {
+                    _push3(ssrRenderComponent(unref(EyeOff), { class: "h-4 w-4" }, null, _parent3, _scopeId2));
+                  }
+                  _push3(`</button></div>`);
+                  if (passwordError.value) {
+                    _push3(`<p class="text-sm text-red-500"${_scopeId2}>${ssrInterpolate(passwordError.value)}</p>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`</div></div>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$O), null, {
+                    default: withCtx((_3, _push4, _parent4, _scopeId3) => {
+                      if (_push4) {
+                        _push4(ssrRenderComponent(unref(_sfc_main$w), {
+                          type: "button",
+                          variant: "outline",
+                          onClick: cancelPasswordDialog,
+                          disabled: unref(form).processing
+                        }, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              _push5(` Batal `);
+                            } else {
+                              return [
+                                createTextVNode(" Batal ")
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                        _push4(ssrRenderComponent(unref(_sfc_main$w), {
+                          type: "button",
+                          onClick: submitWithPassword,
+                          disabled: unref(form).processing || !unref(form).password
+                        }, {
+                          default: withCtx((_4, _push5, _parent5, _scopeId4) => {
+                            if (_push5) {
+                              if (unref(form).processing) {
+                                _push5(ssrRenderComponent(unref(Loader2), { class: "mr-2 h-4 w-4 animate-spin" }, null, _parent5, _scopeId4));
+                              } else {
+                                _push5(`<!---->`);
+                              }
+                              _push5(` ${ssrInterpolate(unref(form).processing ? "Memproses..." : "Konfirmasi Penarikan")}`);
+                            } else {
+                              return [
+                                unref(form).processing ? (openBlock(), createBlock(unref(Loader2), {
+                                  key: 0,
+                                  class: "mr-2 h-4 w-4 animate-spin"
+                                })) : createCommentVNode("", true),
+                                createTextVNode(" " + toDisplayString(unref(form).processing ? "Memproses..." : "Konfirmasi Penarikan"), 1)
+                              ];
+                            }
+                          }),
+                          _: 1
+                        }, _parent4, _scopeId3));
+                      } else {
+                        return [
+                          createVNode(unref(_sfc_main$w), {
+                            type: "button",
+                            variant: "outline",
+                            onClick: cancelPasswordDialog,
+                            disabled: unref(form).processing
+                          }, {
+                            default: withCtx(() => [
+                              createTextVNode(" Batal ")
+                            ]),
+                            _: 1
+                          }, 8, ["disabled"]),
+                          createVNode(unref(_sfc_main$w), {
+                            type: "button",
+                            onClick: submitWithPassword,
+                            disabled: unref(form).processing || !unref(form).password
+                          }, {
+                            default: withCtx(() => [
+                              unref(form).processing ? (openBlock(), createBlock(unref(Loader2), {
+                                key: 0,
+                                class: "mr-2 h-4 w-4 animate-spin"
+                              })) : createCommentVNode("", true),
+                              createTextVNode(" " + toDisplayString(unref(form).processing ? "Memproses..." : "Konfirmasi Penarikan"), 1)
+                            ]),
+                            _: 1
+                          }, 8, ["disabled"])
+                        ];
+                      }
+                    }),
+                    _: 1
+                  }, _parent3, _scopeId2));
+                } else {
+                  return [
+                    createVNode(unref(_sfc_main$C), null, {
+                      default: withCtx(() => [
+                        createVNode(unref(_sfc_main$D), { class: "flex items-center gap-2" }, {
+                          default: withCtx(() => [
+                            createVNode(unref(Lock), { class: "h-5 w-5" }),
+                            createTextVNode(" Konfirmasi Password ")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode(unref(_sfc_main$E), null, {
+                          default: withCtx(() => [
+                            createTextVNode(" Masukkan password akun Anda untuk melanjutkan penarikan dana. ")
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    }),
+                    createVNode("div", { class: "space-y-4 py-4" }, [
+                      createVNode("div", { class: "space-y-2" }, [
+                        createVNode(unref(_sfc_main$F), { for: "confirm_password" }, {
+                          default: withCtx(() => [
+                            createTextVNode("Password")
+                          ]),
+                          _: 1
+                        }),
+                        createVNode("div", { class: "relative" }, [
+                          createVNode(unref(_sfc_main$G), {
+                            id: "confirm_password",
+                            modelValue: unref(form).password,
+                            "onUpdate:modelValue": ($event) => unref(form).password = $event,
+                            type: showPassword.value ? "text" : "password",
+                            placeholder: "Masukkan password Anda",
+                            class: "pr-10",
+                            onKeyup: withKeys(submitWithPassword, ["enter"])
+                          }, null, 8, ["modelValue", "onUpdate:modelValue", "type"]),
+                          createVNode("button", {
+                            type: "button",
+                            class: "absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600",
+                            onClick: ($event) => showPassword.value = !showPassword.value
+                          }, [
+                            !showPassword.value ? (openBlock(), createBlock(unref(Eye), {
+                              key: 0,
+                              class: "h-4 w-4"
+                            })) : (openBlock(), createBlock(unref(EyeOff), {
+                              key: 1,
+                              class: "h-4 w-4"
+                            }))
+                          ], 8, ["onClick"])
+                        ]),
+                        passwordError.value ? (openBlock(), createBlock("p", {
+                          key: 0,
+                          class: "text-sm text-red-500"
+                        }, toDisplayString(passwordError.value), 1)) : createCommentVNode("", true)
+                      ])
+                    ]),
+                    createVNode(unref(_sfc_main$O), null, {
+                      default: withCtx(() => [
+                        createVNode(unref(_sfc_main$w), {
+                          type: "button",
+                          variant: "outline",
+                          onClick: cancelPasswordDialog,
+                          disabled: unref(form).processing
+                        }, {
+                          default: withCtx(() => [
+                            createTextVNode(" Batal ")
+                          ]),
+                          _: 1
+                        }, 8, ["disabled"]),
+                        createVNode(unref(_sfc_main$w), {
+                          type: "button",
+                          onClick: submitWithPassword,
+                          disabled: unref(form).processing || !unref(form).password
+                        }, {
+                          default: withCtx(() => [
+                            unref(form).processing ? (openBlock(), createBlock(unref(Loader2), {
+                              key: 0,
+                              class: "mr-2 h-4 w-4 animate-spin"
+                            })) : createCommentVNode("", true),
+                            createTextVNode(" " + toDisplayString(unref(form).processing ? "Memproses..." : "Konfirmasi Penarikan"), 1)
+                          ]),
+                          _: 1
+                        }, 8, ["disabled"])
+                      ]),
+                      _: 1
+                    })
+                  ];
+                }
+              }),
+              _: 1
+            }, _parent2, _scopeId));
+          } else {
+            return [
+              createVNode(unref(_sfc_main$B), { class: "sm:max-w-md" }, {
+                default: withCtx(() => [
+                  createVNode(unref(_sfc_main$C), null, {
+                    default: withCtx(() => [
+                      createVNode(unref(_sfc_main$D), { class: "flex items-center gap-2" }, {
+                        default: withCtx(() => [
+                          createVNode(unref(Lock), { class: "h-5 w-5" }),
+                          createTextVNode(" Konfirmasi Password ")
+                        ]),
+                        _: 1
+                      }),
+                      createVNode(unref(_sfc_main$E), null, {
+                        default: withCtx(() => [
+                          createTextVNode(" Masukkan password akun Anda untuk melanjutkan penarikan dana. ")
+                        ]),
+                        _: 1
+                      })
+                    ]),
+                    _: 1
+                  }),
+                  createVNode("div", { class: "space-y-4 py-4" }, [
+                    createVNode("div", { class: "space-y-2" }, [
+                      createVNode(unref(_sfc_main$F), { for: "confirm_password" }, {
+                        default: withCtx(() => [
+                          createTextVNode("Password")
+                        ]),
+                        _: 1
+                      }),
+                      createVNode("div", { class: "relative" }, [
+                        createVNode(unref(_sfc_main$G), {
+                          id: "confirm_password",
+                          modelValue: unref(form).password,
+                          "onUpdate:modelValue": ($event) => unref(form).password = $event,
+                          type: showPassword.value ? "text" : "password",
+                          placeholder: "Masukkan password Anda",
+                          class: "pr-10",
+                          onKeyup: withKeys(submitWithPassword, ["enter"])
+                        }, null, 8, ["modelValue", "onUpdate:modelValue", "type"]),
+                        createVNode("button", {
+                          type: "button",
+                          class: "absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600",
+                          onClick: ($event) => showPassword.value = !showPassword.value
+                        }, [
+                          !showPassword.value ? (openBlock(), createBlock(unref(Eye), {
+                            key: 0,
+                            class: "h-4 w-4"
+                          })) : (openBlock(), createBlock(unref(EyeOff), {
+                            key: 1,
+                            class: "h-4 w-4"
+                          }))
+                        ], 8, ["onClick"])
+                      ]),
+                      passwordError.value ? (openBlock(), createBlock("p", {
+                        key: 0,
+                        class: "text-sm text-red-500"
+                      }, toDisplayString(passwordError.value), 1)) : createCommentVNode("", true)
+                    ])
+                  ]),
+                  createVNode(unref(_sfc_main$O), null, {
+                    default: withCtx(() => [
+                      createVNode(unref(_sfc_main$w), {
+                        type: "button",
+                        variant: "outline",
+                        onClick: cancelPasswordDialog,
+                        disabled: unref(form).processing
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode(" Batal ")
+                        ]),
+                        _: 1
+                      }, 8, ["disabled"]),
+                      createVNode(unref(_sfc_main$w), {
+                        type: "button",
+                        onClick: submitWithPassword,
+                        disabled: unref(form).processing || !unref(form).password
+                      }, {
+                        default: withCtx(() => [
+                          unref(form).processing ? (openBlock(), createBlock(unref(Loader2), {
+                            key: 0,
+                            class: "mr-2 h-4 w-4 animate-spin"
+                          })) : createCommentVNode("", true),
+                          createTextVNode(" " + toDisplayString(unref(form).processing ? "Memproses..." : "Konfirmasi Penarikan"), 1)
+                        ]),
+                        _: 1
+                      }, 8, ["disabled"])
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ];
+          }
+        }),
+        _: 1
+      }, _parent));
+      _push(`<!--]-->`);
     };
   }
 });
@@ -7249,11 +8120,14 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
   setup(__props, { emit: __emit }) {
     const props = __props;
     const emit = __emit;
-    const { formatCurrency, formatDate, getTransactionTypeLabel, getTransactionStatusLabel } = useFormatter();
+    const { formatDate, getTransactionTypeLabel, getTransactionStatusLabel } = useFormatter();
     const checkingStatus = ref(false);
     const localStatus = ref(props.transaction.status);
     const creditTypes = ["topup", "top_up", "bonus", "refund"];
     const isCredit = computed(() => creditTypes.includes(props.transaction.type));
+    const safeFormatCurrency = (value) => {
+      return formatCurrency(value, "-");
+    };
     const checkPaymentStatus = async (transactionRef) => {
       if (checkingStatus.value) return;
       checkingStatus.value = true;
@@ -7318,7 +8192,7 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
       } else {
         _push(`<!---->`);
       }
-      _push(`<p>Ref: ${ssrInterpolate(__props.transaction.transaction_ref)}</p></div><div class="grid grid-cols-3 gap-2 text-xs border-t pt-2"><div class="text-center"><p class="text-muted-foreground mb-0.5">Debit</p><p class="font-semibold text-red-600 dark:text-red-400">${ssrInterpolate(!isCredit.value && localStatus.value === "completed" ? unref(formatCurrency)(__props.transaction.amount) : "-")}</p></div><div class="text-center border-x"><p class="text-muted-foreground mb-0.5">Kredit</p><p class="font-semibold text-emerald-600 dark:text-emerald-400">${ssrInterpolate(isCredit.value && localStatus.value === "completed" ? unref(formatCurrency)(__props.transaction.amount) : "-")}</p></div><div class="text-center"><p class="text-muted-foreground mb-0.5">Saldo</p><p class="font-semibold">${ssrInterpolate(__props.transaction.balance_after !== null && __props.transaction.balance_after !== void 0 ? unref(formatCurrency)(__props.transaction.balance_after) : "-")}</p></div></div>`);
+      _push(`<p>Ref: ${ssrInterpolate(__props.transaction.transaction_ref)}</p></div><div class="grid grid-cols-3 gap-2 text-xs border-t pt-2"><div class="text-center"><p class="text-muted-foreground mb-0.5">Debit</p><p class="font-semibold text-red-600 dark:text-red-400">${ssrInterpolate(!isCredit.value && localStatus.value === "completed" ? safeFormatCurrency(__props.transaction.amount) : "-")}</p></div><div class="text-center border-x"><p class="text-muted-foreground mb-0.5">Kredit</p><p class="font-semibold text-emerald-600 dark:text-emerald-400">${ssrInterpolate(isCredit.value && localStatus.value === "completed" ? safeFormatCurrency(__props.transaction.amount) : "-")}</p></div><div class="text-center"><p class="text-muted-foreground mb-0.5">Saldo</p><p class="font-semibold">${ssrInterpolate(safeFormatCurrency(__props.transaction.balance_after))}</p></div></div>`);
       if (__props.transaction.type === "topup" && localStatus.value === "pending" && __props.transaction.midtrans_transaction_id) {
         _push(`<div class="mt-3 pt-3 border-t"><div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"><p class="text-xs text-muted-foreground"> Pembayaran menunggu konfirmasi </p><div class="flex gap-2">`);
         _push(ssrRenderComponent(unref(_sfc_main$w), {
@@ -7662,7 +8536,8 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
   __ssrInlineRender: true,
   props: {
     customer: {},
-    transactions: {}
+    transactions: {},
+    hasPendingWithdrawal: { type: Boolean }
   },
   setup(__props) {
     const walletView = ref("wallet");
@@ -7687,7 +8562,9 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
       }
       if (walletView.value === "wallet-withdrawal") {
         _push(ssrRenderComponent(_sfc_main$e, {
+          customer: __props.customer,
           "max-amount": Number(__props.customer.ewallet_saldo) || 0,
+          "has-pending-withdrawal": __props.hasPendingWithdrawal,
           onCancel: ($event) => walletView.value = "wallet"
         }, null, _parent));
       } else {
@@ -8764,7 +9641,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
         year: "numeric"
       });
     };
-    const formatCurrency = (amount) => {
+    const formatCurrency2 = (amount) => {
       return new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
@@ -8833,16 +9710,16 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(ssrRenderComponent(unref(_sfc_main$_), {
+                  _push3(ssrRenderComponent(unref(_sfc_main$16), {
                     "default-value": "active",
                     class: "w-full"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(ssrRenderComponent(unref(_sfc_main$$), { class: "grid w-full grid-cols-3" }, {
+                        _push4(ssrRenderComponent(unref(_sfc_main$17), { class: "grid w-full grid-cols-3" }, {
                           default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                             if (_push5) {
-                              _push5(ssrRenderComponent(unref(_sfc_main$10), { value: "active" }, {
+                              _push5(ssrRenderComponent(unref(_sfc_main$18), { value: "active" }, {
                                 default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                   if (_push6) {
                                     _push6(ssrRenderComponent(unref(CheckCircle), { class: "w-4 h-4 mr-2" }, null, _parent6, _scopeId5));
@@ -8856,7 +9733,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                 }),
                                 _: 1
                               }, _parent5, _scopeId4));
-                              _push5(ssrRenderComponent(unref(_sfc_main$10), { value: "passive" }, {
+                              _push5(ssrRenderComponent(unref(_sfc_main$18), { value: "passive" }, {
                                 default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                   if (_push6) {
                                     _push6(ssrRenderComponent(unref(Clock), { class: "w-4 h-4 mr-2" }, null, _parent6, _scopeId5));
@@ -8870,7 +9747,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                 }),
                                 _: 1
                               }, _parent5, _scopeId4));
-                              _push5(ssrRenderComponent(unref(_sfc_main$10), { value: "prospect" }, {
+                              _push5(ssrRenderComponent(unref(_sfc_main$18), { value: "prospect" }, {
                                 default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                   if (_push6) {
                                     _push6(ssrRenderComponent(unref(UserPlus), { class: "w-4 h-4 mr-2" }, null, _parent6, _scopeId5));
@@ -8886,21 +9763,21 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                               }, _parent5, _scopeId4));
                             } else {
                               return [
-                                createVNode(unref(_sfc_main$10), { value: "active" }, {
+                                createVNode(unref(_sfc_main$18), { value: "active" }, {
                                   default: withCtx(() => [
                                     createVNode(unref(CheckCircle), { class: "w-4 h-4 mr-2" }),
                                     createTextVNode(" Aktif (" + toDisplayString(__props.activeMembers.length) + ") ", 1)
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), { value: "passive" }, {
+                                createVNode(unref(_sfc_main$18), { value: "passive" }, {
                                   default: withCtx(() => [
                                     createVNode(unref(Clock), { class: "w-4 h-4 mr-2" }),
                                     createTextVNode(" Pasif (" + toDisplayString(__props.passiveMembers.length) + ") ", 1)
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), { value: "prospect" }, {
+                                createVNode(unref(_sfc_main$18), { value: "prospect" }, {
                                   default: withCtx(() => [
                                     createVNode(unref(UserPlus), { class: "w-4 h-4 mr-2" }),
                                     createTextVNode(" Prospek (" + toDisplayString(__props.prospectMembers.length) + ") ", 1)
@@ -8912,7 +9789,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$11), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$19), {
                           value: "active",
                           class: "space-y-4"
                         }, {
@@ -8983,7 +9860,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                             } else {
                                               _push7(`<!---->`);
                                             }
-                                            _push7(`<p class="text-xs"${_scopeId6}>Bergabung: ${ssrInterpolate(formatDate(member.joined_at))}</p><p class="text-xs font-medium text-green-600 dark:text-green-400"${_scopeId6}> Omzet: ${ssrInterpolate(formatCurrency(member.omzet))}</p></div></div><div class="flex flex-col items-end gap-2"${_scopeId6}>`);
+                                            _push7(`<p class="text-xs"${_scopeId6}>Bergabung: ${ssrInterpolate(formatDate(member.joined_at))}</p><p class="text-xs font-medium text-green-600 dark:text-green-400"${_scopeId6}> Omzet: ${ssrInterpolate(formatCurrency2(member.omzet))}</p></div></div><div class="flex flex-col items-end gap-2"${_scopeId6}>`);
                                             _push7(ssrRenderComponent(unref(_sfc_main$v), { variant: "default" }, {
                                               default: withCtx((_7, _push8, _parent8, _scopeId7) => {
                                                 if (_push8) {
@@ -9042,7 +9919,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                       createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                                     ])) : createCommentVNode("", true),
                                                     createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                                    createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                                    createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                                   ])
                                                 ]),
                                                 createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -9105,7 +9982,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                     createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                                   ])) : createCommentVNode("", true),
                                                   createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                                  createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                                  createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                                 ])
                                               ]),
                                               createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -9187,7 +10064,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                   createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                                 ])) : createCommentVNode("", true),
                                                 createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                                createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                                createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                               ])
                                             ]),
                                             createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -9212,7 +10089,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$11), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$19), {
                           value: "passive",
                           class: "space-y-4"
                         }, {
@@ -9265,7 +10142,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                             } else {
                                               _push7(`<!---->`);
                                             }
-                                            _push7(`<p class="text-xs"${_scopeId6}>Bergabung: ${ssrInterpolate(formatDate(member.joined_at))}</p><p class="text-xs font-medium text-orange-600 dark:text-orange-400"${_scopeId6}> Omzet: ${ssrInterpolate(formatCurrency(member.omzet))}</p></div></div><div class="flex flex-col items-end gap-2"${_scopeId6}>`);
+                                            _push7(`<p class="text-xs"${_scopeId6}>Bergabung: ${ssrInterpolate(formatDate(member.joined_at))}</p><p class="text-xs font-medium text-orange-600 dark:text-orange-400"${_scopeId6}> Omzet: ${ssrInterpolate(formatCurrency2(member.omzet))}</p></div></div><div class="flex flex-col items-end gap-2"${_scopeId6}>`);
                                             _push7(ssrRenderComponent(unref(_sfc_main$v), { variant: "outline" }, {
                                               default: withCtx((_7, _push8, _parent8, _scopeId7) => {
                                                 if (_push8) {
@@ -9348,7 +10225,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                       createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                                     ])) : createCommentVNode("", true),
                                                     createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                                    createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                                    createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                                   ])
                                                 ]),
                                                 createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -9419,7 +10296,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                     createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                                   ])) : createCommentVNode("", true),
                                                   createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                                  createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                                  createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                                 ])
                                               ]),
                                               createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -9509,7 +10386,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                   createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                                 ])) : createCommentVNode("", true),
                                                 createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                                createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                                createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                               ])
                                             ]),
                                             createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -9553,7 +10430,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$11), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$19), {
                           value: "prospect",
                           class: "space-y-4"
                         }, {
@@ -9606,7 +10483,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                             } else {
                                               _push7(`<!---->`);
                                             }
-                                            _push7(`<p class="text-xs"${_scopeId6}>Bergabung: ${ssrInterpolate(formatDate(member.joined_at))}</p><p class="text-xs font-medium text-gray-500 dark:text-gray-400"${_scopeId6}> Omzet: ${ssrInterpolate(formatCurrency(member.omzet))}</p></div></div><div class="flex flex-col items-end gap-2"${_scopeId6}>`);
+                                            _push7(`<p class="text-xs"${_scopeId6}>Bergabung: ${ssrInterpolate(formatDate(member.joined_at))}</p><p class="text-xs font-medium text-gray-500 dark:text-gray-400"${_scopeId6}> Omzet: ${ssrInterpolate(formatCurrency2(member.omzet))}</p></div></div><div class="flex flex-col items-end gap-2"${_scopeId6}>`);
                                             _push7(ssrRenderComponent(unref(_sfc_main$v), { variant: "secondary" }, {
                                               default: withCtx((_7, _push8, _parent8, _scopeId7) => {
                                                 if (_push8) {
@@ -9666,7 +10543,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                       createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                                     ])) : createCommentVNode("", true),
                                                     createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                                    createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                                    createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                                   ])
                                                 ]),
                                                 createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -9724,7 +10601,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                     createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                                   ])) : createCommentVNode("", true),
                                                   createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                                  createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                                  createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                                 ])
                                               ]),
                                               createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -9801,7 +10678,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                   createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                                 ])) : createCommentVNode("", true),
                                                 createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                                createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                                createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                               ])
                                             ]),
                                             createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -9834,23 +10711,23 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                         }, _parent4, _scopeId3));
                       } else {
                         return [
-                          createVNode(unref(_sfc_main$$), { class: "grid w-full grid-cols-3" }, {
+                          createVNode(unref(_sfc_main$17), { class: "grid w-full grid-cols-3" }, {
                             default: withCtx(() => [
-                              createVNode(unref(_sfc_main$10), { value: "active" }, {
+                              createVNode(unref(_sfc_main$18), { value: "active" }, {
                                 default: withCtx(() => [
                                   createVNode(unref(CheckCircle), { class: "w-4 h-4 mr-2" }),
                                   createTextVNode(" Aktif (" + toDisplayString(__props.activeMembers.length) + ") ", 1)
                                 ]),
                                 _: 1
                               }),
-                              createVNode(unref(_sfc_main$10), { value: "passive" }, {
+                              createVNode(unref(_sfc_main$18), { value: "passive" }, {
                                 default: withCtx(() => [
                                   createVNode(unref(Clock), { class: "w-4 h-4 mr-2" }),
                                   createTextVNode(" Pasif (" + toDisplayString(__props.passiveMembers.length) + ") ", 1)
                                 ]),
                                 _: 1
                               }),
-                              createVNode(unref(_sfc_main$10), { value: "prospect" }, {
+                              createVNode(unref(_sfc_main$18), { value: "prospect" }, {
                                 default: withCtx(() => [
                                   createVNode(unref(UserPlus), { class: "w-4 h-4 mr-2" }),
                                   createTextVNode(" Prospek (" + toDisplayString(__props.prospectMembers.length) + ") ", 1)
@@ -9860,7 +10737,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$11), {
+                          createVNode(unref(_sfc_main$19), {
                             value: "active",
                             class: "space-y-4"
                           }, {
@@ -9922,7 +10799,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                 createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                               ])) : createCommentVNode("", true),
                                               createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                              createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                              createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                             ])
                                           ]),
                                           createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -9945,7 +10822,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$11), {
+                          createVNode(unref(_sfc_main$19), {
                             value: "passive",
                             class: "space-y-4"
                           }, {
@@ -9996,7 +10873,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                 createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                               ])) : createCommentVNode("", true),
                                               createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                              createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                              createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                             ])
                                           ]),
                                           createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -10038,7 +10915,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$11), {
+                          createVNode(unref(_sfc_main$19), {
                             value: "prospect",
                             class: "space-y-4"
                           }, {
@@ -10089,7 +10966,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                                 createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                               ])) : createCommentVNode("", true),
                                               createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                              createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                              createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                             ])
                                           ]),
                                           createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -10125,28 +11002,28 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                 } else {
                   return [
-                    createVNode(unref(_sfc_main$_), {
+                    createVNode(unref(_sfc_main$16), {
                       "default-value": "active",
                       class: "w-full"
                     }, {
                       default: withCtx(() => [
-                        createVNode(unref(_sfc_main$$), { class: "grid w-full grid-cols-3" }, {
+                        createVNode(unref(_sfc_main$17), { class: "grid w-full grid-cols-3" }, {
                           default: withCtx(() => [
-                            createVNode(unref(_sfc_main$10), { value: "active" }, {
+                            createVNode(unref(_sfc_main$18), { value: "active" }, {
                               default: withCtx(() => [
                                 createVNode(unref(CheckCircle), { class: "w-4 h-4 mr-2" }),
                                 createTextVNode(" Aktif (" + toDisplayString(__props.activeMembers.length) + ") ", 1)
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), { value: "passive" }, {
+                            createVNode(unref(_sfc_main$18), { value: "passive" }, {
                               default: withCtx(() => [
                                 createVNode(unref(Clock), { class: "w-4 h-4 mr-2" }),
                                 createTextVNode(" Pasif (" + toDisplayString(__props.passiveMembers.length) + ") ", 1)
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), { value: "prospect" }, {
+                            createVNode(unref(_sfc_main$18), { value: "prospect" }, {
                               default: withCtx(() => [
                                 createVNode(unref(UserPlus), { class: "w-4 h-4 mr-2" }),
                                 createTextVNode(" Prospek (" + toDisplayString(__props.prospectMembers.length) + ") ", 1)
@@ -10156,7 +11033,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$11), {
+                        createVNode(unref(_sfc_main$19), {
                           value: "active",
                           class: "space-y-4"
                         }, {
@@ -10218,7 +11095,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                               createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                             ])) : createCommentVNode("", true),
                                             createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                            createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                            createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                           ])
                                         ]),
                                         createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -10241,7 +11118,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$11), {
+                        createVNode(unref(_sfc_main$19), {
                           value: "passive",
                           class: "space-y-4"
                         }, {
@@ -10292,7 +11169,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                               createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                             ])) : createCommentVNode("", true),
                                             createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                            createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                            createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                           ])
                                         ]),
                                         createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -10334,7 +11211,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$11), {
+                        createVNode(unref(_sfc_main$19), {
                           value: "prospect",
                           class: "space-y-4"
                         }, {
@@ -10385,7 +11262,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                               createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                             ])) : createCommentVNode("", true),
                                             createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                            createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                            createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                           ])
                                         ]),
                                         createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -10443,28 +11320,28 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
-                  createVNode(unref(_sfc_main$_), {
+                  createVNode(unref(_sfc_main$16), {
                     "default-value": "active",
                     class: "w-full"
                   }, {
                     default: withCtx(() => [
-                      createVNode(unref(_sfc_main$$), { class: "grid w-full grid-cols-3" }, {
+                      createVNode(unref(_sfc_main$17), { class: "grid w-full grid-cols-3" }, {
                         default: withCtx(() => [
-                          createVNode(unref(_sfc_main$10), { value: "active" }, {
+                          createVNode(unref(_sfc_main$18), { value: "active" }, {
                             default: withCtx(() => [
                               createVNode(unref(CheckCircle), { class: "w-4 h-4 mr-2" }),
                               createTextVNode(" Aktif (" + toDisplayString(__props.activeMembers.length) + ") ", 1)
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$10), { value: "passive" }, {
+                          createVNode(unref(_sfc_main$18), { value: "passive" }, {
                             default: withCtx(() => [
                               createVNode(unref(Clock), { class: "w-4 h-4 mr-2" }),
                               createTextVNode(" Pasif (" + toDisplayString(__props.passiveMembers.length) + ") ", 1)
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$10), { value: "prospect" }, {
+                          createVNode(unref(_sfc_main$18), { value: "prospect" }, {
                             default: withCtx(() => [
                               createVNode(unref(UserPlus), { class: "w-4 h-4 mr-2" }),
                               createTextVNode(" Prospek (" + toDisplayString(__props.prospectMembers.length) + ") ", 1)
@@ -10474,7 +11351,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "active",
                         class: "space-y-4"
                       }, {
@@ -10536,7 +11413,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                             createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                           ])) : createCommentVNode("", true),
                                           createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                          createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                          createVNode("p", { class: "text-xs font-medium text-green-600 dark:text-green-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                         ])
                                       ]),
                                       createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -10559,7 +11436,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "passive",
                         class: "space-y-4"
                       }, {
@@ -10610,7 +11487,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                             createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                           ])) : createCommentVNode("", true),
                                           createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                          createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                          createVNode("p", { class: "text-xs font-medium text-orange-600 dark:text-orange-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                         ])
                                       ]),
                                       createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -10652,7 +11529,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "prospect",
                         class: "space-y-4"
                       }, {
@@ -10703,7 +11580,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                                             createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Kanan: " + toDisplayString(member.total_right ?? 0), 1)
                                           ])) : createCommentVNode("", true),
                                           createVNode("p", { class: "text-xs" }, "Bergabung: " + toDisplayString(formatDate(member.joined_at)), 1),
-                                          createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency(member.omzet)), 1)
+                                          createVNode("p", { class: "text-xs font-medium text-gray-500 dark:text-gray-400" }, " Omzet: " + toDisplayString(formatCurrency2(member.omzet)), 1)
                                         ])
                                       ]),
                                       createVNode("div", { class: "flex flex-col items-end gap-2" }, [
@@ -13373,13 +14250,6 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     const props = __props;
-    const formatCurrency = (amount) => {
-      return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        minimumFractionDigits: 0
-      }).format(amount);
-    };
     const formatDate = (date) => {
       return new Date(date).toLocaleDateString("id-ID", {
         day: "numeric",
@@ -13388,67 +14258,67 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       });
     };
     const totalSponsor = computed(
-      () => props.bonusSponsors.reduce((sum, bonus) => sum + bonus.amount, 0)
+      () => props.bonusSponsors.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
     );
     const totalMatching = computed(
-      () => props.bonusMatchings.reduce((sum, bonus) => sum + bonus.amount, 0)
+      () => props.bonusMatchings.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
     );
     const totalPairing = computed(
-      () => props.bonusPairings.reduce((sum, bonus) => sum + bonus.amount, 0)
+      () => props.bonusPairings.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
     );
     const totalCashback = computed(
-      () => props.bonusCashbacks.reduce((sum, bonus) => sum + bonus.amount, 0)
+      () => props.bonusCashbacks.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
     );
     const totalReward = computed(
-      () => props.bonusRewards.reduce((sum, bonus) => sum + bonus.amount, 0)
+      () => props.bonusRewards.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
     );
     const pendingSponsor = computed(
-      () => props.bonusSponsors.filter((b) => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusSponsors.filter((b) => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const releasedSponsor = computed(
-      () => props.bonusSponsors.filter((b) => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusSponsors.filter((b) => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const pendingMatching = computed(
-      () => props.bonusMatchings.filter((b) => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusMatchings.filter((b) => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const releasedMatching = computed(
-      () => props.bonusMatchings.filter((b) => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusMatchings.filter((b) => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const pendingPairing = computed(
-      () => props.bonusPairings.filter((b) => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusPairings.filter((b) => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const releasedPairing = computed(
-      () => props.bonusPairings.filter((b) => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusPairings.filter((b) => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const pendingCashback = computed(
-      () => props.bonusCashbacks.filter((b) => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusCashbacks.filter((b) => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const releasedCashback = computed(
-      () => props.bonusCashbacks.filter((b) => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusCashbacks.filter((b) => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const pendingReward = computed(
-      () => props.bonusRewards.filter((b) => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusRewards.filter((b) => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const releasedReward = computed(
-      () => props.bonusRewards.filter((b) => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusRewards.filter((b) => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const totalRetail = computed(
-      () => props.bonusRetails.reduce((sum, bonus) => sum + bonus.amount, 0)
+      () => props.bonusRetails.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
     );
     const pendingRetail = computed(
-      () => props.bonusRetails.filter((b) => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusRetails.filter((b) => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const releasedRetail = computed(
-      () => props.bonusRetails.filter((b) => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusRetails.filter((b) => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const totalLifetimeCashReward = computed(
-      () => props.bonusLifetimeCashRewards.reduce((sum, bonus) => sum + bonus.amount, 0)
+      () => props.bonusLifetimeCashRewards.reduce((sum, bonus) => sum + safeNumber(bonus.amount), 0)
     );
     const pendingLifetimeCashReward = computed(
-      () => props.bonusLifetimeCashRewards.filter((b) => b.status === 0).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusLifetimeCashRewards.filter((b) => b.status === 0).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const releasedLifetimeCashReward = computed(
-      () => props.bonusLifetimeCashRewards.filter((b) => b.status === 1).reduce((sum, b) => sum + b.amount, 0)
+      () => props.bonusLifetimeCashRewards.filter((b) => b.status === 1).reduce((sum, b) => sum + safeNumber(b.amount), 0)
     );
     const grandTotal = computed(
       () => totalSponsor.value + totalMatching.value + totalPairing.value + totalCashback.value + totalReward.value + totalRetail.value + totalLifetimeCashReward.value
@@ -13492,17 +14362,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(formatCurrency(totalSponsor.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusSponsors.length)} transaksi </p><div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2"${_scopeId2}>`);
+                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(totalSponsor.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusSponsors.length)} transaksi </p><div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "outline",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Pending: ${ssrInterpolate(formatCurrency(pendingSponsor.value))}`);
+                        _push4(` P: ${ssrInterpolate(unref(formatCurrency)(pendingSponsor.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingSponsor.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingSponsor.value)), 1)
                         ];
                       }
                     }),
@@ -13510,14 +14380,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "secondary",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Released: ${ssrInterpolate(formatCurrency(releasedSponsor.value))}`);
+                        _push4(` R: ${ssrInterpolate(unref(formatCurrency)(releasedSponsor.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedSponsor.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedSponsor.value)), 1)
                         ];
                       }
                     }),
@@ -13526,24 +14396,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   _push3(`</div>`);
                 } else {
                   return [
-                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalSponsor.value)), 1),
+                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalSponsor.value)), 1),
                     createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusSponsors.length) + " transaksi ", 1),
-                    createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                    createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                       createVNode(unref(_sfc_main$v), {
                         variant: "outline",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingSponsor.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingSponsor.value)), 1)
                         ]),
                         _: 1
                       }),
                       createVNode(unref(_sfc_main$v), {
                         variant: "secondary",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedSponsor.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedSponsor.value)), 1)
                         ]),
                         _: 1
                       })
@@ -13569,24 +14439,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
-                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalSponsor.value)), 1),
+                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalSponsor.value)), 1),
                   createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusSponsors.length) + " transaksi ", 1),
-                  createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                  createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                     createVNode(unref(_sfc_main$v), {
                       variant: "outline",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingSponsor.value)), 1)
+                        createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingSponsor.value)), 1)
                       ]),
                       _: 1
                     }),
                     createVNode(unref(_sfc_main$v), {
                       variant: "secondary",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedSponsor.value)), 1)
+                        createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedSponsor.value)), 1)
                       ]),
                       _: 1
                     })
@@ -13636,17 +14506,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(formatCurrency(totalMatching.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusMatchings.length)} transaksi </p><div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2"${_scopeId2}>`);
+                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(totalMatching.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusMatchings.length)} transaksi </p><div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "outline",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Pending: ${ssrInterpolate(formatCurrency(pendingMatching.value))}`);
+                        _push4(` P: ${ssrInterpolate(unref(formatCurrency)(pendingMatching.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingMatching.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingMatching.value)), 1)
                         ];
                       }
                     }),
@@ -13654,14 +14524,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "secondary",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Released: ${ssrInterpolate(formatCurrency(releasedMatching.value))}`);
+                        _push4(` R: ${ssrInterpolate(unref(formatCurrency)(releasedMatching.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedMatching.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedMatching.value)), 1)
                         ];
                       }
                     }),
@@ -13670,24 +14540,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   _push3(`</div>`);
                 } else {
                   return [
-                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalMatching.value)), 1),
+                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalMatching.value)), 1),
                     createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusMatchings.length) + " transaksi ", 1),
-                    createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                    createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                       createVNode(unref(_sfc_main$v), {
                         variant: "outline",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingMatching.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingMatching.value)), 1)
                         ]),
                         _: 1
                       }),
                       createVNode(unref(_sfc_main$v), {
                         variant: "secondary",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedMatching.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedMatching.value)), 1)
                         ]),
                         _: 1
                       })
@@ -13713,24 +14583,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
-                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalMatching.value)), 1),
+                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalMatching.value)), 1),
                   createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusMatchings.length) + " transaksi ", 1),
-                  createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                  createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                     createVNode(unref(_sfc_main$v), {
                       variant: "outline",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingMatching.value)), 1)
+                        createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingMatching.value)), 1)
                       ]),
                       _: 1
                     }),
                     createVNode(unref(_sfc_main$v), {
                       variant: "secondary",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedMatching.value)), 1)
+                        createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedMatching.value)), 1)
                       ]),
                       _: 1
                     })
@@ -13780,17 +14650,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(formatCurrency(totalPairing.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusPairings.length)} transaksi </p><div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2"${_scopeId2}>`);
+                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(totalPairing.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusPairings.length)} transaksi </p><div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "outline",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Pending: ${ssrInterpolate(formatCurrency(pendingPairing.value))}`);
+                        _push4(` P: ${ssrInterpolate(unref(formatCurrency)(pendingPairing.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingPairing.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingPairing.value)), 1)
                         ];
                       }
                     }),
@@ -13798,14 +14668,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "secondary",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Released: ${ssrInterpolate(formatCurrency(releasedPairing.value))}`);
+                        _push4(` R: ${ssrInterpolate(unref(formatCurrency)(releasedPairing.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedPairing.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedPairing.value)), 1)
                         ];
                       }
                     }),
@@ -13814,24 +14684,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   _push3(`</div>`);
                 } else {
                   return [
-                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalPairing.value)), 1),
+                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalPairing.value)), 1),
                     createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusPairings.length) + " transaksi ", 1),
-                    createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                    createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                       createVNode(unref(_sfc_main$v), {
                         variant: "outline",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingPairing.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingPairing.value)), 1)
                         ]),
                         _: 1
                       }),
                       createVNode(unref(_sfc_main$v), {
                         variant: "secondary",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedPairing.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedPairing.value)), 1)
                         ]),
                         _: 1
                       })
@@ -13857,24 +14727,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
-                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalPairing.value)), 1),
+                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalPairing.value)), 1),
                   createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusPairings.length) + " transaksi ", 1),
-                  createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                  createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                     createVNode(unref(_sfc_main$v), {
                       variant: "outline",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingPairing.value)), 1)
+                        createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingPairing.value)), 1)
                       ]),
                       _: 1
                     }),
                     createVNode(unref(_sfc_main$v), {
                       variant: "secondary",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedPairing.value)), 1)
+                        createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedPairing.value)), 1)
                       ]),
                       _: 1
                     })
@@ -13924,17 +14794,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(formatCurrency(totalCashback.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusCashbacks.length)} transaksi </p><div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2"${_scopeId2}>`);
+                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(totalCashback.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusCashbacks.length)} transaksi </p><div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "outline",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Pending: ${ssrInterpolate(formatCurrency(pendingCashback.value))}`);
+                        _push4(` P: ${ssrInterpolate(unref(formatCurrency)(pendingCashback.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingCashback.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingCashback.value)), 1)
                         ];
                       }
                     }),
@@ -13942,14 +14812,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "secondary",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Released: ${ssrInterpolate(formatCurrency(releasedCashback.value))}`);
+                        _push4(` R: ${ssrInterpolate(unref(formatCurrency)(releasedCashback.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedCashback.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedCashback.value)), 1)
                         ];
                       }
                     }),
@@ -13958,24 +14828,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   _push3(`</div>`);
                 } else {
                   return [
-                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalCashback.value)), 1),
+                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalCashback.value)), 1),
                     createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusCashbacks.length) + " transaksi ", 1),
-                    createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                    createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                       createVNode(unref(_sfc_main$v), {
                         variant: "outline",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingCashback.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingCashback.value)), 1)
                         ]),
                         _: 1
                       }),
                       createVNode(unref(_sfc_main$v), {
                         variant: "secondary",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedCashback.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedCashback.value)), 1)
                         ]),
                         _: 1
                       })
@@ -14001,24 +14871,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
-                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalCashback.value)), 1),
+                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalCashback.value)), 1),
                   createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusCashbacks.length) + " transaksi ", 1),
-                  createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                  createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                     createVNode(unref(_sfc_main$v), {
                       variant: "outline",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingCashback.value)), 1)
+                        createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingCashback.value)), 1)
                       ]),
                       _: 1
                     }),
                     createVNode(unref(_sfc_main$v), {
                       variant: "secondary",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedCashback.value)), 1)
+                        createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedCashback.value)), 1)
                       ]),
                       _: 1
                     })
@@ -14068,17 +14938,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(formatCurrency(totalReward.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusRewards.length)} transaksi </p><div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2"${_scopeId2}>`);
+                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(totalReward.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusRewards.length)} transaksi </p><div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "outline",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Pending: ${ssrInterpolate(formatCurrency(pendingReward.value))}`);
+                        _push4(` P: ${ssrInterpolate(unref(formatCurrency)(pendingReward.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingReward.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingReward.value)), 1)
                         ];
                       }
                     }),
@@ -14086,14 +14956,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "secondary",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Released: ${ssrInterpolate(formatCurrency(releasedReward.value))}`);
+                        _push4(` R: ${ssrInterpolate(unref(formatCurrency)(releasedReward.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedReward.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedReward.value)), 1)
                         ];
                       }
                     }),
@@ -14102,24 +14972,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   _push3(`</div>`);
                 } else {
                   return [
-                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalReward.value)), 1),
+                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalReward.value)), 1),
                     createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusRewards.length) + " transaksi ", 1),
-                    createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                    createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                       createVNode(unref(_sfc_main$v), {
                         variant: "outline",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingReward.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingReward.value)), 1)
                         ]),
                         _: 1
                       }),
                       createVNode(unref(_sfc_main$v), {
                         variant: "secondary",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedReward.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedReward.value)), 1)
                         ]),
                         _: 1
                       })
@@ -14145,24 +15015,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
-                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalReward.value)), 1),
+                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalReward.value)), 1),
                   createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusRewards.length) + " transaksi ", 1),
-                  createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                  createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                     createVNode(unref(_sfc_main$v), {
                       variant: "outline",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingReward.value)), 1)
+                        createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingReward.value)), 1)
                       ]),
                       _: 1
                     }),
                     createVNode(unref(_sfc_main$v), {
                       variant: "secondary",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedReward.value)), 1)
+                        createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedReward.value)), 1)
                       ]),
                       _: 1
                     })
@@ -14212,17 +15082,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(formatCurrency(totalRetail.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusRetails.length)} transaksi </p><div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2"${_scopeId2}>`);
+                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(totalRetail.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusRetails.length)} transaksi </p><div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "outline",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Pending: ${ssrInterpolate(formatCurrency(pendingRetail.value))}`);
+                        _push4(` P: ${ssrInterpolate(unref(formatCurrency)(pendingRetail.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingRetail.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingRetail.value)), 1)
                         ];
                       }
                     }),
@@ -14230,14 +15100,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "secondary",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Released: ${ssrInterpolate(formatCurrency(releasedRetail.value))}`);
+                        _push4(` R: ${ssrInterpolate(unref(formatCurrency)(releasedRetail.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedRetail.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedRetail.value)), 1)
                         ];
                       }
                     }),
@@ -14246,24 +15116,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   _push3(`</div>`);
                 } else {
                   return [
-                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalRetail.value)), 1),
+                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalRetail.value)), 1),
                     createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusRetails.length) + " transaksi ", 1),
-                    createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                    createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                       createVNode(unref(_sfc_main$v), {
                         variant: "outline",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingRetail.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingRetail.value)), 1)
                         ]),
                         _: 1
                       }),
                       createVNode(unref(_sfc_main$v), {
                         variant: "secondary",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedRetail.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedRetail.value)), 1)
                         ]),
                         _: 1
                       })
@@ -14289,24 +15159,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
-                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalRetail.value)), 1),
+                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalRetail.value)), 1),
                   createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusRetails.length) + " transaksi ", 1),
-                  createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                  createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                     createVNode(unref(_sfc_main$v), {
                       variant: "outline",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingRetail.value)), 1)
+                        createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingRetail.value)), 1)
                       ]),
                       _: 1
                     }),
                     createVNode(unref(_sfc_main$v), {
                       variant: "secondary",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedRetail.value)), 1)
+                        createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedRetail.value)), 1)
                       ]),
                       _: 1
                     })
@@ -14356,17 +15226,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(formatCurrency(totalLifetimeCashReward.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusLifetimeCashRewards.length)} transaksi </p><div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2"${_scopeId2}>`);
+                  _push3(`<div class="text-xl sm:text-2xl font-bold truncate"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(totalLifetimeCashReward.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}>${ssrInterpolate(__props.bonusLifetimeCashRewards.length)} transaksi </p><div class="grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "outline",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Pending: ${ssrInterpolate(formatCurrency(pendingLifetimeCashReward.value))}`);
+                        _push4(` P: ${ssrInterpolate(unref(formatCurrency)(pendingLifetimeCashReward.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingLifetimeCashReward.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingLifetimeCashReward.value)), 1)
                         ];
                       }
                     }),
@@ -14374,14 +15244,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                   _push3(ssrRenderComponent(unref(_sfc_main$v), {
                     variant: "secondary",
-                    class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                    class: "text-[10px] sm:text-xs justify-center truncate"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(` Released: ${ssrInterpolate(formatCurrency(releasedLifetimeCashReward.value))}`);
+                        _push4(` R: ${ssrInterpolate(unref(formatCurrency)(releasedLifetimeCashReward.value))}`);
                       } else {
                         return [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedLifetimeCashReward.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedLifetimeCashReward.value)), 1)
                         ];
                       }
                     }),
@@ -14390,24 +15260,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   _push3(`</div>`);
                 } else {
                   return [
-                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalLifetimeCashReward.value)), 1),
+                    createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalLifetimeCashReward.value)), 1),
                     createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusLifetimeCashRewards.length) + " transaksi ", 1),
-                    createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                    createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                       createVNode(unref(_sfc_main$v), {
                         variant: "outline",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingLifetimeCashReward.value)), 1)
+                          createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingLifetimeCashReward.value)), 1)
                         ]),
                         _: 1
                       }),
                       createVNode(unref(_sfc_main$v), {
                         variant: "secondary",
-                        class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                        class: "text-[10px] sm:text-xs justify-center truncate"
                       }, {
                         default: withCtx(() => [
-                          createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedLifetimeCashReward.value)), 1)
+                          createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedLifetimeCashReward.value)), 1)
                         ]),
                         _: 1
                       })
@@ -14433,24 +15303,24 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
-                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(formatCurrency(totalLifetimeCashReward.value)), 1),
+                  createVNode("div", { class: "text-xl sm:text-2xl font-bold truncate" }, toDisplayString(unref(formatCurrency)(totalLifetimeCashReward.value)), 1),
                   createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(__props.bonusLifetimeCashRewards.length) + " transaksi ", 1),
-                  createVNode("div", { class: "flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2" }, [
+                  createVNode("div", { class: "grid grid-cols-2 gap-1 sm:flex sm:flex-row sm:gap-2 mt-2" }, [
                     createVNode(unref(_sfc_main$v), {
                       variant: "outline",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Pending: " + toDisplayString(formatCurrency(pendingLifetimeCashReward.value)), 1)
+                        createTextVNode(" P: " + toDisplayString(unref(formatCurrency)(pendingLifetimeCashReward.value)), 1)
                       ]),
                       _: 1
                     }),
                     createVNode(unref(_sfc_main$v), {
                       variant: "secondary",
-                      class: "text-[10px] sm:text-xs justify-center sm:justify-start"
+                      class: "text-[10px] sm:text-xs justify-center truncate"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(" Released: " + toDisplayString(formatCurrency(releasedLifetimeCashReward.value)), 1)
+                        createTextVNode(" R: " + toDisplayString(unref(formatCurrency)(releasedLifetimeCashReward.value)), 1)
                       ]),
                       _: 1
                     })
@@ -14500,10 +15370,10 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-xl sm:text-2xl font-bold text-primary truncate"${_scopeId2}>${ssrInterpolate(formatCurrency(grandTotal.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}> Semua jenis bonus </p>`);
+                  _push3(`<div class="text-xl sm:text-2xl font-bold text-primary truncate"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(grandTotal.value))}</div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId2}> Semua jenis bonus </p>`);
                 } else {
                   return [
-                    createVNode("div", { class: "text-xl sm:text-2xl font-bold text-primary truncate" }, toDisplayString(formatCurrency(grandTotal.value)), 1),
+                    createVNode("div", { class: "text-xl sm:text-2xl font-bold text-primary truncate" }, toDisplayString(unref(formatCurrency)(grandTotal.value)), 1),
                     createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, " Semua jenis bonus ")
                   ];
                 }
@@ -14526,7 +15396,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), null, {
                 default: withCtx(() => [
-                  createVNode("div", { class: "text-xl sm:text-2xl font-bold text-primary truncate" }, toDisplayString(formatCurrency(grandTotal.value)), 1),
+                  createVNode("div", { class: "text-xl sm:text-2xl font-bold text-primary truncate" }, toDisplayString(unref(formatCurrency)(grandTotal.value)), 1),
                   createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, " Semua jenis bonus ")
                 ]),
                 _: 1
@@ -14589,17 +15459,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), { class: "p-2 sm:p-4 md:p-6 pt-0" }, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(ssrRenderComponent(unref(_sfc_main$_), {
+                  _push3(ssrRenderComponent(unref(_sfc_main$16), {
                     "default-value": "sponsor",
                     class: "w-full"
                   }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
                         _push4(`<div class="w-full text-center overflow-x-auto [&amp;::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-2 px-2 sm:mx-0 sm:px-0" style="${ssrRenderStyle({ "-webkit-overflow-scrolling": "touch" })}"${_scopeId3}>`);
-                        _push4(ssrRenderComponent(unref(_sfc_main$$), { class: "flex w-max sm:grid sm:w-full sm:grid-cols-7 gap-0.5 sm:gap-1 h-7 sm:h-auto bg-muted/30" }, {
+                        _push4(ssrRenderComponent(unref(_sfc_main$17), { class: "flex w-max sm:grid sm:w-full sm:grid-cols-7 gap-0.5 sm:gap-1 h-7 sm:h-auto bg-muted/30" }, {
                           default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                             if (_push5) {
-                              _push5(ssrRenderComponent(unref(_sfc_main$10), {
+                              _push5(ssrRenderComponent(unref(_sfc_main$18), {
                                 value: "sponsor",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -14614,7 +15484,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 }),
                                 _: 1
                               }, _parent5, _scopeId4));
-                              _push5(ssrRenderComponent(unref(_sfc_main$10), {
+                              _push5(ssrRenderComponent(unref(_sfc_main$18), {
                                 value: "matching",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -14629,7 +15499,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 }),
                                 _: 1
                               }, _parent5, _scopeId4));
-                              _push5(ssrRenderComponent(unref(_sfc_main$10), {
+                              _push5(ssrRenderComponent(unref(_sfc_main$18), {
                                 value: "pairing",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -14644,7 +15514,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 }),
                                 _: 1
                               }, _parent5, _scopeId4));
-                              _push5(ssrRenderComponent(unref(_sfc_main$10), {
+                              _push5(ssrRenderComponent(unref(_sfc_main$18), {
                                 value: "cashback",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -14659,7 +15529,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 }),
                                 _: 1
                               }, _parent5, _scopeId4));
-                              _push5(ssrRenderComponent(unref(_sfc_main$10), {
+                              _push5(ssrRenderComponent(unref(_sfc_main$18), {
                                 value: "reward",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -14674,7 +15544,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 }),
                                 _: 1
                               }, _parent5, _scopeId4));
-                              _push5(ssrRenderComponent(unref(_sfc_main$10), {
+                              _push5(ssrRenderComponent(unref(_sfc_main$18), {
                                 value: "retail",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -14689,7 +15559,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 }),
                                 _: 1
                               }, _parent5, _scopeId4));
-                              _push5(ssrRenderComponent(unref(_sfc_main$10), {
+                              _push5(ssrRenderComponent(unref(_sfc_main$18), {
                                 value: "lifetime",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -14706,7 +15576,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                               }, _parent5, _scopeId4));
                             } else {
                               return [
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "sponsor",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -14715,7 +15585,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "matching",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -14724,7 +15594,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "pairing",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -14733,7 +15603,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "cashback",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -14742,7 +15612,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "reward",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -14751,7 +15621,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "retail",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -14760,7 +15630,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "lifetime",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -14775,7 +15645,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           _: 1
                         }, _parent4, _scopeId3));
                         _push4(`</div>`);
-                        _push4(ssrRenderComponent(unref(_sfc_main$11), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$19), {
                           value: "sponsor",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -14808,7 +15678,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   } else {
                                     _push5(`<!---->`);
                                   }
-                                  _push5(`<span class="block sm:inline sm:ml-1"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</span></p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(formatCurrency(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
+                                  _push5(`<span class="block sm:inline sm:ml-1"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</span></p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(unref(formatCurrency)(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
                                 });
                                 _push5(`<!--]--></div>`);
                               }
@@ -14848,7 +15718,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                         ])
                                       ]),
                                       createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                         createVNode("div", {
                                           class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                         }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -14861,7 +15731,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$11), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$19), {
                           value: "matching",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -14909,7 +15779,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   } else {
                                     _push5(`<!---->`);
                                   }
-                                  _push5(`<span class="block sm:inline sm:ml-2"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</span></p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(formatCurrency(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
+                                  _push5(`<span class="block sm:inline sm:ml-2"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</span></p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(unref(formatCurrency)(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
                                 });
                                 _push5(`<!--]--></div>`);
                               }
@@ -14958,7 +15828,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                         ])
                                       ]),
                                       createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                         createVNode("div", {
                                           class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                         }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -14971,7 +15841,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$11), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$19), {
                           value: "pairing",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -15013,7 +15883,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                     }),
                                     _: 2
                                   }, _parent5, _scopeId4));
-                                  _push5(`<span class="text-xs sm:text-sm font-medium break-words"${_scopeId4}>${ssrInterpolate(bonus.description || "Bonus Pairing")}</span></div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-base sm:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(formatCurrency(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
+                                  _push5(`<span class="text-xs sm:text-sm font-medium break-words"${_scopeId4}>${ssrInterpolate(bonus.description || "Bonus Pairing")}</span></div><p class="text-[10px] sm:text-xs text-muted-foreground mt-1"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-base sm:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(unref(formatCurrency)(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
                                 });
                                 _push5(`<!--]--></div>`);
                               }
@@ -15056,7 +15926,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                         createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                       ]),
                                       createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                        createVNode("div", { class: "text-base sm:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                        createVNode("div", { class: "text-base sm:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                         createVNode("div", {
                                           class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                         }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15069,7 +15939,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$11), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$19), {
                           value: "cashback",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -15102,7 +15972,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   } else {
                                     _push5(`<!---->`);
                                   }
-                                  _push5(`<span class="block sm:inline sm:ml-1"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</span></p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(formatCurrency(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
+                                  _push5(`<span class="block sm:inline sm:ml-1"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</span></p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(unref(formatCurrency)(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
                                 });
                                 _push5(`<!--]--></div>`);
                               }
@@ -15143,7 +16013,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                         ])
                                       ]),
                                       createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                         createVNode("div", {
                                           class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                         }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15156,7 +16026,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$11), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$19), {
                           value: "reward",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -15202,7 +16072,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   } else {
                                     _push5(`<!---->`);
                                   }
-                                  _push5(`<span class="text-[10px] sm:text-xs md:text-sm font-medium break-words line-clamp-1"${_scopeId4}>${ssrInterpolate(bonus.description || "Promotions Reward")}</span></div><p class="text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(formatCurrency(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
+                                  _push5(`<span class="text-[10px] sm:text-xs md:text-sm font-medium break-words line-clamp-1"${_scopeId4}>${ssrInterpolate(bonus.description || "Promotions Reward")}</span></div><p class="text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(unref(formatCurrency)(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
                                 });
                                 _push5(`<!--]--></div>`);
                               }
@@ -15246,7 +16116,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                         createVNode("p", { class: "text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                       ]),
                                       createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                         createVNode("div", {
                                           class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                         }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15259,7 +16129,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$11), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$19), {
                           value: "retail",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -15311,7 +16181,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   } else {
                                     _push5(`<!---->`);
                                   }
-                                  _push5(`<span class="block sm:inline sm:ml-1"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</span></p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(formatCurrency(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
+                                  _push5(`<span class="block sm:inline sm:ml-1"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</span></p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(unref(formatCurrency)(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
                                 });
                                 _push5(`<!--]--></div>`);
                               }
@@ -15361,7 +16231,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                         ])
                                       ]),
                                       createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                         createVNode("div", {
                                           class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                         }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15374,7 +16244,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$11), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$19), {
                           value: "lifetime",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -15416,7 +16286,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                     }),
                                     _: 2
                                   }, _parent5, _scopeId4));
-                                  _push5(`<span class="text-[10px] sm:text-xs md:text-sm font-medium break-words line-clamp-1"${_scopeId4}>${ssrInterpolate(bonus.description || "Lifetime Cash Reward")}</span></div><p class="text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5"${_scopeId4}><span class="block sm:inline"${_scopeId4}> Reward: ${ssrInterpolate(formatCurrency(bonus.reward))} | BV: ${ssrInterpolate(bonus.bv)}</span><span class="block sm:inline sm:ml-1"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</span></p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(formatCurrency(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
+                                  _push5(`<span class="text-[10px] sm:text-xs md:text-sm font-medium break-words line-clamp-1"${_scopeId4}>${ssrInterpolate(bonus.description || "Lifetime Cash Reward")}</span></div><p class="text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5"${_scopeId4}><span class="block sm:inline"${_scopeId4}> Reward: ${ssrInterpolate(unref(formatCurrency)(bonus.reward))} | BV: ${ssrInterpolate(bonus.bv)}</span><span class="block sm:inline sm:ml-1"${_scopeId4}>${ssrInterpolate(formatDate(bonus.created_at))}</span></p></div><div class="text-left sm:text-right flex-shrink-0"${_scopeId4}><div class="text-xs sm:text-base md:text-lg font-bold text-green-600"${_scopeId4}>${ssrInterpolate(unref(formatCurrency)(bonus.amount))}</div><div class="${ssrRenderClass(["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"])}"${_scopeId4}>${ssrInterpolate(bonus.status === 1 ? "Processed" : "Pending")}</div></div></div>`);
                                 });
                                 _push5(`<!--]--></div>`);
                               }
@@ -15457,12 +16327,12 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                           createVNode("span", { class: "text-[10px] sm:text-xs md:text-sm font-medium break-words line-clamp-1" }, toDisplayString(bonus.description || "Lifetime Cash Reward"), 1)
                                         ]),
                                         createVNode("p", { class: "text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5" }, [
-                                          createVNode("span", { class: "block sm:inline" }, " Reward: " + toDisplayString(formatCurrency(bonus.reward)) + " | BV: " + toDisplayString(bonus.bv), 1),
+                                          createVNode("span", { class: "block sm:inline" }, " Reward: " + toDisplayString(unref(formatCurrency)(bonus.reward)) + " | BV: " + toDisplayString(bonus.bv), 1),
                                           createVNode("span", { class: "block sm:inline sm:ml-1" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                         ])
                                       ]),
                                       createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                        createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                         createVNode("div", {
                                           class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                         }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15481,9 +16351,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             class: "w-full text-center overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-2 px-2 sm:mx-0 sm:px-0",
                             style: { "-webkit-overflow-scrolling": "touch" }
                           }, [
-                            createVNode(unref(_sfc_main$$), { class: "flex w-max sm:grid sm:w-full sm:grid-cols-7 gap-0.5 sm:gap-1 h-7 sm:h-auto bg-muted/30" }, {
+                            createVNode(unref(_sfc_main$17), { class: "flex w-max sm:grid sm:w-full sm:grid-cols-7 gap-0.5 sm:gap-1 h-7 sm:h-auto bg-muted/30" }, {
                               default: withCtx(() => [
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "sponsor",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -15492,7 +16362,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "matching",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -15501,7 +16371,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "pairing",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -15510,7 +16380,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "cashback",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -15519,7 +16389,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "reward",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -15528,7 +16398,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "retail",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -15537,7 +16407,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$10), {
+                                createVNode(unref(_sfc_main$18), {
                                   value: "lifetime",
                                   class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                                 }, {
@@ -15550,7 +16420,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                               _: 1
                             })
                           ]),
-                          createVNode(unref(_sfc_main$11), {
+                          createVNode(unref(_sfc_main$19), {
                             value: "sponsor",
                             class: "mt-2 sm:mt-4"
                           }, {
@@ -15589,7 +16459,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                       ])
                                     ]),
                                     createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                       createVNode("div", {
                                         class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                       }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15600,7 +16470,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$11), {
+                          createVNode(unref(_sfc_main$19), {
                             value: "matching",
                             class: "mt-2 sm:mt-4"
                           }, {
@@ -15648,7 +16518,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                       ])
                                     ]),
                                     createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                       createVNode("div", {
                                         class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                       }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15659,7 +16529,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$11), {
+                          createVNode(unref(_sfc_main$19), {
                             value: "pairing",
                             class: "mt-2 sm:mt-4"
                           }, {
@@ -15701,7 +16571,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                       createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                     ]),
                                     createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                      createVNode("div", { class: "text-base sm:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                      createVNode("div", { class: "text-base sm:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                       createVNode("div", {
                                         class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                       }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15712,7 +16582,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$11), {
+                          createVNode(unref(_sfc_main$19), {
                             value: "cashback",
                             class: "mt-2 sm:mt-4"
                           }, {
@@ -15752,7 +16622,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                       ])
                                     ]),
                                     createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                       createVNode("div", {
                                         class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                       }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15763,7 +16633,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$11), {
+                          createVNode(unref(_sfc_main$19), {
                             value: "reward",
                             class: "mt-2 sm:mt-4"
                           }, {
@@ -15806,7 +16676,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                       createVNode("p", { class: "text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                     ]),
                                     createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                       createVNode("div", {
                                         class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                       }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15817,7 +16687,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$11), {
+                          createVNode(unref(_sfc_main$19), {
                             value: "retail",
                             class: "mt-2 sm:mt-4"
                           }, {
@@ -15866,7 +16736,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                       ])
                                     ]),
                                     createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                       createVNode("div", {
                                         class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                       }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15877,7 +16747,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$11), {
+                          createVNode(unref(_sfc_main$19), {
                             value: "lifetime",
                             class: "mt-2 sm:mt-4"
                           }, {
@@ -15917,12 +16787,12 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                         createVNode("span", { class: "text-[10px] sm:text-xs md:text-sm font-medium break-words line-clamp-1" }, toDisplayString(bonus.description || "Lifetime Cash Reward"), 1)
                                       ]),
                                       createVNode("p", { class: "text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5" }, [
-                                        createVNode("span", { class: "block sm:inline" }, " Reward: " + toDisplayString(formatCurrency(bonus.reward)) + " | BV: " + toDisplayString(bonus.bv), 1),
+                                        createVNode("span", { class: "block sm:inline" }, " Reward: " + toDisplayString(unref(formatCurrency)(bonus.reward)) + " | BV: " + toDisplayString(bonus.bv), 1),
                                         createVNode("span", { class: "block sm:inline sm:ml-1" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                       ])
                                     ]),
                                     createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                      createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                       createVNode("div", {
                                         class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                       }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -15940,7 +16810,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                 } else {
                   return [
-                    createVNode(unref(_sfc_main$_), {
+                    createVNode(unref(_sfc_main$16), {
                       "default-value": "sponsor",
                       class: "w-full"
                     }, {
@@ -15949,9 +16819,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           class: "w-full text-center overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-2 px-2 sm:mx-0 sm:px-0",
                           style: { "-webkit-overflow-scrolling": "touch" }
                         }, [
-                          createVNode(unref(_sfc_main$$), { class: "flex w-max sm:grid sm:w-full sm:grid-cols-7 gap-0.5 sm:gap-1 h-7 sm:h-auto bg-muted/30" }, {
+                          createVNode(unref(_sfc_main$17), { class: "flex w-max sm:grid sm:w-full sm:grid-cols-7 gap-0.5 sm:gap-1 h-7 sm:h-auto bg-muted/30" }, {
                             default: withCtx(() => [
-                              createVNode(unref(_sfc_main$10), {
+                              createVNode(unref(_sfc_main$18), {
                                 value: "sponsor",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -15960,7 +16830,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 ]),
                                 _: 1
                               }),
-                              createVNode(unref(_sfc_main$10), {
+                              createVNode(unref(_sfc_main$18), {
                                 value: "matching",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -15969,7 +16839,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 ]),
                                 _: 1
                               }),
-                              createVNode(unref(_sfc_main$10), {
+                              createVNode(unref(_sfc_main$18), {
                                 value: "pairing",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -15978,7 +16848,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 ]),
                                 _: 1
                               }),
-                              createVNode(unref(_sfc_main$10), {
+                              createVNode(unref(_sfc_main$18), {
                                 value: "cashback",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -15987,7 +16857,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 ]),
                                 _: 1
                               }),
-                              createVNode(unref(_sfc_main$10), {
+                              createVNode(unref(_sfc_main$18), {
                                 value: "reward",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -15996,7 +16866,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 ]),
                                 _: 1
                               }),
-                              createVNode(unref(_sfc_main$10), {
+                              createVNode(unref(_sfc_main$18), {
                                 value: "retail",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -16005,7 +16875,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                 ]),
                                 _: 1
                               }),
-                              createVNode(unref(_sfc_main$10), {
+                              createVNode(unref(_sfc_main$18), {
                                 value: "lifetime",
                                 class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                               }, {
@@ -16018,7 +16888,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             _: 1
                           })
                         ]),
-                        createVNode(unref(_sfc_main$11), {
+                        createVNode(unref(_sfc_main$19), {
                           value: "sponsor",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -16057,7 +16927,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                     ])
                                   ]),
                                   createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                     createVNode("div", {
                                       class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                     }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16068,7 +16938,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$11), {
+                        createVNode(unref(_sfc_main$19), {
                           value: "matching",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -16116,7 +16986,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                     ])
                                   ]),
                                   createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                     createVNode("div", {
                                       class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                     }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16127,7 +16997,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$11), {
+                        createVNode(unref(_sfc_main$19), {
                           value: "pairing",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -16169,7 +17039,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                     createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                   ]),
                                   createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                    createVNode("div", { class: "text-base sm:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                    createVNode("div", { class: "text-base sm:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                     createVNode("div", {
                                       class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                     }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16180,7 +17050,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$11), {
+                        createVNode(unref(_sfc_main$19), {
                           value: "cashback",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -16220,7 +17090,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                     ])
                                   ]),
                                   createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                     createVNode("div", {
                                       class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                     }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16231,7 +17101,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$11), {
+                        createVNode(unref(_sfc_main$19), {
                           value: "reward",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -16274,7 +17144,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                     createVNode("p", { class: "text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                   ]),
                                   createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                     createVNode("div", {
                                       class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                     }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16285,7 +17155,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$11), {
+                        createVNode(unref(_sfc_main$19), {
                           value: "retail",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -16334,7 +17204,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                     ])
                                   ]),
                                   createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                     createVNode("div", {
                                       class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                     }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16345,7 +17215,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$11), {
+                        createVNode(unref(_sfc_main$19), {
                           value: "lifetime",
                           class: "mt-2 sm:mt-4"
                         }, {
@@ -16385,12 +17255,12 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                       createVNode("span", { class: "text-[10px] sm:text-xs md:text-sm font-medium break-words line-clamp-1" }, toDisplayString(bonus.description || "Lifetime Cash Reward"), 1)
                                     ]),
                                     createVNode("p", { class: "text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5" }, [
-                                      createVNode("span", { class: "block sm:inline" }, " Reward: " + toDisplayString(formatCurrency(bonus.reward)) + " | BV: " + toDisplayString(bonus.bv), 1),
+                                      createVNode("span", { class: "block sm:inline" }, " Reward: " + toDisplayString(unref(formatCurrency)(bonus.reward)) + " | BV: " + toDisplayString(bonus.bv), 1),
                                       createVNode("span", { class: "block sm:inline sm:ml-1" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                     ])
                                   ]),
                                   createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                    createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                     createVNode("div", {
                                       class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                     }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16430,7 +17300,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$r), { class: "p-2 sm:p-4 md:p-6 pt-0" }, {
                 default: withCtx(() => [
-                  createVNode(unref(_sfc_main$_), {
+                  createVNode(unref(_sfc_main$16), {
                     "default-value": "sponsor",
                     class: "w-full"
                   }, {
@@ -16439,9 +17309,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                         class: "w-full text-center overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-2 px-2 sm:mx-0 sm:px-0",
                         style: { "-webkit-overflow-scrolling": "touch" }
                       }, [
-                        createVNode(unref(_sfc_main$$), { class: "flex w-max sm:grid sm:w-full sm:grid-cols-7 gap-0.5 sm:gap-1 h-7 sm:h-auto bg-muted/30" }, {
+                        createVNode(unref(_sfc_main$17), { class: "flex w-max sm:grid sm:w-full sm:grid-cols-7 gap-0.5 sm:gap-1 h-7 sm:h-auto bg-muted/30" }, {
                           default: withCtx(() => [
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "sponsor",
                               class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                             }, {
@@ -16450,7 +17320,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "matching",
                               class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                             }, {
@@ -16459,7 +17329,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "pairing",
                               class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                             }, {
@@ -16468,7 +17338,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "cashback",
                               class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                             }, {
@@ -16477,7 +17347,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "reward",
                               class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                             }, {
@@ -16486,7 +17356,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "retail",
                               class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                             }, {
@@ -16495,7 +17365,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "lifetime",
                               class: "text-[12px] sm:text-xs md:text-sm whitespace-nowrap px-1.5 sm:px-3 md:px-4 py-1 sm:py-2 h-6 sm:h-auto"
                             }, {
@@ -16508,7 +17378,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           _: 1
                         })
                       ]),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "sponsor",
                         class: "mt-2 sm:mt-4"
                       }, {
@@ -16547,7 +17417,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ])
                                 ]),
                                 createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                   createVNode("div", {
                                     class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                   }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16558,7 +17428,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "matching",
                         class: "mt-2 sm:mt-4"
                       }, {
@@ -16606,7 +17476,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ])
                                 ]),
                                 createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                   createVNode("div", {
                                     class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                   }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16617,7 +17487,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "pairing",
                         class: "mt-2 sm:mt-4"
                       }, {
@@ -16659,7 +17529,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   createVNode("p", { class: "text-[10px] sm:text-xs text-muted-foreground mt-1" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                 ]),
                                 createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                  createVNode("div", { class: "text-base sm:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                  createVNode("div", { class: "text-base sm:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                   createVNode("div", {
                                     class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                   }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16670,7 +17540,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "cashback",
                         class: "mt-2 sm:mt-4"
                       }, {
@@ -16710,7 +17580,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ])
                                 ]),
                                 createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                   createVNode("div", {
                                     class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                   }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16721,7 +17591,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "reward",
                         class: "mt-2 sm:mt-4"
                       }, {
@@ -16764,7 +17634,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   createVNode("p", { class: "text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                 ]),
                                 createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                   createVNode("div", {
                                     class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                   }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16775,7 +17645,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "retail",
                         class: "mt-2 sm:mt-4"
                       }, {
@@ -16824,7 +17694,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                   ])
                                 ]),
                                 createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                   createVNode("div", {
                                     class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                   }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16835,7 +17705,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "lifetime",
                         class: "mt-2 sm:mt-4"
                       }, {
@@ -16875,12 +17745,12 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                                     createVNode("span", { class: "text-[10px] sm:text-xs md:text-sm font-medium break-words line-clamp-1" }, toDisplayString(bonus.description || "Lifetime Cash Reward"), 1)
                                   ]),
                                   createVNode("p", { class: "text-[8px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5" }, [
-                                    createVNode("span", { class: "block sm:inline" }, " Reward: " + toDisplayString(formatCurrency(bonus.reward)) + " | BV: " + toDisplayString(bonus.bv), 1),
+                                    createVNode("span", { class: "block sm:inline" }, " Reward: " + toDisplayString(unref(formatCurrency)(bonus.reward)) + " | BV: " + toDisplayString(bonus.bv), 1),
                                     createVNode("span", { class: "block sm:inline sm:ml-1" }, toDisplayString(formatDate(bonus.created_at)), 1)
                                   ])
                                 ]),
                                 createVNode("div", { class: "text-left sm:text-right flex-shrink-0" }, [
-                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(formatCurrency(bonus.amount)), 1),
+                                  createVNode("div", { class: "text-xs sm:text-base md:text-lg font-bold text-green-600" }, toDisplayString(unref(formatCurrency)(bonus.amount)), 1),
                                   createVNode("div", {
                                     class: ["text-[8px] sm:text-xs", bonus.status === 1 ? "text-green-600" : "text-yellow-600"]
                                   }, toDisplayString(bonus.status === 1 ? "Processed" : "Pending"), 3)
@@ -16919,7 +17789,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     customer: {}
   },
   setup(__props) {
-    const formatCurrency = (value) => {
+    const formatCurrency2 = (value) => {
       return new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
@@ -16984,13 +17854,13 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                   }, _parent3, _scopeId2));
                   _push3(`</div>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
-                  _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Network Builder Kiri</span><span class="font-semibold text-blue-600 dark:text-blue-400"${_scopeId2}>${ssrInterpolate(formatCurrency(__props.customer.network_stats.omzet_group_left_plana))}</span></div>`);
+                  _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Network Builder Kiri</span><span class="font-semibold text-blue-600 dark:text-blue-400"${_scopeId2}>${ssrInterpolate(formatCurrency2(__props.customer.network_stats.omzet_group_left_plana))}</span></div>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
-                  _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Network Builder Kanan</span><span class="font-semibold text-green-600 dark:text-green-400"${_scopeId2}>${ssrInterpolate(formatCurrency(__props.customer.network_stats.omzet_group_right_plana))}</span></div>`);
+                  _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Network Builder Kanan</span><span class="font-semibold text-green-600 dark:text-green-400"${_scopeId2}>${ssrInterpolate(formatCurrency2(__props.customer.network_stats.omzet_group_right_plana))}</span></div>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
-                  _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Retail Kiri</span><span class="font-semibold text-blue-600 dark:text-blue-400"${_scopeId2}>${ssrInterpolate(formatCurrency(__props.customer.network_stats.omzet_group_left_planb))}</span></div>`);
+                  _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Retail Kiri</span><span class="font-semibold text-blue-600 dark:text-blue-400"${_scopeId2}>${ssrInterpolate(formatCurrency2(__props.customer.network_stats.omzet_group_left_planb))}</span></div>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
-                  _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Retail Kanan</span><span class="font-semibold text-green-600 dark:text-green-400"${_scopeId2}>${ssrInterpolate(formatCurrency(__props.customer.network_stats.omzet_group_right_planb))}</span></div>`);
+                  _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Retail Kanan</span><span class="font-semibold text-green-600 dark:text-green-400"${_scopeId2}>${ssrInterpolate(formatCurrency2(__props.customer.network_stats.omzet_group_right_planb))}</span></div>`);
                 } else {
                   return [
                     createVNode("div", { class: "flex items-center justify-between" }, [
@@ -17015,22 +17885,22 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     createVNode(unref(_sfc_main$z)),
                     createVNode("div", { class: "flex items-center justify-between" }, [
                       createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Network Builder Kiri"),
-                      createVNode("span", { class: "font-semibold text-blue-600 dark:text-blue-400" }, toDisplayString(formatCurrency(__props.customer.network_stats.omzet_group_left_plana)), 1)
+                      createVNode("span", { class: "font-semibold text-blue-600 dark:text-blue-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group_left_plana)), 1)
                     ]),
                     createVNode(unref(_sfc_main$z)),
                     createVNode("div", { class: "flex items-center justify-between" }, [
                       createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Network Builder Kanan"),
-                      createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency(__props.customer.network_stats.omzet_group_right_plana)), 1)
+                      createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group_right_plana)), 1)
                     ]),
                     createVNode(unref(_sfc_main$z)),
                     createVNode("div", { class: "flex items-center justify-between" }, [
                       createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Retail Kiri"),
-                      createVNode("span", { class: "font-semibold text-blue-600 dark:text-blue-400" }, toDisplayString(formatCurrency(__props.customer.network_stats.omzet_group_left_planb)), 1)
+                      createVNode("span", { class: "font-semibold text-blue-600 dark:text-blue-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group_left_planb)), 1)
                     ]),
                     createVNode(unref(_sfc_main$z)),
                     createVNode("div", { class: "flex items-center justify-between" }, [
                       createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Retail Kanan"),
-                      createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency(__props.customer.network_stats.omzet_group_right_planb)), 1)
+                      createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group_right_planb)), 1)
                     ])
                   ];
                 }
@@ -17075,22 +17945,22 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                   createVNode(unref(_sfc_main$z)),
                   createVNode("div", { class: "flex items-center justify-between" }, [
                     createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Network Builder Kiri"),
-                    createVNode("span", { class: "font-semibold text-blue-600 dark:text-blue-400" }, toDisplayString(formatCurrency(__props.customer.network_stats.omzet_group_left_plana)), 1)
+                    createVNode("span", { class: "font-semibold text-blue-600 dark:text-blue-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group_left_plana)), 1)
                   ]),
                   createVNode(unref(_sfc_main$z)),
                   createVNode("div", { class: "flex items-center justify-between" }, [
                     createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Network Builder Kanan"),
-                    createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency(__props.customer.network_stats.omzet_group_right_plana)), 1)
+                    createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group_right_plana)), 1)
                   ]),
                   createVNode(unref(_sfc_main$z)),
                   createVNode("div", { class: "flex items-center justify-between" }, [
                     createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Retail Kiri"),
-                    createVNode("span", { class: "font-semibold text-blue-600 dark:text-blue-400" }, toDisplayString(formatCurrency(__props.customer.network_stats.omzet_group_left_planb)), 1)
+                    createVNode("span", { class: "font-semibold text-blue-600 dark:text-blue-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group_left_planb)), 1)
                   ]),
                   createVNode(unref(_sfc_main$z)),
                   createVNode("div", { class: "flex items-center justify-between" }, [
                     createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Retail Kanan"),
-                    createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency(__props.customer.network_stats.omzet_group_right_planb)), 1)
+                    createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group_right_planb)), 1)
                   ])
                 ]),
                 _: 1
@@ -17210,16 +18080,16 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                     _push3(`<h3 class="text-lg font-semibold mb-2"${_scopeId2}>Belum Ada Reward Promosi</h3><p class="text-muted-foreground text-sm"${_scopeId2}> Tidak ada program reward promosi yang sedang aktif saat ini. </p></div>`);
                   } else {
                     _push3(`<div class="overflow-x-auto"${_scopeId2}>`);
-                    _push3(ssrRenderComponent(unref(_sfc_main$12), null, {
+                    _push3(ssrRenderComponent(unref(_sfc_main$1a), null, {
                       default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                         if (_push4) {
-                          _push4(ssrRenderComponent(unref(_sfc_main$13), null, {
+                          _push4(ssrRenderComponent(unref(_sfc_main$1b), null, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
-                                _push5(ssrRenderComponent(unref(_sfc_main$14), null, {
+                                _push5(ssrRenderComponent(unref(_sfc_main$1c), null, {
                                   default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                     if (_push6) {
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Nama`);
@@ -17231,7 +18101,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Reward`);
@@ -17243,31 +18113,43 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
-                                            _push7(`Syarat Omset Grup Kiri (BV)`);
+                                            _push7(`Syarat Omset Grup Kiri &amp; Kanan (BV)`);
                                           } else {
                                             return [
-                                              createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                              createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                             ];
                                           }
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
-                                            _push7(`Syarat Omset Grup Kanan (BV)`);
+                                            _push7(`Akumulasi Omset Grup Kiri (BV)`);
                                           } else {
                                             return [
-                                              createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                              createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                             ];
                                           }
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                        default: withCtx((_6, _push7, _parent7, _scopeId6) => {
+                                          if (_push7) {
+                                            _push7(`Akumulasi Omset Grup Kanan (BV)`);
+                                          } else {
+                                            return [
+                                              createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                            ];
+                                          }
+                                        }),
+                                        _: 1
+                                      }, _parent6, _scopeId5));
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Periode Awal`);
@@ -17279,7 +18161,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Periode Akhir`);
@@ -17291,7 +18173,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Status`);
@@ -17305,43 +18187,49 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                       }, _parent6, _scopeId5));
                                     } else {
                                       return [
-                                        createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Nama")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Reward")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                           default: withCtx(() => [
-                                            createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                            createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                           default: withCtx(() => [
-                                            createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                            createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                          ]),
+                                          _: 1
+                                        }),
+                                        createVNode(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Periode Awal")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Periode Akhir")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Status")
                                           ]),
@@ -17354,45 +18242,51 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                 }, _parent5, _scopeId4));
                               } else {
                                 return [
-                                  createVNode(unref(_sfc_main$14), null, {
+                                  createVNode(unref(_sfc_main$1c), null, {
                                     default: withCtx(() => [
-                                      createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Nama")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Reward")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx(() => [
-                                          createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                          createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx(() => [
-                                          createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                          createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                        default: withCtx(() => [
+                                          createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                        ]),
+                                        _: 1
+                                      }),
+                                      createVNode(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Periode Awal")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Periode Akhir")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Status")
                                         ]),
@@ -17406,17 +18300,17 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             }),
                             _: 1
                           }, _parent4, _scopeId3));
-                          _push4(ssrRenderComponent(unref(_sfc_main$16), null, {
+                          _push4(ssrRenderComponent(unref(_sfc_main$1e), null, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
                                 _push5(`<!--[-->`);
                                 ssrRenderList(__props.promotionRewards, (reward) => {
-                                  _push5(ssrRenderComponent(unref(_sfc_main$14), {
+                                  _push5(ssrRenderComponent(unref(_sfc_main$1c), {
                                     key: reward.id
                                   }, {
                                     default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                       if (_push6) {
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "font-medium" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "font-medium" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`<div class="flex items-center gap-2"${_scopeId6}>`);
@@ -17433,7 +18327,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), null, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), null, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`${ssrInterpolate(reward.reward)}`);
@@ -17445,7 +18339,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`${ssrInterpolate(formatNumber(reward.bv))}`);
@@ -17457,19 +18351,31 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
-                                              _push7(`${ssrInterpolate(formatNumber(reward.bv))}`);
+                                              _push7(`${ssrInterpolate(formatNumber(reward.accumulated_left))}`);
                                             } else {
                                               return [
-                                                createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                                createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                               ];
                                             }
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), null, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                          default: withCtx((_6, _push7, _parent7, _scopeId6) => {
+                                            if (_push7) {
+                                              _push7(`${ssrInterpolate(formatNumber(reward.accumulated_right))}`);
+                                            } else {
+                                              return [
+                                                createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                              ];
+                                            }
+                                          }),
+                                          _: 2
+                                        }, _parent6, _scopeId5));
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), null, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`${ssrInterpolate(formatDate(reward.start))}`);
@@ -17481,7 +18387,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), null, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), null, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`${ssrInterpolate(formatDate(reward.end))}`);
@@ -17493,7 +18399,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "text-center" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "text-center" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(ssrRenderComponent(unref(_sfc_main$v), {
@@ -17540,7 +18446,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         }, _parent6, _scopeId5));
                                       } else {
                                         return [
-                                          createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                             default: withCtx(() => [
                                               createVNode("div", { class: "flex items-center gap-2" }, [
                                                 createVNode(unref(Award), { class: "h-4 w-4 text-amber-500" }),
@@ -17549,37 +18455,43 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), null, {
+                                          createVNode(unref(_sfc_main$1f), null, {
                                             default: withCtx(() => [
                                               createTextVNode(toDisplayString(reward.reward), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                             default: withCtx(() => [
                                               createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                             default: withCtx(() => [
-                                              createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                              createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), null, {
+                                          createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                            default: withCtx(() => [
+                                              createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                            ]),
+                                            _: 2
+                                          }, 1024),
+                                          createVNode(unref(_sfc_main$1f), null, {
                                             default: withCtx(() => [
                                               createTextVNode(toDisplayString(formatDate(reward.start)), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), null, {
+                                          createVNode(unref(_sfc_main$1f), null, {
                                             default: withCtx(() => [
                                               createTextVNode(toDisplayString(formatDate(reward.end)), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), { class: "text-center" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "text-center" }, {
                                             default: withCtx(() => [
                                               createVNode(unref(_sfc_main$v), {
                                                 variant: getStatusVariant(reward.claim_status)
@@ -17606,11 +18518,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               } else {
                                 return [
                                   (openBlock(true), createBlock(Fragment, null, renderList(__props.promotionRewards, (reward) => {
-                                    return openBlock(), createBlock(unref(_sfc_main$14), {
+                                    return openBlock(), createBlock(unref(_sfc_main$1c), {
                                       key: reward.id
                                     }, {
                                       default: withCtx(() => [
-                                        createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                           default: withCtx(() => [
                                             createVNode("div", { class: "flex items-center gap-2" }, [
                                               createVNode(unref(Award), { class: "h-4 w-4 text-amber-500" }),
@@ -17619,37 +18531,43 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), null, {
+                                        createVNode(unref(_sfc_main$1f), null, {
                                           default: withCtx(() => [
                                             createTextVNode(toDisplayString(reward.reward), 1)
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx(() => [
                                             createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx(() => [
-                                            createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                            createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), null, {
+                                        createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                          default: withCtx(() => [
+                                            createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                          ]),
+                                          _: 2
+                                        }, 1024),
+                                        createVNode(unref(_sfc_main$1f), null, {
                                           default: withCtx(() => [
                                             createTextVNode(toDisplayString(formatDate(reward.start)), 1)
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), null, {
+                                        createVNode(unref(_sfc_main$1f), null, {
                                           default: withCtx(() => [
                                             createTextVNode(toDisplayString(formatDate(reward.end)), 1)
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), { class: "text-center" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "text-center" }, {
                                           default: withCtx(() => [
                                             createVNode(unref(_sfc_main$v), {
                                               variant: getStatusVariant(reward.claim_status)
@@ -17677,47 +18595,53 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           }, _parent4, _scopeId3));
                         } else {
                           return [
-                            createVNode(unref(_sfc_main$13), null, {
+                            createVNode(unref(_sfc_main$1b), null, {
                               default: withCtx(() => [
-                                createVNode(unref(_sfc_main$14), null, {
+                                createVNode(unref(_sfc_main$1c), null, {
                                   default: withCtx(() => [
-                                    createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Nama")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Reward")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                       default: withCtx(() => [
-                                        createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                        createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                       default: withCtx(() => [
-                                        createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                        createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                      default: withCtx(() => [
+                                        createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                      ]),
+                                      _: 1
+                                    }),
+                                    createVNode(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Periode Awal")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Periode Akhir")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Status")
                                       ]),
@@ -17729,14 +18653,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$16), null, {
+                            createVNode(unref(_sfc_main$1e), null, {
                               default: withCtx(() => [
                                 (openBlock(true), createBlock(Fragment, null, renderList(__props.promotionRewards, (reward) => {
-                                  return openBlock(), createBlock(unref(_sfc_main$14), {
+                                  return openBlock(), createBlock(unref(_sfc_main$1c), {
                                     key: reward.id
                                   }, {
                                     default: withCtx(() => [
-                                      createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                         default: withCtx(() => [
                                           createVNode("div", { class: "flex items-center gap-2" }, [
                                             createVNode(unref(Award), { class: "h-4 w-4 text-amber-500" }),
@@ -17745,37 +18669,43 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), null, {
+                                      createVNode(unref(_sfc_main$1f), null, {
                                         default: withCtx(() => [
                                           createTextVNode(toDisplayString(reward.reward), 1)
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                         default: withCtx(() => [
                                           createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                         default: withCtx(() => [
-                                          createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                          createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), null, {
+                                      createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                        default: withCtx(() => [
+                                          createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                        ]),
+                                        _: 2
+                                      }, 1024),
+                                      createVNode(unref(_sfc_main$1f), null, {
                                         default: withCtx(() => [
                                           createTextVNode(toDisplayString(formatDate(reward.start)), 1)
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), null, {
+                                      createVNode(unref(_sfc_main$1f), null, {
                                         default: withCtx(() => [
                                           createTextVNode(toDisplayString(formatDate(reward.end)), 1)
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), { class: "text-center" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "text-center" }, {
                                         default: withCtx(() => [
                                           createVNode(unref(_sfc_main$v), {
                                             variant: getStatusVariant(reward.claim_status)
@@ -17819,49 +18749,55 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                       key: 1,
                       class: "overflow-x-auto"
                     }, [
-                      createVNode(unref(_sfc_main$12), null, {
+                      createVNode(unref(_sfc_main$1a), null, {
                         default: withCtx(() => [
-                          createVNode(unref(_sfc_main$13), null, {
+                          createVNode(unref(_sfc_main$1b), null, {
                             default: withCtx(() => [
-                              createVNode(unref(_sfc_main$14), null, {
+                              createVNode(unref(_sfc_main$1c), null, {
                                 default: withCtx(() => [
-                                  createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Nama")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Reward")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                     default: withCtx(() => [
-                                      createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                      createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                     default: withCtx(() => [
-                                      createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                      createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                    default: withCtx(() => [
+                                      createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                    ]),
+                                    _: 1
+                                  }),
+                                  createVNode(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Periode Awal")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Periode Akhir")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Status")
                                     ]),
@@ -17873,14 +18809,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$16), null, {
+                          createVNode(unref(_sfc_main$1e), null, {
                             default: withCtx(() => [
                               (openBlock(true), createBlock(Fragment, null, renderList(__props.promotionRewards, (reward) => {
-                                return openBlock(), createBlock(unref(_sfc_main$14), {
+                                return openBlock(), createBlock(unref(_sfc_main$1c), {
                                   key: reward.id
                                 }, {
                                   default: withCtx(() => [
-                                    createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                       default: withCtx(() => [
                                         createVNode("div", { class: "flex items-center gap-2" }, [
                                           createVNode(unref(Award), { class: "h-4 w-4 text-amber-500" }),
@@ -17889,37 +18825,43 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), null, {
+                                    createVNode(unref(_sfc_main$1f), null, {
                                       default: withCtx(() => [
                                         createTextVNode(toDisplayString(reward.reward), 1)
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                       default: withCtx(() => [
                                         createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                       default: withCtx(() => [
-                                        createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                        createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), null, {
+                                    createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                      default: withCtx(() => [
+                                        createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                      ]),
+                                      _: 2
+                                    }, 1024),
+                                    createVNode(unref(_sfc_main$1f), null, {
                                       default: withCtx(() => [
                                         createTextVNode(toDisplayString(formatDate(reward.start)), 1)
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), null, {
+                                    createVNode(unref(_sfc_main$1f), null, {
                                       default: withCtx(() => [
                                         createTextVNode(toDisplayString(formatDate(reward.end)), 1)
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), { class: "text-center" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "text-center" }, {
                                       default: withCtx(() => [
                                         createVNode(unref(_sfc_main$v), {
                                           variant: getStatusVariant(reward.claim_status)
@@ -17991,49 +18933,55 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                     key: 1,
                     class: "overflow-x-auto"
                   }, [
-                    createVNode(unref(_sfc_main$12), null, {
+                    createVNode(unref(_sfc_main$1a), null, {
                       default: withCtx(() => [
-                        createVNode(unref(_sfc_main$13), null, {
+                        createVNode(unref(_sfc_main$1b), null, {
                           default: withCtx(() => [
-                            createVNode(unref(_sfc_main$14), null, {
+                            createVNode(unref(_sfc_main$1c), null, {
                               default: withCtx(() => [
-                                createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Nama")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Reward")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                   default: withCtx(() => [
-                                    createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                    createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                   default: withCtx(() => [
-                                    createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                    createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                  default: withCtx(() => [
+                                    createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                  ]),
+                                  _: 1
+                                }),
+                                createVNode(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Periode Awal")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "min-w-[120px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "min-w-[120px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Periode Akhir")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Status")
                                   ]),
@@ -18045,14 +18993,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$16), null, {
+                        createVNode(unref(_sfc_main$1e), null, {
                           default: withCtx(() => [
                             (openBlock(true), createBlock(Fragment, null, renderList(__props.promotionRewards, (reward) => {
-                              return openBlock(), createBlock(unref(_sfc_main$14), {
+                              return openBlock(), createBlock(unref(_sfc_main$1c), {
                                 key: reward.id
                               }, {
                                 default: withCtx(() => [
-                                  createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                     default: withCtx(() => [
                                       createVNode("div", { class: "flex items-center gap-2" }, [
                                         createVNode(unref(Award), { class: "h-4 w-4 text-amber-500" }),
@@ -18061,37 +19009,43 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), null, {
+                                  createVNode(unref(_sfc_main$1f), null, {
                                     default: withCtx(() => [
                                       createTextVNode(toDisplayString(reward.reward), 1)
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                     default: withCtx(() => [
                                       createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                     default: withCtx(() => [
-                                      createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                      createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), null, {
+                                  createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                    default: withCtx(() => [
+                                      createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                    ]),
+                                    _: 2
+                                  }, 1024),
+                                  createVNode(unref(_sfc_main$1f), null, {
                                     default: withCtx(() => [
                                       createTextVNode(toDisplayString(formatDate(reward.start)), 1)
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), null, {
+                                  createVNode(unref(_sfc_main$1f), null, {
                                     default: withCtx(() => [
                                       createTextVNode(toDisplayString(formatDate(reward.end)), 1)
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), { class: "text-center" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "text-center" }, {
                                     default: withCtx(() => [
                                       createVNode(unref(_sfc_main$v), {
                                         variant: getStatusVariant(reward.claim_status)
@@ -18196,16 +19150,16 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                     _push3(`<h3 class="text-lg font-semibold mb-2"${_scopeId2}>Belum Ada Reward Diklaim</h3><p class="text-muted-foreground text-sm"${_scopeId2}> Anda belum memiliki reward promosi yang telah diklaim. </p></div>`);
                   } else {
                     _push3(`<div class="overflow-x-auto"${_scopeId2}>`);
-                    _push3(ssrRenderComponent(unref(_sfc_main$12), null, {
+                    _push3(ssrRenderComponent(unref(_sfc_main$1a), null, {
                       default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                         if (_push4) {
-                          _push4(ssrRenderComponent(unref(_sfc_main$13), null, {
+                          _push4(ssrRenderComponent(unref(_sfc_main$1b), null, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
-                                _push5(ssrRenderComponent(unref(_sfc_main$14), null, {
+                                _push5(ssrRenderComponent(unref(_sfc_main$1c), null, {
                                   default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                     if (_push6) {
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Reward`);
@@ -18217,7 +19171,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Syarat Omset Group (BV)`);
@@ -18229,7 +19183,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Tanggal Klaim`);
@@ -18243,19 +19197,19 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                       }, _parent6, _scopeId5));
                                     } else {
                                       return [
-                                        createVNode(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Reward")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Syarat Omset Group (BV)")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Tanggal Klaim")
                                           ]),
@@ -18268,21 +19222,21 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                 }, _parent5, _scopeId4));
                               } else {
                                 return [
-                                  createVNode(unref(_sfc_main$14), null, {
+                                  createVNode(unref(_sfc_main$1c), null, {
                                     default: withCtx(() => [
-                                      createVNode(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Reward")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Syarat Omset Group (BV)")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Tanggal Klaim")
                                         ]),
@@ -18296,17 +19250,17 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             }),
                             _: 1
                           }, _parent4, _scopeId3));
-                          _push4(ssrRenderComponent(unref(_sfc_main$16), null, {
+                          _push4(ssrRenderComponent(unref(_sfc_main$1e), null, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
                                 _push5(`<!--[-->`);
                                 ssrRenderList(__props.claimedPromotionRewards, (claimed) => {
-                                  _push5(ssrRenderComponent(unref(_sfc_main$14), {
+                                  _push5(ssrRenderComponent(unref(_sfc_main$1c), {
                                     key: claimed.id
                                   }, {
                                     default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                       if (_push6) {
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "font-medium" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "font-medium" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`<div class="flex items-center gap-2"${_scopeId6}>`);
@@ -18323,7 +19277,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`${ssrInterpolate(formatNumber(claimed.bv))}`);
@@ -18335,7 +19289,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), null, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), null, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`${ssrInterpolate(formatDate(claimed.created_at))}`);
@@ -18349,7 +19303,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         }, _parent6, _scopeId5));
                                       } else {
                                         return [
-                                          createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                             default: withCtx(() => [
                                               createVNode("div", { class: "flex items-center gap-2" }, [
                                                 createVNode(unref(Gift), { class: "h-4 w-4 text-green-500" }),
@@ -18358,13 +19312,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                             default: withCtx(() => [
                                               createTextVNode(toDisplayString(formatNumber(claimed.bv)), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), null, {
+                                          createVNode(unref(_sfc_main$1f), null, {
                                             default: withCtx(() => [
                                               createTextVNode(toDisplayString(formatDate(claimed.created_at)), 1)
                                             ]),
@@ -18380,11 +19334,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               } else {
                                 return [
                                   (openBlock(true), createBlock(Fragment, null, renderList(__props.claimedPromotionRewards, (claimed) => {
-                                    return openBlock(), createBlock(unref(_sfc_main$14), {
+                                    return openBlock(), createBlock(unref(_sfc_main$1c), {
                                       key: claimed.id
                                     }, {
                                       default: withCtx(() => [
-                                        createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                           default: withCtx(() => [
                                             createVNode("div", { class: "flex items-center gap-2" }, [
                                               createVNode(unref(Gift), { class: "h-4 w-4 text-green-500" }),
@@ -18393,13 +19347,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx(() => [
                                             createTextVNode(toDisplayString(formatNumber(claimed.bv)), 1)
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), null, {
+                                        createVNode(unref(_sfc_main$1f), null, {
                                           default: withCtx(() => [
                                             createTextVNode(toDisplayString(formatDate(claimed.created_at)), 1)
                                           ]),
@@ -18416,23 +19370,23 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           }, _parent4, _scopeId3));
                         } else {
                           return [
-                            createVNode(unref(_sfc_main$13), null, {
+                            createVNode(unref(_sfc_main$1b), null, {
                               default: withCtx(() => [
-                                createVNode(unref(_sfc_main$14), null, {
+                                createVNode(unref(_sfc_main$1c), null, {
                                   default: withCtx(() => [
-                                    createVNode(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Reward")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Syarat Omset Group (BV)")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Tanggal Klaim")
                                       ]),
@@ -18444,14 +19398,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$16), null, {
+                            createVNode(unref(_sfc_main$1e), null, {
                               default: withCtx(() => [
                                 (openBlock(true), createBlock(Fragment, null, renderList(__props.claimedPromotionRewards, (claimed) => {
-                                  return openBlock(), createBlock(unref(_sfc_main$14), {
+                                  return openBlock(), createBlock(unref(_sfc_main$1c), {
                                     key: claimed.id
                                   }, {
                                     default: withCtx(() => [
-                                      createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                         default: withCtx(() => [
                                           createVNode("div", { class: "flex items-center gap-2" }, [
                                             createVNode(unref(Gift), { class: "h-4 w-4 text-green-500" }),
@@ -18460,13 +19414,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                         default: withCtx(() => [
                                           createTextVNode(toDisplayString(formatNumber(claimed.bv)), 1)
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), null, {
+                                      createVNode(unref(_sfc_main$1f), null, {
                                         default: withCtx(() => [
                                           createTextVNode(toDisplayString(formatDate(claimed.created_at)), 1)
                                         ]),
@@ -18499,25 +19453,25 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                       key: 1,
                       class: "overflow-x-auto"
                     }, [
-                      createVNode(unref(_sfc_main$12), null, {
+                      createVNode(unref(_sfc_main$1a), null, {
                         default: withCtx(() => [
-                          createVNode(unref(_sfc_main$13), null, {
+                          createVNode(unref(_sfc_main$1b), null, {
                             default: withCtx(() => [
-                              createVNode(unref(_sfc_main$14), null, {
+                              createVNode(unref(_sfc_main$1c), null, {
                                 default: withCtx(() => [
-                                  createVNode(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Reward")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Syarat Omset Group (BV)")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Tanggal Klaim")
                                     ]),
@@ -18529,14 +19483,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$16), null, {
+                          createVNode(unref(_sfc_main$1e), null, {
                             default: withCtx(() => [
                               (openBlock(true), createBlock(Fragment, null, renderList(__props.claimedPromotionRewards, (claimed) => {
-                                return openBlock(), createBlock(unref(_sfc_main$14), {
+                                return openBlock(), createBlock(unref(_sfc_main$1c), {
                                   key: claimed.id
                                 }, {
                                   default: withCtx(() => [
-                                    createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                       default: withCtx(() => [
                                         createVNode("div", { class: "flex items-center gap-2" }, [
                                           createVNode(unref(Gift), { class: "h-4 w-4 text-green-500" }),
@@ -18545,13 +19499,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                       default: withCtx(() => [
                                         createTextVNode(toDisplayString(formatNumber(claimed.bv)), 1)
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), null, {
+                                    createVNode(unref(_sfc_main$1f), null, {
                                       default: withCtx(() => [
                                         createTextVNode(toDisplayString(formatDate(claimed.created_at)), 1)
                                       ]),
@@ -18612,25 +19566,25 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                     key: 1,
                     class: "overflow-x-auto"
                   }, [
-                    createVNode(unref(_sfc_main$12), null, {
+                    createVNode(unref(_sfc_main$1a), null, {
                       default: withCtx(() => [
-                        createVNode(unref(_sfc_main$13), null, {
+                        createVNode(unref(_sfc_main$1b), null, {
                           default: withCtx(() => [
-                            createVNode(unref(_sfc_main$14), null, {
+                            createVNode(unref(_sfc_main$1c), null, {
                               default: withCtx(() => [
-                                createVNode(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Reward")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Syarat Omset Group (BV)")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Tanggal Klaim")
                                   ]),
@@ -18642,14 +19596,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$16), null, {
+                        createVNode(unref(_sfc_main$1e), null, {
                           default: withCtx(() => [
                             (openBlock(true), createBlock(Fragment, null, renderList(__props.claimedPromotionRewards, (claimed) => {
-                              return openBlock(), createBlock(unref(_sfc_main$14), {
+                              return openBlock(), createBlock(unref(_sfc_main$1c), {
                                 key: claimed.id
                               }, {
                                 default: withCtx(() => [
-                                  createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                     default: withCtx(() => [
                                       createVNode("div", { class: "flex items-center gap-2" }, [
                                         createVNode(unref(Gift), { class: "h-4 w-4 text-green-500" }),
@@ -18658,13 +19612,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                     default: withCtx(() => [
                                       createTextVNode(toDisplayString(formatNumber(claimed.bv)), 1)
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), null, {
+                                  createVNode(unref(_sfc_main$1f), null, {
                                     default: withCtx(() => [
                                       createTextVNode(toDisplayString(formatDate(claimed.created_at)), 1)
                                     ]),
@@ -18800,16 +19754,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     _push3(`<h3 class="text-lg font-semibold mb-2"${_scopeId2}>Belum Ada Reward Lifetime</h3><p class="text-muted-foreground text-sm"${_scopeId2}> Tidak ada program reward lifetime yang tersedia saat ini. </p></div>`);
                   } else {
                     _push3(`<div class="overflow-x-auto"${_scopeId2}>`);
-                    _push3(ssrRenderComponent(unref(_sfc_main$12), null, {
+                    _push3(ssrRenderComponent(unref(_sfc_main$1a), null, {
                       default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                         if (_push4) {
-                          _push4(ssrRenderComponent(unref(_sfc_main$13), null, {
+                          _push4(ssrRenderComponent(unref(_sfc_main$1b), null, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
-                                _push5(ssrRenderComponent(unref(_sfc_main$14), null, {
+                                _push5(ssrRenderComponent(unref(_sfc_main$1c), null, {
                                   default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                     if (_push6) {
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Nama`);
@@ -18821,7 +19775,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Reward`);
@@ -18833,31 +19787,43 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
-                                            _push7(`Syarat Omset Grup Kiri (BV)`);
+                                            _push7(`Syarat Omset Grup Kiri &amp; Kanan (BV)`);
                                           } else {
                                             return [
-                                              createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                              createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                             ];
                                           }
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
-                                            _push7(`Syarat Omset Grup Kanan (BV)`);
+                                            _push7(`Akumulasi Omset Grup Kiri (BV)`);
                                           } else {
                                             return [
-                                              createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                              createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                             ];
                                           }
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                        default: withCtx((_6, _push7, _parent7, _scopeId6) => {
+                                          if (_push7) {
+                                            _push7(`Akumulasi Omset Grup Kanan (BV)`);
+                                          } else {
+                                            return [
+                                              createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                            ];
+                                          }
+                                        }),
+                                        _: 1
+                                      }, _parent6, _scopeId5));
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Klaim`);
@@ -18871,31 +19837,37 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                       }, _parent6, _scopeId5));
                                     } else {
                                       return [
-                                        createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Nama")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Reward")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                           default: withCtx(() => [
-                                            createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                            createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                           default: withCtx(() => [
-                                            createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                            createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                          ]),
+                                          _: 1
+                                        }),
+                                        createVNode(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Klaim")
                                           ]),
@@ -18908,33 +19880,39 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                 }, _parent5, _scopeId4));
                               } else {
                                 return [
-                                  createVNode(unref(_sfc_main$14), null, {
+                                  createVNode(unref(_sfc_main$1c), null, {
                                     default: withCtx(() => [
-                                      createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Nama")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Reward")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx(() => [
-                                          createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                          createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx(() => [
-                                          createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                          createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                        default: withCtx(() => [
+                                          createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                        ]),
+                                        _: 1
+                                      }),
+                                      createVNode(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Klaim")
                                         ]),
@@ -18948,17 +19926,17 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             }),
                             _: 1
                           }, _parent4, _scopeId3));
-                          _push4(ssrRenderComponent(unref(_sfc_main$16), null, {
+                          _push4(ssrRenderComponent(unref(_sfc_main$1e), null, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
                                 _push5(`<!--[-->`);
                                 ssrRenderList(__props.lifetimeRewards, (reward) => {
-                                  _push5(ssrRenderComponent(unref(_sfc_main$14), {
+                                  _push5(ssrRenderComponent(unref(_sfc_main$1c), {
                                     key: reward.id
                                   }, {
                                     default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                       if (_push6) {
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "font-medium" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "font-medium" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`<div class="flex items-center gap-2"${_scopeId6}>`);
@@ -18975,7 +19953,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), null, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), null, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`${ssrInterpolate(reward.reward)}`);
@@ -18987,7 +19965,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`${ssrInterpolate(formatNumber(reward.bv))}`);
@@ -18999,19 +19977,31 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
-                                              _push7(`${ssrInterpolate(formatNumber(reward.bv))}`);
+                                              _push7(`${ssrInterpolate(formatNumber(reward.accumulated_left))}`);
                                             } else {
                                               return [
-                                                createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                                createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                               ];
                                             }
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "text-center" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                          default: withCtx((_6, _push7, _parent7, _scopeId6) => {
+                                            if (_push7) {
+                                              _push7(`${ssrInterpolate(formatNumber(reward.accumulated_right))}`);
+                                            } else {
+                                              return [
+                                                createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                              ];
+                                            }
+                                          }),
+                                          _: 2
+                                        }, _parent6, _scopeId5));
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "text-center" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               if (reward.is_claimed) {
@@ -19116,7 +20106,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                         }, _parent6, _scopeId5));
                                       } else {
                                         return [
-                                          createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                             default: withCtx(() => [
                                               createVNode("div", { class: "flex items-center gap-2" }, [
                                                 createVNode(unref(Award), { class: "h-4 w-4 text-purple-500" }),
@@ -19125,25 +20115,31 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), null, {
+                                          createVNode(unref(_sfc_main$1f), null, {
                                             default: withCtx(() => [
                                               createTextVNode(toDisplayString(reward.reward), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                             default: withCtx(() => [
                                               createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                             default: withCtx(() => [
-                                              createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                              createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), { class: "text-center" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                            default: withCtx(() => [
+                                              createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                            ]),
+                                            _: 2
+                                          }, 1024),
+                                          createVNode(unref(_sfc_main$1f), { class: "text-center" }, {
                                             default: withCtx(() => [
                                               reward.is_claimed ? (openBlock(), createBlock(unref(_sfc_main$v), {
                                                 key: 0,
@@ -19193,11 +20189,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               } else {
                                 return [
                                   (openBlock(true), createBlock(Fragment, null, renderList(__props.lifetimeRewards, (reward) => {
-                                    return openBlock(), createBlock(unref(_sfc_main$14), {
+                                    return openBlock(), createBlock(unref(_sfc_main$1c), {
                                       key: reward.id
                                     }, {
                                       default: withCtx(() => [
-                                        createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                           default: withCtx(() => [
                                             createVNode("div", { class: "flex items-center gap-2" }, [
                                               createVNode(unref(Award), { class: "h-4 w-4 text-purple-500" }),
@@ -19206,25 +20202,31 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), null, {
+                                        createVNode(unref(_sfc_main$1f), null, {
                                           default: withCtx(() => [
                                             createTextVNode(toDisplayString(reward.reward), 1)
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx(() => [
                                             createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx(() => [
-                                            createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                            createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), { class: "text-center" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                          default: withCtx(() => [
+                                            createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                          ]),
+                                          _: 2
+                                        }, 1024),
+                                        createVNode(unref(_sfc_main$1f), { class: "text-center" }, {
                                           default: withCtx(() => [
                                             reward.is_claimed ? (openBlock(), createBlock(unref(_sfc_main$v), {
                                               key: 0,
@@ -19275,35 +20277,41 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, _parent4, _scopeId3));
                         } else {
                           return [
-                            createVNode(unref(_sfc_main$13), null, {
+                            createVNode(unref(_sfc_main$1b), null, {
                               default: withCtx(() => [
-                                createVNode(unref(_sfc_main$14), null, {
+                                createVNode(unref(_sfc_main$1c), null, {
                                   default: withCtx(() => [
-                                    createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Nama")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Reward")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                       default: withCtx(() => [
-                                        createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                        createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                       default: withCtx(() => [
-                                        createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                        createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                      default: withCtx(() => [
+                                        createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                      ]),
+                                      _: 1
+                                    }),
+                                    createVNode(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Klaim")
                                       ]),
@@ -19315,14 +20323,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$16), null, {
+                            createVNode(unref(_sfc_main$1e), null, {
                               default: withCtx(() => [
                                 (openBlock(true), createBlock(Fragment, null, renderList(__props.lifetimeRewards, (reward) => {
-                                  return openBlock(), createBlock(unref(_sfc_main$14), {
+                                  return openBlock(), createBlock(unref(_sfc_main$1c), {
                                     key: reward.id
                                   }, {
                                     default: withCtx(() => [
-                                      createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                         default: withCtx(() => [
                                           createVNode("div", { class: "flex items-center gap-2" }, [
                                             createVNode(unref(Award), { class: "h-4 w-4 text-purple-500" }),
@@ -19331,25 +20339,31 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), null, {
+                                      createVNode(unref(_sfc_main$1f), null, {
                                         default: withCtx(() => [
                                           createTextVNode(toDisplayString(reward.reward), 1)
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                         default: withCtx(() => [
                                           createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                         default: withCtx(() => [
-                                          createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                          createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), { class: "text-center" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                        default: withCtx(() => [
+                                          createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                        ]),
+                                        _: 2
+                                      }, 1024),
+                                      createVNode(unref(_sfc_main$1f), { class: "text-center" }, {
                                         default: withCtx(() => [
                                           reward.is_claimed ? (openBlock(), createBlock(unref(_sfc_main$v), {
                                             key: 0,
@@ -19416,37 +20430,43 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       key: 1,
                       class: "overflow-x-auto"
                     }, [
-                      createVNode(unref(_sfc_main$12), null, {
+                      createVNode(unref(_sfc_main$1a), null, {
                         default: withCtx(() => [
-                          createVNode(unref(_sfc_main$13), null, {
+                          createVNode(unref(_sfc_main$1b), null, {
                             default: withCtx(() => [
-                              createVNode(unref(_sfc_main$14), null, {
+                              createVNode(unref(_sfc_main$1c), null, {
                                 default: withCtx(() => [
-                                  createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Nama")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Reward")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                     default: withCtx(() => [
-                                      createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                      createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                     default: withCtx(() => [
-                                      createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                      createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                    default: withCtx(() => [
+                                      createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                    ]),
+                                    _: 1
+                                  }),
+                                  createVNode(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Klaim")
                                     ]),
@@ -19458,14 +20478,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$16), null, {
+                          createVNode(unref(_sfc_main$1e), null, {
                             default: withCtx(() => [
                               (openBlock(true), createBlock(Fragment, null, renderList(__props.lifetimeRewards, (reward) => {
-                                return openBlock(), createBlock(unref(_sfc_main$14), {
+                                return openBlock(), createBlock(unref(_sfc_main$1c), {
                                   key: reward.id
                                 }, {
                                   default: withCtx(() => [
-                                    createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                       default: withCtx(() => [
                                         createVNode("div", { class: "flex items-center gap-2" }, [
                                           createVNode(unref(Award), { class: "h-4 w-4 text-purple-500" }),
@@ -19474,25 +20494,31 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), null, {
+                                    createVNode(unref(_sfc_main$1f), null, {
                                       default: withCtx(() => [
                                         createTextVNode(toDisplayString(reward.reward), 1)
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                       default: withCtx(() => [
                                         createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                       default: withCtx(() => [
-                                        createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                        createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), { class: "text-center" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                      default: withCtx(() => [
+                                        createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                      ]),
+                                      _: 2
+                                    }, 1024),
+                                    createVNode(unref(_sfc_main$1f), { class: "text-center" }, {
                                       default: withCtx(() => [
                                         reward.is_claimed ? (openBlock(), createBlock(unref(_sfc_main$v), {
                                           key: 0,
@@ -19587,37 +20613,43 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     key: 1,
                     class: "overflow-x-auto"
                   }, [
-                    createVNode(unref(_sfc_main$12), null, {
+                    createVNode(unref(_sfc_main$1a), null, {
                       default: withCtx(() => [
-                        createVNode(unref(_sfc_main$13), null, {
+                        createVNode(unref(_sfc_main$1b), null, {
                           default: withCtx(() => [
-                            createVNode(unref(_sfc_main$14), null, {
+                            createVNode(unref(_sfc_main$1c), null, {
                               default: withCtx(() => [
-                                createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Nama")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Reward")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                   default: withCtx(() => [
-                                    createTextVNode("Syarat Omset Grup Kiri (BV)")
+                                    createTextVNode("Syarat Omset Grup Kiri & Kanan (BV)")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "text-right min-w-[150px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                   default: withCtx(() => [
-                                    createTextVNode("Syarat Omset Grup Kanan (BV)")
+                                    createTextVNode("Akumulasi Omset Grup Kiri (BV)")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "text-center min-w-[120px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
+                                  default: withCtx(() => [
+                                    createTextVNode("Akumulasi Omset Grup Kanan (BV)")
+                                  ]),
+                                  _: 1
+                                }),
+                                createVNode(unref(_sfc_main$1d), { class: "text-center min-w-[120px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Klaim")
                                   ]),
@@ -19629,14 +20661,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$16), null, {
+                        createVNode(unref(_sfc_main$1e), null, {
                           default: withCtx(() => [
                             (openBlock(true), createBlock(Fragment, null, renderList(__props.lifetimeRewards, (reward) => {
-                              return openBlock(), createBlock(unref(_sfc_main$14), {
+                              return openBlock(), createBlock(unref(_sfc_main$1c), {
                                 key: reward.id
                               }, {
                                 default: withCtx(() => [
-                                  createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                     default: withCtx(() => [
                                       createVNode("div", { class: "flex items-center gap-2" }, [
                                         createVNode(unref(Award), { class: "h-4 w-4 text-purple-500" }),
@@ -19645,25 +20677,31 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), null, {
+                                  createVNode(unref(_sfc_main$1f), null, {
                                     default: withCtx(() => [
                                       createTextVNode(toDisplayString(reward.reward), 1)
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                     default: withCtx(() => [
                                       createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                     default: withCtx(() => [
-                                      createTextVNode(toDisplayString(formatNumber(reward.bv)), 1)
+                                      createTextVNode(toDisplayString(formatNumber(reward.accumulated_left)), 1)
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), { class: "text-center" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
+                                    default: withCtx(() => [
+                                      createTextVNode(toDisplayString(formatNumber(reward.accumulated_right)), 1)
+                                    ]),
+                                    _: 2
+                                  }, 1024),
+                                  createVNode(unref(_sfc_main$1f), { class: "text-center" }, {
                                     default: withCtx(() => [
                                       reward.is_claimed ? (openBlock(), createBlock(unref(_sfc_main$v), {
                                         key: 0,
@@ -19791,16 +20829,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     _push3(`<h3 class="text-lg font-semibold mb-2"${_scopeId2}>Belum Ada Reward Diklaim</h3><p class="text-muted-foreground text-sm"${_scopeId2}> Anda belum memiliki reward lifetime yang telah diklaim. </p></div>`);
                   } else {
                     _push3(`<div class="overflow-x-auto"${_scopeId2}>`);
-                    _push3(ssrRenderComponent(unref(_sfc_main$12), null, {
+                    _push3(ssrRenderComponent(unref(_sfc_main$1a), null, {
                       default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                         if (_push4) {
-                          _push4(ssrRenderComponent(unref(_sfc_main$13), null, {
+                          _push4(ssrRenderComponent(unref(_sfc_main$1b), null, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
-                                _push5(ssrRenderComponent(unref(_sfc_main$14), null, {
+                                _push5(ssrRenderComponent(unref(_sfc_main$1c), null, {
                                   default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                     if (_push6) {
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Reward`);
@@ -19812,7 +20850,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Syarat Omset Group (BV)`);
@@ -19824,7 +20862,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                         }),
                                         _: 1
                                       }, _parent6, _scopeId5));
-                                      _push6(ssrRenderComponent(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      _push6(ssrRenderComponent(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                           if (_push7) {
                                             _push7(`Tanggal Klaim`);
@@ -19838,19 +20876,19 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                       }, _parent6, _scopeId5));
                                     } else {
                                       return [
-                                        createVNode(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Reward")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Syarat Omset Group (BV)")
                                           ]),
                                           _: 1
                                         }),
-                                        createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                        createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                           default: withCtx(() => [
                                             createTextVNode("Tanggal Klaim")
                                           ]),
@@ -19863,21 +20901,21 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                 }, _parent5, _scopeId4));
                               } else {
                                 return [
-                                  createVNode(unref(_sfc_main$14), null, {
+                                  createVNode(unref(_sfc_main$1c), null, {
                                     default: withCtx(() => [
-                                      createVNode(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Reward")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Syarat Omset Group (BV)")
                                         ]),
                                         _: 1
                                       }),
-                                      createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                      createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                         default: withCtx(() => [
                                           createTextVNode("Tanggal Klaim")
                                         ]),
@@ -19891,17 +20929,17 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             }),
                             _: 1
                           }, _parent4, _scopeId3));
-                          _push4(ssrRenderComponent(unref(_sfc_main$16), null, {
+                          _push4(ssrRenderComponent(unref(_sfc_main$1e), null, {
                             default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                               if (_push5) {
                                 _push5(`<!--[-->`);
                                 ssrRenderList(__props.claimedLifetimeRewards, (claimed) => {
-                                  _push5(ssrRenderComponent(unref(_sfc_main$14), {
+                                  _push5(ssrRenderComponent(unref(_sfc_main$1c), {
                                     key: claimed.id
                                   }, {
                                     default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                       if (_push6) {
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "font-medium" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "font-medium" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`<div class="flex items-center gap-2"${_scopeId6}>`);
@@ -19918,7 +20956,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`${ssrInterpolate(formatNumber(claimed.bv))}`);
@@ -19930,7 +20968,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                           }),
                                           _: 2
                                         }, _parent6, _scopeId5));
-                                        _push6(ssrRenderComponent(unref(_sfc_main$17), null, {
+                                        _push6(ssrRenderComponent(unref(_sfc_main$1f), null, {
                                           default: withCtx((_6, _push7, _parent7, _scopeId6) => {
                                             if (_push7) {
                                               _push7(`${ssrInterpolate(formatDate(claimed.created_at))}`);
@@ -19944,7 +20982,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                         }, _parent6, _scopeId5));
                                       } else {
                                         return [
-                                          createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                             default: withCtx(() => [
                                               createVNode("div", { class: "flex items-center gap-2" }, [
                                                 createVNode(unref(Gift), { class: "h-4 w-4 text-green-500" }),
@@ -19953,13 +20991,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                          createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                             default: withCtx(() => [
                                               createTextVNode(toDisplayString(formatNumber(claimed.bv)), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
-                                          createVNode(unref(_sfc_main$17), null, {
+                                          createVNode(unref(_sfc_main$1f), null, {
                                             default: withCtx(() => [
                                               createTextVNode(toDisplayString(formatDate(claimed.created_at)), 1)
                                             ]),
@@ -19975,11 +21013,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               } else {
                                 return [
                                   (openBlock(true), createBlock(Fragment, null, renderList(__props.claimedLifetimeRewards, (claimed) => {
-                                    return openBlock(), createBlock(unref(_sfc_main$14), {
+                                    return openBlock(), createBlock(unref(_sfc_main$1c), {
                                       key: claimed.id
                                     }, {
                                       default: withCtx(() => [
-                                        createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                           default: withCtx(() => [
                                             createVNode("div", { class: "flex items-center gap-2" }, [
                                               createVNode(unref(Gift), { class: "h-4 w-4 text-green-500" }),
@@ -19988,13 +21026,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                        createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                           default: withCtx(() => [
                                             createTextVNode(toDisplayString(formatNumber(claimed.bv)), 1)
                                           ]),
                                           _: 2
                                         }, 1024),
-                                        createVNode(unref(_sfc_main$17), null, {
+                                        createVNode(unref(_sfc_main$1f), null, {
                                           default: withCtx(() => [
                                             createTextVNode(toDisplayString(formatDate(claimed.created_at)), 1)
                                           ]),
@@ -20011,23 +21049,23 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, _parent4, _scopeId3));
                         } else {
                           return [
-                            createVNode(unref(_sfc_main$13), null, {
+                            createVNode(unref(_sfc_main$1b), null, {
                               default: withCtx(() => [
-                                createVNode(unref(_sfc_main$14), null, {
+                                createVNode(unref(_sfc_main$1c), null, {
                                   default: withCtx(() => [
-                                    createVNode(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Reward")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Syarat Omset Group (BV)")
                                       ]),
                                       _: 1
                                     }),
-                                    createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                    createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                       default: withCtx(() => [
                                         createTextVNode("Tanggal Klaim")
                                       ]),
@@ -20039,14 +21077,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$16), null, {
+                            createVNode(unref(_sfc_main$1e), null, {
                               default: withCtx(() => [
                                 (openBlock(true), createBlock(Fragment, null, renderList(__props.claimedLifetimeRewards, (claimed) => {
-                                  return openBlock(), createBlock(unref(_sfc_main$14), {
+                                  return openBlock(), createBlock(unref(_sfc_main$1c), {
                                     key: claimed.id
                                   }, {
                                     default: withCtx(() => [
-                                      createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                         default: withCtx(() => [
                                           createVNode("div", { class: "flex items-center gap-2" }, [
                                             createVNode(unref(Gift), { class: "h-4 w-4 text-green-500" }),
@@ -20055,13 +21093,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                      createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                         default: withCtx(() => [
                                           createTextVNode(toDisplayString(formatNumber(claimed.bv)), 1)
                                         ]),
                                         _: 2
                                       }, 1024),
-                                      createVNode(unref(_sfc_main$17), null, {
+                                      createVNode(unref(_sfc_main$1f), null, {
                                         default: withCtx(() => [
                                           createTextVNode(toDisplayString(formatDate(claimed.created_at)), 1)
                                         ]),
@@ -20094,25 +21132,25 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       key: 1,
                       class: "overflow-x-auto"
                     }, [
-                      createVNode(unref(_sfc_main$12), null, {
+                      createVNode(unref(_sfc_main$1a), null, {
                         default: withCtx(() => [
-                          createVNode(unref(_sfc_main$13), null, {
+                          createVNode(unref(_sfc_main$1b), null, {
                             default: withCtx(() => [
-                              createVNode(unref(_sfc_main$14), null, {
+                              createVNode(unref(_sfc_main$1c), null, {
                                 default: withCtx(() => [
-                                  createVNode(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Reward")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Syarat Omset Group (BV)")
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                  createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                     default: withCtx(() => [
                                       createTextVNode("Tanggal Klaim")
                                     ]),
@@ -20124,14 +21162,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$16), null, {
+                          createVNode(unref(_sfc_main$1e), null, {
                             default: withCtx(() => [
                               (openBlock(true), createBlock(Fragment, null, renderList(__props.claimedLifetimeRewards, (claimed) => {
-                                return openBlock(), createBlock(unref(_sfc_main$14), {
+                                return openBlock(), createBlock(unref(_sfc_main$1c), {
                                   key: claimed.id
                                 }, {
                                   default: withCtx(() => [
-                                    createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                       default: withCtx(() => [
                                         createVNode("div", { class: "flex items-center gap-2" }, [
                                           createVNode(unref(Gift), { class: "h-4 w-4 text-green-500" }),
@@ -20140,13 +21178,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                    createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                       default: withCtx(() => [
                                         createTextVNode(toDisplayString(formatNumber(claimed.bv)), 1)
                                       ]),
                                       _: 2
                                     }, 1024),
-                                    createVNode(unref(_sfc_main$17), null, {
+                                    createVNode(unref(_sfc_main$1f), null, {
                                       default: withCtx(() => [
                                         createTextVNode(toDisplayString(formatDate(claimed.created_at)), 1)
                                       ]),
@@ -20207,25 +21245,25 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     key: 1,
                     class: "overflow-x-auto"
                   }, [
-                    createVNode(unref(_sfc_main$12), null, {
+                    createVNode(unref(_sfc_main$1a), null, {
                       default: withCtx(() => [
-                        createVNode(unref(_sfc_main$13), null, {
+                        createVNode(unref(_sfc_main$1b), null, {
                           default: withCtx(() => [
-                            createVNode(unref(_sfc_main$14), null, {
+                            createVNode(unref(_sfc_main$1c), null, {
                               default: withCtx(() => [
-                                createVNode(unref(_sfc_main$15), { class: "min-w-[200px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "min-w-[200px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Reward")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "text-right min-w-[180px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "text-right min-w-[180px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Syarat Omset Group (BV)")
                                   ]),
                                   _: 1
                                 }),
-                                createVNode(unref(_sfc_main$15), { class: "min-w-[150px]" }, {
+                                createVNode(unref(_sfc_main$1d), { class: "min-w-[150px]" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Tanggal Klaim")
                                   ]),
@@ -20237,14 +21275,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(_sfc_main$16), null, {
+                        createVNode(unref(_sfc_main$1e), null, {
                           default: withCtx(() => [
                             (openBlock(true), createBlock(Fragment, null, renderList(__props.claimedLifetimeRewards, (claimed) => {
-                              return openBlock(), createBlock(unref(_sfc_main$14), {
+                              return openBlock(), createBlock(unref(_sfc_main$1c), {
                                 key: claimed.id
                               }, {
                                 default: withCtx(() => [
-                                  createVNode(unref(_sfc_main$17), { class: "font-medium" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "font-medium" }, {
                                     default: withCtx(() => [
                                       createVNode("div", { class: "flex items-center gap-2" }, [
                                         createVNode(unref(Gift), { class: "h-4 w-4 text-green-500" }),
@@ -20253,13 +21291,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), { class: "text-right font-mono" }, {
+                                  createVNode(unref(_sfc_main$1f), { class: "text-right font-mono" }, {
                                     default: withCtx(() => [
                                       createTextVNode(toDisplayString(formatNumber(claimed.bv)), 1)
                                     ]),
                                     _: 2
                                   }, 1024),
-                                  createVNode(unref(_sfc_main$17), null, {
+                                  createVNode(unref(_sfc_main$1f), null, {
                                     default: withCtx(() => [
                                       createTextVNode(toDisplayString(formatDate(claimed.created_at)), 1)
                                     ]),
@@ -20301,6 +21339,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     customer: {},
     orders: {},
     walletTransactions: {},
+    hasPendingWithdrawal: { type: Boolean },
+    isProfileIncomplete: { type: Boolean },
     activeMembers: {},
     passiveMembers: {},
     prospectMembers: {},
@@ -20340,13 +21380,21 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
     });
     return (_ctx, _push, _parent, _attrs) => {
-      _push(ssrRenderComponent(_sfc_main$18, _attrs, {
+      _push(ssrRenderComponent(_sfc_main$1g, _attrs, {
         default: withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
             _push2(ssrRenderComponent(unref(Head), { title: "Profile Saya" }, null, _parent2, _scopeId));
             _push2(`<div class="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b"${_scopeId}><div class="container mx-auto px-3 py-6 sm:px-4 sm:py-12 max-w-7xl"${_scopeId}><div class="flex items-center justify-between"${_scopeId}><div${_scopeId}><h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1 sm:mb-2"${_scopeId}>Profile Saya</h1><p class="text-sm sm:text-base md:text-lg text-muted-foreground"${_scopeId}> Kelola informasi profil dan keamanan akun Anda </p></div><div class="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg bg-background/80 backdrop-blur-sm border shadow-sm"${_scopeId}>`);
             _push2(ssrRenderComponent(unref(User), { class: "w-5 h-5 text-primary" }, null, _parent2, _scopeId));
-            _push2(`<span class="font-semibold"${_scopeId}>${ssrInterpolate(__props.customer.name)}</span></div></div></div></div><div class="container mx-auto px-3 py-4 sm:px-4 sm:py-8 max-w-7xl"${_scopeId}><div class="grid gap-4 sm:gap-6 lg:grid-cols-3"${_scopeId}><div class="lg:col-span-1 space-y-4 sm:space-y-6"${_scopeId}>`);
+            _push2(`<span class="font-semibold"${_scopeId}>${ssrInterpolate(__props.customer.name)}</span></div></div></div></div><div class="container mx-auto px-3 py-4 sm:px-4 sm:py-8 max-w-7xl"${_scopeId}>`);
+            if (__props.isProfileIncomplete && isActiveMember.value) {
+              _push2(`<div class="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"${_scopeId}><div class="flex items-start gap-3"${_scopeId}>`);
+              _push2(ssrRenderComponent(unref(AlertCircle), { class: "h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" }, null, _parent2, _scopeId));
+              _push2(`<div class="flex-1"${_scopeId}><p class="font-medium text-amber-700 dark:text-amber-300"${_scopeId}>Lengkapi Data Profil Anda</p><p class="text-sm text-amber-600 dark:text-amber-400 mt-1"${_scopeId}> Untuk dapat melakukan penarikan bonus, Anda harus melengkapi NIK dan informasi rekening bank di tab Profil. </p></div></div></div>`);
+            } else {
+              _push2(`<!---->`);
+            }
+            _push2(`<div class="grid gap-4 sm:gap-6 lg:grid-cols-3"${_scopeId}><div class="lg:col-span-1 space-y-4 sm:space-y-6"${_scopeId}>`);
             _push2(ssrRenderComponent(_sfc_main$p, { customer: __props.customer }, null, _parent2, _scopeId));
             if (isActiveMember.value) {
               _push2(ssrRenderComponent(_sfc_main$3, { customer: __props.customer }, null, _parent2, _scopeId));
@@ -20363,17 +21411,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               "created-at": __props.customer.created_at
             }, null, _parent2, _scopeId));
             _push2(`</div><div class="lg:col-span-2"${_scopeId}><div class="rounded-xl border bg-card overflow-hidden"${_scopeId}>`);
-            _push2(ssrRenderComponent(unref(_sfc_main$_), {
+            _push2(ssrRenderComponent(unref(_sfc_main$16), {
               "default-value": activeTab.value,
               class: "w-full"
             }, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
                   _push3(`<div class="border-b bg-muted/30"${_scopeId2}><div class="overflow-x-auto text-center overflow-y-hidden px-1.5 py-1.5 sm:px-2 sm:py-2 [&amp;::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$$), { class: "inline-flex h-auto w-max bg-transparent gap-1 sm:gap-1.5 p-0" }, {
+                  _push3(ssrRenderComponent(unref(_sfc_main$17), { class: "inline-flex h-auto w-max bg-transparent gap-1 sm:gap-1.5 p-0" }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(ssrRenderComponent(unref(_sfc_main$10), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$18), {
                           value: "profile",
                           class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                         }, {
@@ -20390,7 +21438,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$10), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$18), {
                           value: "orders",
                           class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                         }, {
@@ -20408,7 +21456,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _: 1
                         }, _parent4, _scopeId3));
                         if (isActiveMember.value) {
-                          _push4(ssrRenderComponent(unref(_sfc_main$10), {
+                          _push4(ssrRenderComponent(unref(_sfc_main$18), {
                             value: "network",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                           }, {
@@ -20429,7 +21477,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _push4(`<!---->`);
                         }
                         if (isActiveMember.value) {
-                          _push4(ssrRenderComponent(unref(_sfc_main$10), {
+                          _push4(ssrRenderComponent(unref(_sfc_main$18), {
                             value: "binary",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                           }, {
@@ -20450,7 +21498,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _push4(`<!---->`);
                         }
                         if (isActiveMember.value) {
-                          _push4(ssrRenderComponent(unref(_sfc_main$10), {
+                          _push4(ssrRenderComponent(unref(_sfc_main$18), {
                             value: "bonus",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                           }, {
@@ -20471,7 +21519,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _push4(`<!---->`);
                         }
                         if (isActiveMember.value) {
-                          _push4(ssrRenderComponent(unref(_sfc_main$10), {
+                          _push4(ssrRenderComponent(unref(_sfc_main$18), {
                             value: "promotions",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                           }, {
@@ -20492,7 +21540,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _push4(`<!---->`);
                         }
                         if (isActiveMember.value) {
-                          _push4(ssrRenderComponent(unref(_sfc_main$10), {
+                          _push4(ssrRenderComponent(unref(_sfc_main$18), {
                             value: "lifetime",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                           }, {
@@ -20512,7 +21560,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         } else {
                           _push4(`<!---->`);
                         }
-                        _push4(ssrRenderComponent(unref(_sfc_main$10), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$18), {
                           value: "wallet",
                           class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                         }, {
@@ -20529,7 +21577,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$10), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$18), {
                           value: "security",
                           class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                         }, {
@@ -20546,7 +21594,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(ssrRenderComponent(unref(_sfc_main$10), {
+                        _push4(ssrRenderComponent(unref(_sfc_main$18), {
                           value: "danger",
                           class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                         }, {
@@ -20565,7 +21613,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         }, _parent4, _scopeId3));
                       } else {
                         return [
-                          createVNode(unref(_sfc_main$10), {
+                          createVNode(unref(_sfc_main$18), {
                             value: "profile",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                           }, {
@@ -20575,7 +21623,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$10), {
+                          createVNode(unref(_sfc_main$18), {
                             value: "orders",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                           }, {
@@ -20585,7 +21633,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                          isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                             key: 0,
                             value: "network",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -20596,7 +21644,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           })) : createCommentVNode("", true),
-                          isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                          isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                             key: 1,
                             value: "binary",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -20607,7 +21655,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           })) : createCommentVNode("", true),
-                          isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                          isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                             key: 2,
                             value: "bonus",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -20618,7 +21666,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           })) : createCommentVNode("", true),
-                          isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                          isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                             key: 3,
                             value: "promotions",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -20629,7 +21677,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           })) : createCommentVNode("", true),
-                          isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                          isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                             key: 4,
                             value: "lifetime",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -20640,7 +21688,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           })) : createCommentVNode("", true),
-                          createVNode(unref(_sfc_main$10), {
+                          createVNode(unref(_sfc_main$18), {
                             value: "wallet",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                           }, {
@@ -20650,7 +21698,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$10), {
+                          createVNode(unref(_sfc_main$18), {
                             value: "security",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                           }, {
@@ -20660,7 +21708,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode(unref(_sfc_main$10), {
+                          createVNode(unref(_sfc_main$18), {
                             value: "danger",
                             class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                           }, {
@@ -20676,7 +21724,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     _: 1
                   }, _parent3, _scopeId2));
                   _push3(`</div></div><div class="p-3 sm:p-4 md:p-6"${_scopeId2}>`);
-                  _push3(ssrRenderComponent(unref(_sfc_main$11), {
+                  _push3(ssrRenderComponent(unref(_sfc_main$19), {
                     value: "profile",
                     class: "mt-0"
                   }, {
@@ -20691,7 +21739,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$11), {
+                  _push3(ssrRenderComponent(unref(_sfc_main$19), {
                     value: "orders",
                     class: "mt-0"
                   }, {
@@ -20707,7 +21755,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     _: 1
                   }, _parent3, _scopeId2));
                   if (isActiveMember.value) {
-                    _push3(ssrRenderComponent(unref(_sfc_main$11), {
+                    _push3(ssrRenderComponent(unref(_sfc_main$19), {
                       value: "network",
                       class: "mt-0"
                     }, {
@@ -20738,7 +21786,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     _push3(`<!---->`);
                   }
                   if (isActiveMember.value) {
-                    _push3(ssrRenderComponent(unref(_sfc_main$11), {
+                    _push3(ssrRenderComponent(unref(_sfc_main$19), {
                       value: "binary",
                       class: "mt-0"
                     }, {
@@ -20783,7 +21831,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     _push3(`<!---->`);
                   }
                   if (isActiveMember.value) {
-                    _push3(ssrRenderComponent(unref(_sfc_main$11), {
+                    _push3(ssrRenderComponent(unref(_sfc_main$19), {
                       value: "bonus",
                       class: "mt-0"
                     }, {
@@ -20818,7 +21866,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     _push3(`<!---->`);
                   }
                   if (isActiveMember.value) {
-                    _push3(ssrRenderComponent(unref(_sfc_main$11), {
+                    _push3(ssrRenderComponent(unref(_sfc_main$19), {
                       value: "promotions",
                       class: "mt-0"
                     }, {
@@ -20843,7 +21891,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     _push3(`<!---->`);
                   }
                   if (isActiveMember.value) {
-                    _push3(ssrRenderComponent(unref(_sfc_main$11), {
+                    _push3(ssrRenderComponent(unref(_sfc_main$19), {
                       value: "lifetime",
                       class: "mt-0"
                     }, {
@@ -20867,7 +21915,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   } else {
                     _push3(`<!---->`);
                   }
-                  _push3(ssrRenderComponent(unref(_sfc_main$11), {
+                  _push3(ssrRenderComponent(unref(_sfc_main$19), {
                     value: "wallet",
                     class: "mt-0"
                   }, {
@@ -20875,20 +21923,22 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       if (_push4) {
                         _push4(ssrRenderComponent(_sfc_main$a, {
                           customer: __props.customer,
-                          transactions: __props.walletTransactions
+                          transactions: __props.walletTransactions,
+                          "has-pending-withdrawal": __props.hasPendingWithdrawal
                         }, null, _parent4, _scopeId3));
                       } else {
                         return [
                           createVNode(_sfc_main$a, {
                             customer: __props.customer,
-                            transactions: __props.walletTransactions
-                          }, null, 8, ["customer", "transactions"])
+                            transactions: __props.walletTransactions,
+                            "has-pending-withdrawal": __props.hasPendingWithdrawal
+                          }, null, 8, ["customer", "transactions", "has-pending-withdrawal"])
                         ];
                       }
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$11), {
+                  _push3(ssrRenderComponent(unref(_sfc_main$19), {
                     value: "security",
                     class: "mt-0"
                   }, {
@@ -20903,7 +21953,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  _push3(ssrRenderComponent(unref(_sfc_main$11), {
+                  _push3(ssrRenderComponent(unref(_sfc_main$19), {
                     value: "danger",
                     class: "mt-0"
                   }, {
@@ -20923,9 +21973,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   return [
                     createVNode("div", { class: "border-b bg-muted/30" }, [
                       createVNode("div", { class: "overflow-x-auto text-center overflow-y-hidden px-1.5 py-1.5 sm:px-2 sm:py-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" }, [
-                        createVNode(unref(_sfc_main$$), { class: "inline-flex h-auto w-max bg-transparent gap-1 sm:gap-1.5 p-0" }, {
+                        createVNode(unref(_sfc_main$17), { class: "inline-flex h-auto w-max bg-transparent gap-1 sm:gap-1.5 p-0" }, {
                           default: withCtx(() => [
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "profile",
                               class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                             }, {
@@ -20935,7 +21985,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "orders",
                               class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                             }, {
@@ -20945,7 +21995,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                               key: 0,
                               value: "network",
                               class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -20956,7 +22006,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),
-                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                               key: 1,
                               value: "binary",
                               class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -20967,7 +22017,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),
-                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                               key: 2,
                               value: "bonus",
                               class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -20978,7 +22028,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),
-                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                               key: 3,
                               value: "promotions",
                               class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -20989,7 +22039,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),
-                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                               key: 4,
                               value: "lifetime",
                               class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -21000,7 +22050,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "wallet",
                               class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                             }, {
@@ -21010,7 +22060,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "security",
                               class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                             }, {
@@ -21020,7 +22070,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$10), {
+                            createVNode(unref(_sfc_main$18), {
                               value: "danger",
                               class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                             }, {
@@ -21036,7 +22086,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       ])
                     ]),
                     createVNode("div", { class: "p-3 sm:p-4 md:p-6" }, [
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "profile",
                         class: "mt-0"
                       }, {
@@ -21045,7 +22095,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "orders",
                         class: "mt-0"
                       }, {
@@ -21054,7 +22104,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$11), {
+                      isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$19), {
                         key: 0,
                         value: "network",
                         class: "mt-0"
@@ -21070,7 +22120,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       })) : createCommentVNode("", true),
-                      isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$11), {
+                      isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$19), {
                         key: 1,
                         value: "binary",
                         class: "mt-0"
@@ -21094,7 +22144,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       })) : createCommentVNode("", true),
-                      isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$11), {
+                      isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$19), {
                         key: 2,
                         value: "bonus",
                         class: "mt-0"
@@ -21112,7 +22162,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       })) : createCommentVNode("", true),
-                      isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$11), {
+                      isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$19), {
                         key: 3,
                         value: "promotions",
                         class: "mt-0"
@@ -21125,7 +22175,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       })) : createCommentVNode("", true),
-                      isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$11), {
+                      isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$19), {
                         key: 4,
                         value: "lifetime",
                         class: "mt-0"
@@ -21138,19 +22188,20 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       })) : createCommentVNode("", true),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "wallet",
                         class: "mt-0"
                       }, {
                         default: withCtx(() => [
                           createVNode(_sfc_main$a, {
                             customer: __props.customer,
-                            transactions: __props.walletTransactions
-                          }, null, 8, ["customer", "transactions"])
+                            transactions: __props.walletTransactions,
+                            "has-pending-withdrawal": __props.hasPendingWithdrawal
+                          }, null, 8, ["customer", "transactions", "has-pending-withdrawal"])
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "security",
                         class: "mt-0"
                       }, {
@@ -21159,7 +22210,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(_sfc_main$11), {
+                      createVNode(unref(_sfc_main$19), {
                         value: "danger",
                         class: "mt-0"
                       }, {
@@ -21193,6 +22244,18 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 ])
               ]),
               createVNode("div", { class: "container mx-auto px-3 py-4 sm:px-4 sm:py-8 max-w-7xl" }, [
+                __props.isProfileIncomplete && isActiveMember.value ? (openBlock(), createBlock("div", {
+                  key: 0,
+                  class: "mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"
+                }, [
+                  createVNode("div", { class: "flex items-start gap-3" }, [
+                    createVNode(unref(AlertCircle), { class: "h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" }),
+                    createVNode("div", { class: "flex-1" }, [
+                      createVNode("p", { class: "font-medium text-amber-700 dark:text-amber-300" }, "Lengkapi Data Profil Anda"),
+                      createVNode("p", { class: "text-sm text-amber-600 dark:text-amber-400 mt-1" }, " Untuk dapat melakukan penarikan bonus, Anda harus melengkapi NIK dan informasi rekening bank di tab Profil. ")
+                    ])
+                  ])
+                ])) : createCommentVNode("", true),
                 createVNode("div", { class: "grid gap-4 sm:gap-6 lg:grid-cols-3" }, [
                   createVNode("div", { class: "lg:col-span-1 space-y-4 sm:space-y-6" }, [
                     createVNode(_sfc_main$p, { customer: __props.customer }, null, 8, ["customer"]),
@@ -21211,16 +22274,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   ]),
                   createVNode("div", { class: "lg:col-span-2" }, [
                     createVNode("div", { class: "rounded-xl border bg-card overflow-hidden" }, [
-                      createVNode(unref(_sfc_main$_), {
+                      createVNode(unref(_sfc_main$16), {
                         "default-value": activeTab.value,
                         class: "w-full"
                       }, {
                         default: withCtx(() => [
                           createVNode("div", { class: "border-b bg-muted/30" }, [
                             createVNode("div", { class: "overflow-x-auto text-center overflow-y-hidden px-1.5 py-1.5 sm:px-2 sm:py-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" }, [
-                              createVNode(unref(_sfc_main$$), { class: "inline-flex h-auto w-max bg-transparent gap-1 sm:gap-1.5 p-0" }, {
+                              createVNode(unref(_sfc_main$17), { class: "inline-flex h-auto w-max bg-transparent gap-1 sm:gap-1.5 p-0" }, {
                                 default: withCtx(() => [
-                                  createVNode(unref(_sfc_main$10), {
+                                  createVNode(unref(_sfc_main$18), {
                                     value: "profile",
                                     class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                                   }, {
@@ -21230,7 +22293,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$10), {
+                                  createVNode(unref(_sfc_main$18), {
                                     value: "orders",
                                     class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                                   }, {
@@ -21240,7 +22303,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 1
                                   }),
-                                  isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                                  isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                                     key: 0,
                                     value: "network",
                                     class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -21251,7 +22314,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 1
                                   })) : createCommentVNode("", true),
-                                  isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                                  isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                                     key: 1,
                                     value: "binary",
                                     class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -21262,7 +22325,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 1
                                   })) : createCommentVNode("", true),
-                                  isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                                  isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                                     key: 2,
                                     value: "bonus",
                                     class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -21273,7 +22336,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 1
                                   })) : createCommentVNode("", true),
-                                  isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                                  isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                                     key: 3,
                                     value: "promotions",
                                     class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -21284,7 +22347,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 1
                                   })) : createCommentVNode("", true),
-                                  isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$10), {
+                                  isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$18), {
                                     key: 4,
                                     value: "lifetime",
                                     class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
@@ -21295,7 +22358,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 1
                                   })) : createCommentVNode("", true),
-                                  createVNode(unref(_sfc_main$10), {
+                                  createVNode(unref(_sfc_main$18), {
                                     value: "wallet",
                                     class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                                   }, {
@@ -21305,7 +22368,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$10), {
+                                  createVNode(unref(_sfc_main$18), {
                                     value: "security",
                                     class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                                   }, {
@@ -21315,7 +22378,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     ]),
                                     _: 1
                                   }),
-                                  createVNode(unref(_sfc_main$10), {
+                                  createVNode(unref(_sfc_main$18), {
                                     value: "danger",
                                     class: "flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                                   }, {
@@ -21331,7 +22394,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ])
                           ]),
                           createVNode("div", { class: "p-3 sm:p-4 md:p-6" }, [
-                            createVNode(unref(_sfc_main$11), {
+                            createVNode(unref(_sfc_main$19), {
                               value: "profile",
                               class: "mt-0"
                             }, {
@@ -21340,7 +22403,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$11), {
+                            createVNode(unref(_sfc_main$19), {
                               value: "orders",
                               class: "mt-0"
                             }, {
@@ -21349,7 +22412,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$11), {
+                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$19), {
                               key: 0,
                               value: "network",
                               class: "mt-0"
@@ -21365,7 +22428,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),
-                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$11), {
+                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$19), {
                               key: 1,
                               value: "binary",
                               class: "mt-0"
@@ -21389,7 +22452,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),
-                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$11), {
+                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$19), {
                               key: 2,
                               value: "bonus",
                               class: "mt-0"
@@ -21407,7 +22470,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),
-                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$11), {
+                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$19), {
                               key: 3,
                               value: "promotions",
                               class: "mt-0"
@@ -21420,7 +22483,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),
-                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$11), {
+                            isActiveMember.value ? (openBlock(), createBlock(unref(_sfc_main$19), {
                               key: 4,
                               value: "lifetime",
                               class: "mt-0"
@@ -21433,19 +22496,20 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             })) : createCommentVNode("", true),
-                            createVNode(unref(_sfc_main$11), {
+                            createVNode(unref(_sfc_main$19), {
                               value: "wallet",
                               class: "mt-0"
                             }, {
                               default: withCtx(() => [
                                 createVNode(_sfc_main$a, {
                                   customer: __props.customer,
-                                  transactions: __props.walletTransactions
-                                }, null, 8, ["customer", "transactions"])
+                                  transactions: __props.walletTransactions,
+                                  "has-pending-withdrawal": __props.hasPendingWithdrawal
+                                }, null, 8, ["customer", "transactions", "has-pending-withdrawal"])
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$11), {
+                            createVNode(unref(_sfc_main$19), {
                               value: "security",
                               class: "mt-0"
                             }, {
@@ -21454,7 +22518,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createVNode(unref(_sfc_main$11), {
+                            createVNode(unref(_sfc_main$19), {
                               value: "danger",
                               class: "mt-0"
                             }, {

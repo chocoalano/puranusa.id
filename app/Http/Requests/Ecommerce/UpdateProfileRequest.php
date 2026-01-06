@@ -32,6 +32,8 @@ class UpdateProfileRequest extends FormRequest
             'alamat' => ['nullable', 'string', 'max:1000'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
+            'bank_name' => ['nullable', 'string', 'max:100'],
+            'bank_account' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -56,6 +58,8 @@ class UpdateProfileRequest extends FormRequest
             'email.email' => 'Format email tidak valid.',
             'phone.required' => 'Nomor telepon wajib diisi.',
             'phone.max' => 'Nomor telepon maksimal 20 karakter.',
+            'bank_name.max' => 'Nama bank maksimal 100 karakter.',
+            'bank_account.max' => 'Nomor rekening maksimal 50 karakter.',
             'description.max' => 'Deskripsi maksimal 1000 karakter.',
         ];
     }
