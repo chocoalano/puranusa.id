@@ -28,7 +28,7 @@ class UpdateProfileRequest extends FormRequest
             'username' => ['required', 'string', 'max:100', Rule::unique('customers')->ignore($customer->id)],
             'name' => ['required', 'string', 'max:255'],
             'nik' => ['nullable', 'string', 'max:32'],
-            'gender' => ['nullable', 'string', 'in:male,female,L,P'],
+            'gender' => ['nullable', 'string', 'in:laki-laki,perempuan'],
             'alamat' => ['nullable', 'string', 'max:1000'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],

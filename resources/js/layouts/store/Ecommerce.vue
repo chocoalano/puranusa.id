@@ -1537,8 +1537,9 @@ const searchSuggestions = computed(() => {
                             </Link>
                             <p
                                 class="mb-6 text-sm leading-relaxed text-muted-foreground"
+                                v-html="siteDescription"
                             >
-                                {{ siteDescription }}
+
                             </p>
 
                             <!-- Social Links -->

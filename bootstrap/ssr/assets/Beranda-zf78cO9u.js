@@ -7,7 +7,7 @@ import { createInjectionState } from "@vueuse/core";
 import emblaCarouselVue from "embla-carousel-vue";
 import { ArrowRight, ArrowLeft, Package, Users, Star, Truck, ChevronRight } from "lucide-vue-next";
 import { _ as _sfc_main$9 } from "./CardCatalogProduct-Dx6KW7gl.js";
-import { _ as _sfc_main$7 } from "./Ecommerce-CCwufmLs.js";
+import { _ as _sfc_main$7 } from "./Ecommerce-DOQw8eVY.js";
 import { Head, Link } from "@inertiajs/vue3";
 import { e as _sfc_main$h } from "./DropdownMenuTrigger-B1v6pHML.js";
 import "reka-ui";

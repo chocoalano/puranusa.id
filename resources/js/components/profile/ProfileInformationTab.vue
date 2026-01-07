@@ -140,8 +140,8 @@ const submitForm = () => {
                                 <SelectValue placeholder="Pilih jenis kelamin" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="male">Laki-laki</SelectItem>
-                                <SelectItem value="female">Perempuan</SelectItem>
+                                <SelectItem value="laki-laki">Laki-laki</SelectItem>
+                                <SelectItem value="perempuan">Perempuan</SelectItem>
                             </SelectContent>
                         </Select>
                         <p v-if="form.errors.gender" class="text-sm text-red-500">

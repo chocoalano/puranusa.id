@@ -37,7 +37,7 @@ export interface Customer {
     username: string | null;
     level: string | null;
     nik: string | null;
-    gender: 'male' | 'female' | 'L' | 'P' | null;
+    gender: 'laki-laki' | 'perempuan' | null;
     alamat: string | null;
     email: string;
     phone: string;

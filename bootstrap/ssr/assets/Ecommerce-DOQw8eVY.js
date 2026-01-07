@@ -5894,7 +5894,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }),
         _: 1
       }, _parent));
-      _push(`<p class="mb-6 text-sm leading-relaxed text-muted-foreground">${ssrInterpolate(siteDescription.value)}</p><div class="flex items-center gap-3"><span class="text-sm font-semibold">Ikuti Kami:</span><div class="flex gap-2"><!--[-->`);
+      _push(`<p class="mb-6 text-sm leading-relaxed text-muted-foreground">${siteDescription.value ?? ""}</p><div class="flex items-center gap-3"><span class="text-sm font-semibold">Ikuti Kami:</span><div class="flex gap-2"><!--[-->`);
       ssrRenderList(socialLinks.value, (social) => {
         _push(ssrRenderComponent(unref(_sfc_main$l), {
           key: social.icon,

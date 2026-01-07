@@ -166,7 +166,6 @@ class Customer extends Authenticatable
             'omzet' => 'decimal:2',
             'omzet_group_left' => 'decimal:2',
             'omzet_group_right' => 'decimal:2',
-            'gender' => 'string',
         ];
     }
 
