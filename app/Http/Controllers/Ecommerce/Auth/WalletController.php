@@ -326,13 +326,16 @@ class WalletController extends Controller
         try {
             DB::beginTransaction();
 
+            $balanceBefore = $customer->ewallet_saldo;
+            $balanceAfter = bcsub((string) $balanceBefore, (string) $request->amount, 2);
+
             // Create withdrawal transaction using customer's stored bank info
-            $transaction = CustomerWalletTransaction::create([
+            CustomerWalletTransaction::create([
                 'customer_id' => $customer->id,
                 'type' => 'withdrawal',
                 'amount' => $request->amount,
-                'balance_before' => $customer->ewallet_saldo,
-                'balance_after' => $customer->ewallet_saldo - $request->amount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => (float) $balanceAfter,
                 'status' => 'pending',
                 'transaction_ref' => 'WD-'.date('YmdHis').'-'.strtoupper(Str::random(6)),
                 'notes' => json_encode([
@@ -342,8 +345,9 @@ class WalletController extends Controller
                 ]),
             ]);
 
-            // Deduct balance (will be processed by admin)
-            $customer->deductBalance($request->amount, 'Withdrawal request: '.$transaction->transaction_ref, 'withdrawal');
+            // Deduct balance directly (without calling deductBalance to avoid double transaction record)
+            $customer->ewallet_saldo = (float) $balanceAfter;
+            $customer->save();
 
             DB::commit();
 
