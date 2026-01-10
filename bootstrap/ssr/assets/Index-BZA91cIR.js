@@ -1,12 +1,11 @@
 import { defineComponent, mergeProps, unref, withCtx, createTextVNode, createVNode, toDisplayString, useSSRContext, ref, h, watch, createBlock, openBlock, Fragment, renderList, createCommentVNode } from "vue";
 import { ssrRenderAttrs, ssrRenderComponent, ssrInterpolate, ssrRenderList } from "vue/server-renderer";
-import { _ as _sfc_main$6, K as approve, L as reject } from "./AppLayout-BqZcCUfR.js";
+import { _ as _sfc_main$6, I as approve, J as reject } from "./AppLayout-BqZcCUfR.js";
 import { router, Head, useForm } from "@inertiajs/vue3";
 import { _ as _sfc_main$p } from "./ConfirmDialog-CTU0x0KG.js";
 import { _ as _sfc_main$o } from "./Pagination-DAUeA01Y.js";
 import { _ as _sfc_main$2, a as _sfc_main$3, b as _sfc_main$4, c as _sfc_main$5 } from "./CardTitle-sqUG0LTw.js";
 import { Clock, CheckCircle, XCircle, DollarSign, Search, ChevronDown, ArrowUpDown, Check, X } from "lucide-vue-next";
-import { f as formatCurrency } from "./currency-BxbHkR_F.js";
 import { _ as _sfc_main$q } from "./index-BpQimeTM.js";
 import { v as valueUpdater, _ as _sfc_main$f } from "./index-SN_CnQ_F.js";
 import { _ as _sfc_main$d, a as _sfc_main$e, b as _sfc_main$g, d as _sfc_main$h } from "./DropdownMenuTrigger-B1v6pHML.js";
@@ -27,12 +26,19 @@ import "./AlertDialogTrigger-DIWb7xue.js";
 import "clsx";
 import "tailwind-merge";
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
-  __name: "WithdrawalStatistics",
+  __name: "TopupStatistics",
   __ssrInlineRender: true,
   props: {
     statistics: {}
   },
   setup(__props) {
+    const formatCurrency = (amount) => {
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0
+      }).format(amount);
+    };
     return (_ctx, _push, _parent, _attrs) => {
       _push(`<div${ssrRenderAttrs(mergeProps({ class: "grid gap-4 md:grid-cols-4" }, _attrs))}>`);
       _push(ssrRenderComponent(unref(_sfc_main$2), null, {
@@ -143,11 +149,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$5), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-2xl font-bold"${_scopeId2}>${ssrInterpolate(__props.statistics.total_completed)}</div><p class="text-xs text-muted-foreground"${_scopeId2}>Withdrawal selesai</p>`);
+                  _push3(`<div class="text-2xl font-bold"${_scopeId2}>${ssrInterpolate(__props.statistics.total_completed)}</div><p class="text-xs text-muted-foreground"${_scopeId2}>Topup selesai</p>`);
                 } else {
                   return [
                     createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(__props.statistics.total_completed), 1),
-                    createVNode("p", { class: "text-xs text-muted-foreground" }, "Withdrawal selesai")
+                    createVNode("p", { class: "text-xs text-muted-foreground" }, "Topup selesai")
                   ];
                 }
               }),
@@ -170,7 +176,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               createVNode(unref(_sfc_main$5), null, {
                 default: withCtx(() => [
                   createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(__props.statistics.total_completed), 1),
-                  createVNode("p", { class: "text-xs text-muted-foreground" }, "Withdrawal selesai")
+                  createVNode("p", { class: "text-xs text-muted-foreground" }, "Topup selesai")
                 ]),
                 _: 1
               })
@@ -215,11 +221,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$5), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-2xl font-bold"${_scopeId2}>${ssrInterpolate(__props.statistics.total_failed)}</div><p class="text-xs text-muted-foreground"${_scopeId2}>Withdrawal gagal</p>`);
+                  _push3(`<div class="text-2xl font-bold"${_scopeId2}>${ssrInterpolate(__props.statistics.total_failed)}</div><p class="text-xs text-muted-foreground"${_scopeId2}>Topup gagal</p>`);
                 } else {
                   return [
                     createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(__props.statistics.total_failed), 1),
-                    createVNode("p", { class: "text-xs text-muted-foreground" }, "Withdrawal gagal")
+                    createVNode("p", { class: "text-xs text-muted-foreground" }, "Topup gagal")
                   ];
                 }
               }),
@@ -242,7 +248,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               createVNode(unref(_sfc_main$5), null, {
                 default: withCtx(() => [
                   createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(__props.statistics.total_failed), 1),
-                  createVNode("p", { class: "text-xs text-muted-foreground" }, "Withdrawal gagal")
+                  createVNode("p", { class: "text-xs text-muted-foreground" }, "Topup gagal")
                 ]),
                 _: 1
               })
@@ -287,11 +293,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$5), null, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="text-2xl font-bold"${_scopeId2}>${ssrInterpolate(unref(formatCurrency)(__props.statistics.total_amount))}</div><p class="text-xs text-muted-foreground"${_scopeId2}>Total withdrawal berhasil</p>`);
+                  _push3(`<div class="text-2xl font-bold"${_scopeId2}>${ssrInterpolate(formatCurrency(__props.statistics.total_amount))}</div><p class="text-xs text-muted-foreground"${_scopeId2}>Total topup berhasil</p>`);
                 } else {
                   return [
-                    createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(unref(formatCurrency)(__props.statistics.total_amount)), 1),
-                    createVNode("p", { class: "text-xs text-muted-foreground" }, "Total withdrawal berhasil")
+                    createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(formatCurrency(__props.statistics.total_amount)), 1),
+                    createVNode("p", { class: "text-xs text-muted-foreground" }, "Total topup berhasil")
                   ];
                 }
               }),
@@ -313,8 +319,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(_sfc_main$5), null, {
                 default: withCtx(() => [
-                  createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(unref(formatCurrency)(__props.statistics.total_amount)), 1),
-                  createVNode("p", { class: "text-xs text-muted-foreground" }, "Total withdrawal berhasil")
+                  createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(formatCurrency(__props.statistics.total_amount)), 1),
+                  createVNode("p", { class: "text-xs text-muted-foreground" }, "Total topup berhasil")
                 ]),
                 _: 1
               })
@@ -330,14 +336,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
 const _sfc_setup$1 = _sfc_main$1.setup;
 _sfc_main$1.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
-  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/components/withdrawals/WithdrawalStatistics.vue");
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/components/topups/TopupStatistics.vue");
   return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : void 0;
 };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Index",
   __ssrInlineRender: true,
   props: {
-    withdrawals: {},
+    topups: {},
     statistics: {},
     filters: {}
   },
@@ -355,13 +361,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const columnVisibility = ref({});
     const approveDialog = ref({
       open: false,
-      withdrawal: null
+      topup: null
     });
     const rejectDialog = ref({
       open: false,
-      withdrawal: null
+      topup: null
     });
-    const formatCurrency2 = (amount) => {
+    const formatCurrency = (amount) => {
       return new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
@@ -385,42 +391,34 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       };
       return variants[status] || "secondary";
     };
-    const getBankInfo = (notes) => {
-      if (!notes) return null;
-      try {
-        return JSON.parse(notes);
-      } catch {
-        return null;
-      }
-    };
-    const openApproveDialog = (withdrawal) => {
-      approveDialog.value = { open: true, withdrawal };
+    const openApproveDialog = (topup) => {
+      approveDialog.value = { open: true, topup };
     };
     const handleApprove = () => {
-      if (!approveDialog.value.withdrawal) return;
+      if (!approveDialog.value.topup) return;
       const approveForm = useForm({});
       approveForm.post(
-        approve.url(approveDialog.value.withdrawal.id),
+        approve.url(approveDialog.value.topup.id),
         {
           preserveScroll: true,
           onSuccess: () => {
-            approveDialog.value = { open: false, withdrawal: null };
+            approveDialog.value = { open: false, topup: null };
           }
         }
       );
     };
-    const openRejectDialog = (withdrawal) => {
-      rejectDialog.value = { open: true, withdrawal };
+    const openRejectDialog = (topup) => {
+      rejectDialog.value = { open: true, topup };
     };
     const handleReject = () => {
-      if (!rejectDialog.value.withdrawal) return;
+      if (!rejectDialog.value.topup) return;
       const rejectForm = useForm({});
       rejectForm.post(
-        reject.url(rejectDialog.value.withdrawal.id),
+        reject.url(rejectDialog.value.topup.id),
         {
           preserveScroll: true,
           onSuccess: () => {
-            rejectDialog.value = { open: false, withdrawal: null };
+            rejectDialog.value = { open: false, topup: null };
           }
         }
       );
@@ -430,7 +428,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         id: "index",
         header: () => h("div", { class: "w-12" }, "No"),
         cell: ({ row }) => {
-          const index = row.index + 1 + (props.withdrawals.current_page - 1) * props.withdrawals.per_page;
+          const index = row.index + 1 + (props.topups.current_page - 1) * props.topups.per_page;
           return h("div", { class: "font-medium" }, index);
         }
       },
@@ -456,29 +454,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
       },
       {
-        accessorKey: "customer.ewallet_saldo",
-        header: () => "Saldo",
-        cell: ({ row }) => {
-          return h("div", formatCurrency2(row.original.customer.ewallet_saldo));
-        }
-      },
-      {
         accessorKey: "amount",
-        header: () => "Penarikan",
+        header: () => "Jumlah",
         cell: ({ row }) => {
-          return h("div", { class: "font-bold text-red-600" }, formatCurrency2(row.getValue("amount")));
+          return h("div", { class: "font-bold" }, formatCurrency(row.getValue("amount")));
         }
       },
       {
-        accessorKey: "notes",
-        header: () => "Rekening Tujuan",
+        accessorKey: "payment_method",
+        header: () => "Metode",
         cell: ({ row }) => {
-          const bankInfo = getBankInfo(row.getValue("notes"));
-          if (!bankInfo) return h("div", { class: "text-xs text-muted-foreground" }, "-");
-          return h("div", [
-            h("div", { class: "text-xs font-medium" }, `${bankInfo.bank_name} - ${bankInfo.bank_account}`),
-            h("div", { class: "text-xs text-muted-foreground" }, bankInfo.bank_holder)
-          ]);
+          return h("div", { class: "uppercase" }, row.getValue("payment_method"));
         }
       },
       {
@@ -497,6 +483,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
       },
       {
+        accessorKey: "notes",
+        header: () => "Keterangan",
+        cell: ({ row }) => {
+          return h("p", row.getValue("notes"));
+        }
+      },
+      {
         accessorKey: "created_at",
         header: () => "Tanggal",
         cell: ({ row }) => {
@@ -507,16 +500,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         id: "actions",
         header: () => h("div", { class: "text-right" }, "Aksi"),
         cell: ({ row }) => {
-          const withdrawal = row.original;
-          if (withdrawal.status !== "pending") return null;
-          const isDisabled = withdrawal.customer.ewallet_saldo < withdrawal.amount;
+          const topup = row.original;
+          if (topup.status !== "pending") return null;
           return h("div", { class: "flex justify-end gap-2" }, [
             h(
               _sfc_main$f,
               {
                 size: "sm",
-                onClick: () => openApproveDialog(withdrawal),
-                disabled: isDisabled
+                onClick: () => openApproveDialog(topup)
               },
               () => [h(Check, { class: "mr-1 h-4 w-4" }), "Setujui"]
             ),
@@ -525,7 +516,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               {
                 size: "sm",
                 variant: "destructive",
-                onClick: () => openRejectDialog(withdrawal)
+                onClick: () => openRejectDialog(topup)
               },
               () => [h(X, { class: "mr-1 h-4 w-4" }), "Tolak"]
             )
@@ -535,7 +526,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     ];
     const table = useVueTable({
       get data() {
-        return props.withdrawals.data;
+        return props.topups.data;
       },
       columns,
       getCoreRowModel: getCoreRowModel(),
@@ -562,7 +553,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       (newSorting) => {
         if (newSorting.length > 0) {
           router.get(
-            "/admin/withdrawals",
+            "/admin/topups",
             {
               search: search.value || void 0,
               status: statusFilter.value !== "all" ? statusFilter.value : void 0,
@@ -583,7 +574,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
         router.get(
-          "/admin/withdrawals",
+          "/admin/topups",
           {
             search: search.value || void 0,
             status: statusFilter.value !== "all" ? statusFilter.value : void 0,
@@ -599,11 +590,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     });
     return (_ctx, _push, _parent, _attrs) => {
       _push(`<!--[-->`);
-      _push(ssrRenderComponent(unref(Head), { title: "Permintaan Withdrawal" }, null, _parent));
+      _push(ssrRenderComponent(unref(Head), { title: "Permintaan Top Up" }, null, _parent));
       _push(ssrRenderComponent(_sfc_main$6, null, {
         default: withCtx((_, _push2, _parent2, _scopeId) => {
           if (_push2) {
-            _push2(`<div class="rounded-xl p-4 space-y-6 py-6"${_scopeId}><div${_scopeId}><h2 class="text-3xl font-bold tracking-tight"${_scopeId}>Permintaan Withdrawal</h2><p class="text-muted-foreground"${_scopeId}>Kelola permintaan penarikan saldo dari pelanggan</p></div>`);
+            _push2(`<div class="rounded-xl p-4 space-y-6 py-6"${_scopeId}><div${_scopeId}><h2 class="text-3xl font-bold tracking-tight"${_scopeId}>Permintaan Top Up</h2><p class="text-muted-foreground"${_scopeId}>Kelola permintaan top up saldo dari pelanggan</p></div>`);
             _push2(ssrRenderComponent(_sfc_main$1, { statistics: __props.statistics }, null, _parent2, _scopeId));
             _push2(`<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"${_scopeId}><div class="flex flex-1 gap-4"${_scopeId}><div class="relative flex-1 max-w-sm"${_scopeId}>`);
             _push2(ssrRenderComponent(unref(Search), { class: "absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" }, null, _parent2, _scopeId));
@@ -1050,10 +1041,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 }, {
                                   default: withCtx((_5, _push6, _parent6, _scopeId5) => {
                                     if (_push6) {
-                                      _push6(` Tidak ada permintaan withdrawal. `);
+                                      _push6(` Tidak ada permintaan topup. `);
                                     } else {
                                       return [
-                                        createTextVNode(" Tidak ada permintaan withdrawal. ")
+                                        createTextVNode(" Tidak ada permintaan topup. ")
                                       ];
                                     }
                                   }),
@@ -1066,7 +1057,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     class: "h-24 text-center"
                                   }, {
                                     default: withCtx(() => [
-                                      createTextVNode(" Tidak ada permintaan withdrawal. ")
+                                      createTextVNode(" Tidak ada permintaan topup. ")
                                     ]),
                                     _: 1
                                   }, 8, ["colspan"])
@@ -1106,7 +1097,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 class: "h-24 text-center"
                               }, {
                                 default: withCtx(() => [
-                                  createTextVNode(" Tidak ada permintaan withdrawal. ")
+                                  createTextVNode(" Tidak ada permintaan topup. ")
                                 ]),
                                 _: 1
                               }, 8, ["colspan"])
@@ -1178,7 +1169,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               class: "h-24 text-center"
                             }, {
                               default: withCtx(() => [
-                                createTextVNode(" Tidak ada permintaan withdrawal. ")
+                                createTextVNode(" Tidak ada permintaan topup. ")
                               ]),
                               _: 1
                             }, 8, ["colspan"])
@@ -1194,17 +1185,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               _: 1
             }, _parent2, _scopeId));
             _push2(`</div>`);
-            if (__props.withdrawals.last_page > 1) {
+            if (__props.topups.last_page > 1) {
               _push2(ssrRenderComponent(_sfc_main$o, {
                 data: {
-                  current_page: __props.withdrawals.current_page,
-                  last_page: __props.withdrawals.last_page,
-                  per_page: __props.withdrawals.per_page,
-                  from: (__props.withdrawals.current_page - 1) * __props.withdrawals.per_page + 1,
-                  to: Math.min(__props.withdrawals.current_page * __props.withdrawals.per_page, __props.withdrawals.total),
-                  total: __props.withdrawals.total
+                  current_page: __props.topups.current_page,
+                  last_page: __props.topups.last_page,
+                  per_page: __props.topups.per_page,
+                  from: (__props.topups.current_page - 1) * __props.topups.per_page + 1,
+                  to: Math.min(__props.topups.current_page * __props.topups.per_page, __props.topups.total),
+                  total: __props.topups.total
                 },
-                url: "/admin/withdrawals",
+                url: "/admin/topups",
                 filters: {
                   search: search.value || void 0,
                   status: statusFilter.value !== "all" ? statusFilter.value : void 0,
@@ -1219,17 +1210,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(_sfc_main$p, {
               open: approveDialog.value.open,
               "onUpdate:open": ($event) => approveDialog.value.open = $event,
-              title: "Setujui Withdrawal?",
-              description: `Apakah Anda yakin ingin menyetujui permintaan withdrawal sebesar ${approveDialog.value.withdrawal ? formatCurrency2(approveDialog.value.withdrawal.amount) : ""} untuk ${approveDialog.value.withdrawal?.customer.name}? Dana akan ditransfer via Midtrans ke rekening tujuan.`,
-              "confirm-text": "Setujui & Transfer",
+              title: "Setujui Top Up?",
+              description: `Apakah Anda yakin ingin menyetujui permintaan top up sebesar ${approveDialog.value.topup ? formatCurrency(approveDialog.value.topup.amount) : ""} untuk ${approveDialog.value.topup?.customer.name}?`,
+              "confirm-text": "Setujui",
               "cancel-text": "Batal",
               onConfirm: handleApprove
             }, null, _parent2, _scopeId));
             _push2(ssrRenderComponent(_sfc_main$p, {
               open: rejectDialog.value.open,
               "onUpdate:open": ($event) => rejectDialog.value.open = $event,
-              title: "Tolak Withdrawal?",
-              description: `Apakah Anda yakin ingin menolak permintaan withdrawal sebesar ${rejectDialog.value.withdrawal ? formatCurrency2(rejectDialog.value.withdrawal.amount) : ""} dari ${rejectDialog.value.withdrawal?.customer.name}?`,
+              title: "Tolak Top Up?",
+              description: `Apakah Anda yakin ingin menolak permintaan top up sebesar ${rejectDialog.value.topup ? formatCurrency(rejectDialog.value.topup.amount) : ""} dari ${rejectDialog.value.topup?.customer.name}?`,
               "confirm-text": "Tolak",
               "cancel-text": "Batal",
               variant: "destructive",
@@ -1239,8 +1230,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             return [
               createVNode("div", { class: "rounded-xl p-4 space-y-6 py-6" }, [
                 createVNode("div", null, [
-                  createVNode("h2", { class: "text-3xl font-bold tracking-tight" }, "Permintaan Withdrawal"),
-                  createVNode("p", { class: "text-muted-foreground" }, "Kelola permintaan penarikan saldo dari pelanggan")
+                  createVNode("h2", { class: "text-3xl font-bold tracking-tight" }, "Permintaan Top Up"),
+                  createVNode("p", { class: "text-muted-foreground" }, "Kelola permintaan top up saldo dari pelanggan")
                 ]),
                 createVNode(_sfc_main$1, { statistics: __props.statistics }, null, 8, ["statistics"]),
                 createVNode("div", { class: "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between" }, [
@@ -1400,7 +1391,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 class: "h-24 text-center"
                               }, {
                                 default: withCtx(() => [
-                                  createTextVNode(" Tidak ada permintaan withdrawal. ")
+                                  createTextVNode(" Tidak ada permintaan topup. ")
                                 ]),
                                 _: 1
                               }, 8, ["colspan"])
@@ -1414,17 +1405,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     _: 1
                   })
                 ]),
-                __props.withdrawals.last_page > 1 ? (openBlock(), createBlock(_sfc_main$o, {
+                __props.topups.last_page > 1 ? (openBlock(), createBlock(_sfc_main$o, {
                   key: 0,
                   data: {
-                    current_page: __props.withdrawals.current_page,
-                    last_page: __props.withdrawals.last_page,
-                    per_page: __props.withdrawals.per_page,
-                    from: (__props.withdrawals.current_page - 1) * __props.withdrawals.per_page + 1,
-                    to: Math.min(__props.withdrawals.current_page * __props.withdrawals.per_page, __props.withdrawals.total),
-                    total: __props.withdrawals.total
+                    current_page: __props.topups.current_page,
+                    last_page: __props.topups.last_page,
+                    per_page: __props.topups.per_page,
+                    from: (__props.topups.current_page - 1) * __props.topups.per_page + 1,
+                    to: Math.min(__props.topups.current_page * __props.topups.per_page, __props.topups.total),
+                    total: __props.topups.total
                   },
-                  url: "/admin/withdrawals",
+                  url: "/admin/topups",
                   filters: {
                     search: search.value || void 0,
                     status: statusFilter.value !== "all" ? statusFilter.value : void 0,
@@ -1436,17 +1427,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               createVNode(_sfc_main$p, {
                 open: approveDialog.value.open,
                 "onUpdate:open": ($event) => approveDialog.value.open = $event,
-                title: "Setujui Withdrawal?",
-                description: `Apakah Anda yakin ingin menyetujui permintaan withdrawal sebesar ${approveDialog.value.withdrawal ? formatCurrency2(approveDialog.value.withdrawal.amount) : ""} untuk ${approveDialog.value.withdrawal?.customer.name}? Dana akan ditransfer via Midtrans ke rekening tujuan.`,
-                "confirm-text": "Setujui & Transfer",
+                title: "Setujui Top Up?",
+                description: `Apakah Anda yakin ingin menyetujui permintaan top up sebesar ${approveDialog.value.topup ? formatCurrency(approveDialog.value.topup.amount) : ""} untuk ${approveDialog.value.topup?.customer.name}?`,
+                "confirm-text": "Setujui",
                 "cancel-text": "Batal",
                 onConfirm: handleApprove
               }, null, 8, ["open", "onUpdate:open", "description"]),
               createVNode(_sfc_main$p, {
                 open: rejectDialog.value.open,
                 "onUpdate:open": ($event) => rejectDialog.value.open = $event,
-                title: "Tolak Withdrawal?",
-                description: `Apakah Anda yakin ingin menolak permintaan withdrawal sebesar ${rejectDialog.value.withdrawal ? formatCurrency2(rejectDialog.value.withdrawal.amount) : ""} dari ${rejectDialog.value.withdrawal?.customer.name}?`,
+                title: "Tolak Top Up?",
+                description: `Apakah Anda yakin ingin menolak permintaan top up sebesar ${rejectDialog.value.topup ? formatCurrency(rejectDialog.value.topup.amount) : ""} dari ${rejectDialog.value.topup?.customer.name}?`,
                 "confirm-text": "Tolak",
                 "cancel-text": "Batal",
                 variant: "destructive",
@@ -1464,7 +1455,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
 const _sfc_setup = _sfc_main.setup;
 _sfc_main.setup = (props, ctx) => {
   const ssrContext = useSSRContext();
-  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/Admin/Withdrawals/Index.vue");
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/pages/Admin/Topups/Index.vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
 export {

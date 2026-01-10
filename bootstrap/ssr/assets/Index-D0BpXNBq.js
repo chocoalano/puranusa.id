@@ -6935,6 +6935,7 @@ _sfc_main$f.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/components/profile/wallet/WalletTopupForm.vue");
   return _sfc_setup$f ? _sfc_setup$f(props, ctx) : void 0;
 };
+const ADMIN_FEE = 6500;
 const _sfc_main$e = /* @__PURE__ */ defineComponent({
   __name: "WalletWithdrawalForm",
   __ssrInlineRender: true,
@@ -6960,9 +6961,14 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
     });
     const withdrawalSummary = computed(() => {
       const amount = parseFloat(form.amount) || 0;
+      const netAmount = Math.max(0, amount - ADMIN_FEE);
       return {
         amount,
-        formattedAmount: amount.toLocaleString("id-ID")
+        formattedAmount: amount.toLocaleString("id-ID"),
+        adminFee: ADMIN_FEE,
+        formattedAdminFee: ADMIN_FEE.toLocaleString("id-ID"),
+        netAmount,
+        formattedNetAmount: netAmount.toLocaleString("id-ID")
       };
     });
     const handleSubmit = () => {
@@ -7162,7 +7168,15 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                   }
                   _push3(`<div class="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(Info), { class: "h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" }, null, _parent3, _scopeId2));
-                  _push3(`<p class="text-xs text-blue-700 dark:text-blue-300"${_scopeId2}> Nama pemilik rekening harus sama dengan nama yang terdaftar sebagai member. </p></div></div><div class="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg"${_scopeId2}><p class="text-sm text-amber-700 dark:text-amber-300"${_scopeId2}><strong${_scopeId2}>Catatan:</strong> Penarikan akan diproses dalam 1-3 hari kerja. Pastikan data rekening sudah benar. </p></div><div class="flex items-center justify-end gap-3"${_scopeId2}>`);
+                  _push3(`<p class="text-xs text-blue-700 dark:text-blue-300"${_scopeId2}> Nama pemilik rekening harus sama dengan nama yang terdaftar sebagai member. </p></div></div>`);
+                  if (unref(form).amount && parseFloat(unref(form).amount) >= 5e4) {
+                    _push3(`<div class="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2"${_scopeId2}><h4 class="font-semibold text-sm"${_scopeId2}>Rincian Penarikan</h4><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Jumlah Penarikan:</span><span${_scopeId2}>Rp ${ssrInterpolate(withdrawalSummary.value.formattedAmount)}</span></div><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Biaya Administrasi:</span><span class="text-red-600 dark:text-red-400"${_scopeId2}>- Rp ${ssrInterpolate(withdrawalSummary.value.formattedAdminFee)}</span></div>`);
+                    _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
+                    _push3(`<div class="flex justify-between text-sm font-semibold"${_scopeId2}><span${_scopeId2}>Yang Akan Diterima:</span><span class="text-green-600 dark:text-green-400"${_scopeId2}>Rp ${ssrInterpolate(withdrawalSummary.value.formattedNetAmount)}</span></div></div>`);
+                  } else {
+                    _push3(`<!---->`);
+                  }
+                  _push3(`<div class="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg space-y-2"${_scopeId2}><p class="text-sm text-amber-700 dark:text-amber-300"${_scopeId2}><strong${_scopeId2}>Catatan:</strong></p><ul class="text-sm text-amber-700 dark:text-amber-300 list-disc list-inside space-y-1"${_scopeId2}><li${_scopeId2}>Setiap penarikan dikenakan <strong${_scopeId2}>biaya administrasi Rp 6.500</strong></li><li${_scopeId2}>Penarikan akan diproses dalam 1-3 hari kerja</li><li${_scopeId2}>Pastikan data rekening sudah benar</li></ul></div><div class="flex items-center justify-end gap-3"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$w), {
                     type: "button",
                     variant: "outline",
@@ -7306,10 +7320,36 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                           createVNode("p", { class: "text-xs text-blue-700 dark:text-blue-300" }, " Nama pemilik rekening harus sama dengan nama yang terdaftar sebagai member. ")
                         ])
                       ]),
-                      createVNode("div", { class: "p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg" }, [
+                      unref(form).amount && parseFloat(unref(form).amount) >= 5e4 ? (openBlock(), createBlock("div", {
+                        key: 0,
+                        class: "p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2"
+                      }, [
+                        createVNode("h4", { class: "font-semibold text-sm" }, "Rincian Penarikan"),
+                        createVNode("div", { class: "flex justify-between text-sm" }, [
+                          createVNode("span", { class: "text-muted-foreground" }, "Jumlah Penarikan:"),
+                          createVNode("span", null, "Rp " + toDisplayString(withdrawalSummary.value.formattedAmount), 1)
+                        ]),
+                        createVNode("div", { class: "flex justify-between text-sm" }, [
+                          createVNode("span", { class: "text-muted-foreground" }, "Biaya Administrasi:"),
+                          createVNode("span", { class: "text-red-600 dark:text-red-400" }, "- Rp " + toDisplayString(withdrawalSummary.value.formattedAdminFee), 1)
+                        ]),
+                        createVNode(unref(_sfc_main$z)),
+                        createVNode("div", { class: "flex justify-between text-sm font-semibold" }, [
+                          createVNode("span", null, "Yang Akan Diterima:"),
+                          createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Rp " + toDisplayString(withdrawalSummary.value.formattedNetAmount), 1)
+                        ])
+                      ])) : createCommentVNode("", true),
+                      createVNode("div", { class: "p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg space-y-2" }, [
                         createVNode("p", { class: "text-sm text-amber-700 dark:text-amber-300" }, [
-                          createVNode("strong", null, "Catatan:"),
-                          createTextVNode(" Penarikan akan diproses dalam 1-3 hari kerja. Pastikan data rekening sudah benar. ")
+                          createVNode("strong", null, "Catatan:")
+                        ]),
+                        createVNode("ul", { class: "text-sm text-amber-700 dark:text-amber-300 list-disc list-inside space-y-1" }, [
+                          createVNode("li", null, [
+                            createTextVNode("Setiap penarikan dikenakan "),
+                            createVNode("strong", null, "biaya administrasi Rp 6.500")
+                          ]),
+                          createVNode("li", null, "Penarikan akan diproses dalam 1-3 hari kerja"),
+                          createVNode("li", null, "Pastikan data rekening sudah benar")
                         ])
                       ]),
                       createVNode("div", { class: "flex items-center justify-end gap-3" }, [
@@ -7469,10 +7509,36 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                         createVNode("p", { class: "text-xs text-blue-700 dark:text-blue-300" }, " Nama pemilik rekening harus sama dengan nama yang terdaftar sebagai member. ")
                       ])
                     ]),
-                    createVNode("div", { class: "p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg" }, [
+                    unref(form).amount && parseFloat(unref(form).amount) >= 5e4 ? (openBlock(), createBlock("div", {
+                      key: 0,
+                      class: "p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2"
+                    }, [
+                      createVNode("h4", { class: "font-semibold text-sm" }, "Rincian Penarikan"),
+                      createVNode("div", { class: "flex justify-between text-sm" }, [
+                        createVNode("span", { class: "text-muted-foreground" }, "Jumlah Penarikan:"),
+                        createVNode("span", null, "Rp " + toDisplayString(withdrawalSummary.value.formattedAmount), 1)
+                      ]),
+                      createVNode("div", { class: "flex justify-between text-sm" }, [
+                        createVNode("span", { class: "text-muted-foreground" }, "Biaya Administrasi:"),
+                        createVNode("span", { class: "text-red-600 dark:text-red-400" }, "- Rp " + toDisplayString(withdrawalSummary.value.formattedAdminFee), 1)
+                      ]),
+                      createVNode(unref(_sfc_main$z)),
+                      createVNode("div", { class: "flex justify-between text-sm font-semibold" }, [
+                        createVNode("span", null, "Yang Akan Diterima:"),
+                        createVNode("span", { class: "text-green-600 dark:text-green-400" }, "Rp " + toDisplayString(withdrawalSummary.value.formattedNetAmount), 1)
+                      ])
+                    ])) : createCommentVNode("", true),
+                    createVNode("div", { class: "p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg space-y-2" }, [
                       createVNode("p", { class: "text-sm text-amber-700 dark:text-amber-300" }, [
-                        createVNode("strong", null, "Catatan:"),
-                        createTextVNode(" Penarikan akan diproses dalam 1-3 hari kerja. Pastikan data rekening sudah benar. ")
+                        createVNode("strong", null, "Catatan:")
+                      ]),
+                      createVNode("ul", { class: "text-sm text-amber-700 dark:text-amber-300 list-disc list-inside space-y-1" }, [
+                        createVNode("li", null, [
+                          createTextVNode("Setiap penarikan dikenakan "),
+                          createVNode("strong", null, "biaya administrasi Rp 6.500")
+                        ]),
+                        createVNode("li", null, "Penarikan akan diproses dalam 1-3 hari kerja"),
+                        createVNode("li", null, "Pastikan data rekening sudah benar")
                       ])
                     ]),
                     createVNode("div", { class: "flex items-center justify-end gap-3" }, [
@@ -7564,7 +7630,7 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  _push3(`<div class="space-y-3 py-4"${_scopeId2}><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Jumlah Penarikan:</span><span class="font-semibold"${_scopeId2}>Rp ${ssrInterpolate(withdrawalSummary.value.formattedAmount)}</span></div>`);
+                  _push3(`<div class="space-y-3 py-4"${_scopeId2}><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Jumlah Penarikan:</span><span${_scopeId2}>Rp ${ssrInterpolate(withdrawalSummary.value.formattedAmount)}</span></div><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Biaya Administrasi:</span><span class="text-red-600"${_scopeId2}>- Rp ${ssrInterpolate(withdrawalSummary.value.formattedAdminFee)}</span></div><div class="flex justify-between text-sm font-semibold"${_scopeId2}><span${_scopeId2}>Yang Akan Diterima:</span><span class="text-green-600"${_scopeId2}>Rp ${ssrInterpolate(withdrawalSummary.value.formattedNetAmount)}</span></div>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
                   _push3(`<div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Bank:</span><span class="font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.bank_name)}</span></div><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>No. Rekening:</span><span class="font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.bank_account)}</span></div><div class="flex justify-between text-sm"${_scopeId2}><span class="text-muted-foreground"${_scopeId2}>Atas Nama:</span><span class="font-medium"${_scopeId2}>${ssrInterpolate(__props.customer.name)}</span></div></div>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$13), null, {
@@ -7635,7 +7701,15 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                     createVNode("div", { class: "space-y-3 py-4" }, [
                       createVNode("div", { class: "flex justify-between text-sm" }, [
                         createVNode("span", { class: "text-muted-foreground" }, "Jumlah Penarikan:"),
-                        createVNode("span", { class: "font-semibold" }, "Rp " + toDisplayString(withdrawalSummary.value.formattedAmount), 1)
+                        createVNode("span", null, "Rp " + toDisplayString(withdrawalSummary.value.formattedAmount), 1)
+                      ]),
+                      createVNode("div", { class: "flex justify-between text-sm" }, [
+                        createVNode("span", { class: "text-muted-foreground" }, "Biaya Administrasi:"),
+                        createVNode("span", { class: "text-red-600" }, "- Rp " + toDisplayString(withdrawalSummary.value.formattedAdminFee), 1)
+                      ]),
+                      createVNode("div", { class: "flex justify-between text-sm font-semibold" }, [
+                        createVNode("span", null, "Yang Akan Diterima:"),
+                        createVNode("span", { class: "text-green-600" }, "Rp " + toDisplayString(withdrawalSummary.value.formattedNetAmount), 1)
                       ]),
                       createVNode(unref(_sfc_main$z)),
                       createVNode("div", { class: "flex justify-between text-sm" }, [
@@ -7697,7 +7771,15 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
                   createVNode("div", { class: "space-y-3 py-4" }, [
                     createVNode("div", { class: "flex justify-between text-sm" }, [
                       createVNode("span", { class: "text-muted-foreground" }, "Jumlah Penarikan:"),
-                      createVNode("span", { class: "font-semibold" }, "Rp " + toDisplayString(withdrawalSummary.value.formattedAmount), 1)
+                      createVNode("span", null, "Rp " + toDisplayString(withdrawalSummary.value.formattedAmount), 1)
+                    ]),
+                    createVNode("div", { class: "flex justify-between text-sm" }, [
+                      createVNode("span", { class: "text-muted-foreground" }, "Biaya Administrasi:"),
+                      createVNode("span", { class: "text-red-600" }, "- Rp " + toDisplayString(withdrawalSummary.value.formattedAdminFee), 1)
+                    ]),
+                    createVNode("div", { class: "flex justify-between text-sm font-semibold" }, [
+                      createVNode("span", null, "Yang Akan Diterima:"),
+                      createVNode("span", { class: "text-green-600" }, "Rp " + toDisplayString(withdrawalSummary.value.formattedNetAmount), 1)
                     ]),
                     createVNode(unref(_sfc_main$z)),
                     createVNode("div", { class: "flex justify-between text-sm" }, [
