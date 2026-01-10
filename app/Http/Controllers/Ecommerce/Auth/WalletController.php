@@ -326,6 +326,10 @@ class WalletController extends Controller
         try {
             DB::beginTransaction();
 
+            // Biaya administrasi penarikan
+            $adminFee = 6500;
+            $netAmount = bcsub((string) $request->amount, (string) $adminFee, 2);
+
             $balanceBefore = $customer->ewallet_saldo;
             $balanceAfter = bcsub((string) $balanceBefore, (string) $request->amount, 2);
 
@@ -342,6 +346,9 @@ class WalletController extends Controller
                     'bank_name' => $customer->bank_name,
                     'bank_account' => $customer->bank_account,
                     'bank_holder' => $customer->name,
+                    'gross_amount' => (float) $request->amount,
+                    'admin_fee' => $adminFee,
+                    'net_amount' => (float) $netAmount,
                 ]),
             ]);
 

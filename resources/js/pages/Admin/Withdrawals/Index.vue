@@ -207,6 +207,27 @@ const columns: ColumnDef<Withdrawal>[] = [
         },
     },
     {
+        accessorKey: 'customer.username',
+        header: ({ column }) => {
+            return h(
+                Button,
+                {
+                    variant: 'ghost',
+                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+                    class: '-ml-4',
+                },
+                () => ['Username', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })]
+            );
+        },
+        cell: ({ row }) => {
+            const customer = row.original.customer;
+            return h('div', [
+                h('div', { class: 'font-medium' }, customer.name),
+                h('div', { class: 'text-xs text-muted-foreground' }, customer.email),
+            ]);
+        },
+    },
+    {
         accessorKey: 'customer.ewallet_saldo',
         header: () => 'Saldo',
         cell: ({ row }) => {
@@ -218,6 +239,13 @@ const columns: ColumnDef<Withdrawal>[] = [
         header: () => 'Penarikan',
         cell: ({ row }) => {
             return h('div', { class: 'font-bold text-red-600' }, formatCurrency(row.getValue('amount')));
+        },
+    },
+    {
+        accessorKey: 'amount',
+        header: () => 'Biaya Admin',
+        cell: () => {
+            return h('div', { class: 'font-bold text-red-600' }, formatCurrency(6500.00));
         },
     },
     {

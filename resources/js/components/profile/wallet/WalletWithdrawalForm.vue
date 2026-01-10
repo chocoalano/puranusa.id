@@ -54,12 +54,20 @@ const form = useForm({
     password: '',
 });
 
+// Biaya administrasi penarikan
+const ADMIN_FEE = 6500;
+
 // Computed untuk menampilkan ringkasan penarikan
 const withdrawalSummary = computed(() => {
     const amount = parseFloat(form.amount) || 0;
+    const netAmount = Math.max(0, amount - ADMIN_FEE);
     return {
         amount,
         formattedAmount: amount.toLocaleString('id-ID'),
+        adminFee: ADMIN_FEE,
+        formattedAdminFee: ADMIN_FEE.toLocaleString('id-ID'),
+        netAmount,
+        formattedNetAmount: netAmount.toLocaleString('id-ID'),
     };
 });
 
@@ -243,11 +251,33 @@ const cancelPasswordDialog = () => {
                     </div>
                 </div>
 
-                <div class="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg">
+                <!-- Info Biaya Admin -->
+                <div v-if="form.amount && parseFloat(form.amount) >= 50000" class="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2">
+                    <h4 class="font-semibold text-sm">Rincian Penarikan</h4>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted-foreground">Jumlah Penarikan:</span>
+                        <span>Rp {{ withdrawalSummary.formattedAmount }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted-foreground">Biaya Administrasi:</span>
+                        <span class="text-red-600 dark:text-red-400">- Rp {{ withdrawalSummary.formattedAdminFee }}</span>
+                    </div>
+                    <Separator />
+                    <div class="flex justify-between text-sm font-semibold">
+                        <span>Yang Akan Diterima:</span>
+                        <span class="text-green-600 dark:text-green-400">Rp {{ withdrawalSummary.formattedNetAmount }}</span>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-lg space-y-2">
                     <p class="text-sm text-amber-700 dark:text-amber-300">
-                        <strong>Catatan:</strong> Penarikan akan diproses dalam 1-3 hari kerja.
-                        Pastikan data rekening sudah benar.
+                        <strong>Catatan:</strong>
                     </p>
+                    <ul class="text-sm text-amber-700 dark:text-amber-300 list-disc list-inside space-y-1">
+                        <li>Setiap penarikan dikenakan <strong>biaya administrasi Rp 6.500</strong></li>
+                        <li>Penarikan akan diproses dalam 1-3 hari kerja</li>
+                        <li>Pastikan data rekening sudah benar</li>
+                    </ul>
                 </div>
 
                 <div class="flex items-center justify-end gap-3">
@@ -282,7 +312,15 @@ const cancelPasswordDialog = () => {
             <div class="space-y-3 py-4">
                 <div class="flex justify-between text-sm">
                     <span class="text-muted-foreground">Jumlah Penarikan:</span>
-                    <span class="font-semibold">Rp {{ withdrawalSummary.formattedAmount }}</span>
+                    <span>Rp {{ withdrawalSummary.formattedAmount }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-muted-foreground">Biaya Administrasi:</span>
+                    <span class="text-red-600">- Rp {{ withdrawalSummary.formattedAdminFee }}</span>
+                </div>
+                <div class="flex justify-between text-sm font-semibold">
+                    <span>Yang Akan Diterima:</span>
+                    <span class="text-green-600">Rp {{ withdrawalSummary.formattedNetAmount }}</span>
                 </div>
                 <Separator />
                 <div class="flex justify-between text-sm">

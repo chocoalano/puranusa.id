@@ -227,6 +227,13 @@ const columns: ColumnDef<Topup>[] = [
         },
     },
     {
+        accessorKey: 'notes',
+        header: () => 'Keterangan',
+        cell: ({ row }) => {
+            return h('p', row.getValue('notes'));
+        },
+    },
+    {
         accessorKey: 'created_at',
         header: () => 'Tanggal',
         cell: ({ row }) => {
