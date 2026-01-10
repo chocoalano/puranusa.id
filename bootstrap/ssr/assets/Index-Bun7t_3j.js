@@ -471,7 +471,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         cell: ({ row }) => {
           const customer = row.original.customer;
           return h("div", [
-            h("div", { class: "font-medium" }, customer.name),
+            h("div", { class: "font-medium" }, customer.username),
             h("div", { class: "text-xs text-muted-foreground" }, customer.email)
           ]);
         }
@@ -491,10 +491,36 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
       },
       {
-        accessorKey: "amount",
+        accessorKey: "notes",
         header: () => "Biaya Admin",
-        cell: () => {
-          return h("div", { class: "font-bold text-red-600" }, formatCurrency2(6500));
+        cell: ({ row }) => {
+          const bankInfo = getBankInfo(row.getValue("notes"));
+          if (!bankInfo) return h("div", { class: "text-xs text-muted-foreground" }, "-");
+          return h("div", [
+            h("div", { class: "text-xs font-medium" }, `${formatCurrency2(bankInfo.admin_fee ?? 0)}`)
+          ]);
+        }
+      },
+      {
+        accessorKey: "notes",
+        header: () => "Biaya Admin",
+        cell: ({ row }) => {
+          const bankInfo = getBankInfo(row.getValue("notes"));
+          if (!bankInfo) return h("div", { class: "text-xs text-muted-foreground" }, "-");
+          return h("div", [
+            h("div", { class: "text-xs font-medium" }, `${formatCurrency2(bankInfo.admin_fee ?? 0)}`)
+          ]);
+        }
+      },
+      {
+        accessorKey: "notes",
+        header: () => "Penarikan Net",
+        cell: ({ row }) => {
+          const bankInfo = getBankInfo(row.getValue("notes"));
+          if (!bankInfo) return h("div", { class: "text-xs text-muted-foreground" }, "-");
+          return h("div", [
+            h("div", { class: "text-xs font-medium" }, `${formatCurrency2(bankInfo.net_amount ?? 0)}`)
+          ]);
         }
       },
       {

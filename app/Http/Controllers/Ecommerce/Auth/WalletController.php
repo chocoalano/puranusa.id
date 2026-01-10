@@ -346,10 +346,13 @@ class WalletController extends Controller
                     'bank_name' => $customer->bank_name,
                     'bank_account' => $customer->bank_account,
                     'bank_holder' => $customer->name,
-                    'gross_amount' => (float) $request->amount,
-                    'admin_fee' => $adminFee,
-                    'net_amount' => (float) $netAmount,
+                    'gross_amount' => (float) $request->amount ?? 0,
+                    'admin_fee' => $adminFee ?? 0,
+                    'net_amount' => (float) $netAmount ?? 0,
                 ]),
+                'created_at' => now(),
+                'updated_at' => now(),
+                'is_system' => 1,
             ]);
 
             // Deduct balance directly (without calling deductBalance to avoid double transaction record)

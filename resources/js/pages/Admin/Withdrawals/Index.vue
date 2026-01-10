@@ -45,11 +45,11 @@ import { h, ref, watch } from 'vue';
 
 interface Withdrawal {
     id: number;
-    customer: { name: string; email: string; ewallet_saldo: number };
+    customer: { username: string;name: string; email: string; ewallet_saldo: number };
     amount: number;
     status: string;
     transaction_ref: string;
-    notes: string | null;
+    notes: string | {bank_name: string; bank_account: string; bank_holder: string, gross_amount: number, admin_fee: number, net_amount: number} | null;
     created_at: string;
 }
 
@@ -222,7 +222,7 @@ const columns: ColumnDef<Withdrawal>[] = [
         cell: ({ row }) => {
             const customer = row.original.customer;
             return h('div', [
-                h('div', { class: 'font-medium' }, customer.name),
+                h('div', { class: 'font-medium' }, customer.username),
                 h('div', { class: 'text-xs text-muted-foreground' }, customer.email),
             ]);
         },
@@ -242,10 +242,36 @@ const columns: ColumnDef<Withdrawal>[] = [
         },
     },
     {
-        accessorKey: 'amount',
+        accessorKey: 'notes',
         header: () => 'Biaya Admin',
-        cell: () => {
-            return h('div', { class: 'font-bold text-red-600' }, formatCurrency(6500.00));
+        cell: ({ row }) => {
+            const bankInfo = getBankInfo(row.getValue('notes'));
+            if (!bankInfo) return h('div', { class: 'text-xs text-muted-foreground' }, '-');
+            return h('div', [
+                h('div', { class: 'text-xs font-medium' }, `${formatCurrency(bankInfo.admin_fee ?? 0)}`)
+            ]);
+        },
+    },
+    {
+        accessorKey: 'notes',
+        header: () => 'Biaya Admin',
+        cell: ({ row }) => {
+            const bankInfo = getBankInfo(row.getValue('notes'));
+            if (!bankInfo) return h('div', { class: 'text-xs text-muted-foreground' }, '-');
+            return h('div', [
+                h('div', { class: 'text-xs font-medium' }, `${formatCurrency(bankInfo.admin_fee ?? 0)}`)
+            ]);
+        },
+    },
+    {
+        accessorKey: 'notes',
+        header: () => 'Penarikan Net',
+        cell: ({ row }) => {
+            const bankInfo = getBankInfo(row.getValue('notes'));
+            if (!bankInfo) return h('div', { class: 'text-xs text-muted-foreground' }, '-');
+            return h('div', [
+                h('div', { class: 'text-xs font-medium' }, `${formatCurrency(bankInfo.net_amount ?? 0)}`)
+            ]);
         },
     },
     {
