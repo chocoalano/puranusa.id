@@ -8210,6 +8210,54 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
     const safeFormatCurrency = (value) => {
       return formatCurrency(value, "-");
     };
+    const isPlainObject = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+    const parseNotes = (notes) => {
+      if (notes == null) return null;
+      if (isPlainObject(notes)) return notes;
+      if (typeof notes === "string") {
+        const trimmed = notes.trim();
+        if (!trimmed) return null;
+        const looksJson = trimmed.startsWith("{") && trimmed.endsWith("}") || trimmed.startsWith("[") && trimmed.endsWith("]");
+        if (!looksJson) return trimmed;
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (isPlainObject(parsed)) return parsed;
+          return trimmed;
+        } catch {
+          return trimmed;
+        }
+      }
+      return String(notes);
+    };
+    const notesParsed = computed(() => parseNotes(props.transaction.notes));
+    const bankNotes = computed(() => {
+      const n = notesParsed.value;
+      if (!n || typeof n === "string") return null;
+      const hasBank = typeof n.bank_name === "string" && typeof n.bank_account === "string" && typeof n.bank_holder === "string";
+      if (!hasBank) return null;
+      return {
+        bank_name: n.bank_name,
+        bank_account: n.bank_account,
+        bank_holder: n.bank_holder,
+        gross_amount: typeof n.gross_amount === "number" ? n.gross_amount : void 0,
+        admin_fee: typeof n.admin_fee === "number" ? n.admin_fee : void 0,
+        net_amount: typeof n.net_amount === "number" ? n.net_amount : void 0
+      };
+    });
+    const notesText = computed(() => {
+      const n = notesParsed.value;
+      if (!n) return "";
+      if (typeof n === "string") return n;
+      if (bankNotes.value) return "";
+      if (typeof n.message === "string") return n.message;
+      if (typeof n.description === "string") return n.description;
+      if (typeof n.label === "string") return n.label;
+      try {
+        return JSON.stringify(n);
+      } catch {
+        return "[notes]";
+      }
+    });
     const checkPaymentStatus = async (transactionRef) => {
       if (checkingStatus.value) return;
       checkingStatus.value = true;
@@ -8268,15 +8316,17 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
         }),
         _: 1
       }, _parent));
-      _push(`</div><div class="mb-2 text-xs text-muted-foreground">`);
-      if (__props.transaction.notes) {
-        _push(`<p class="line-clamp-2">${ssrInterpolate(__props.transaction.notes)}</p>`);
+      _push(`</div><div class="mb-2 text-xs text-muted-foreground space-y-1">`);
+      if (notesText.value) {
+        _push(`<p class="line-clamp-2">${ssrInterpolate(notesText.value)}</p>`);
+      } else if (bankNotes.value) {
+        _push(`<div class="space-y-1"><p class="text-foreground/80 font-medium"> Rekening: ${ssrInterpolate(bankNotes.value.bank_name)} - ${ssrInterpolate(bankNotes.value.bank_account)}</p><p> a.n ${ssrInterpolate(bankNotes.value.bank_holder)}</p><div class="grid grid-cols-3 gap-2 pt-1"><div><p class="text-[11px] text-muted-foreground">Gross</p><p class="text-foreground/90 font-medium">${ssrInterpolate(bankNotes.value.gross_amount != null ? safeFormatCurrency(bankNotes.value.gross_amount) : "-")}</p></div><div class="border-x px-2"><p class="text-[11px] text-muted-foreground">Admin</p><p class="text-foreground/90 font-medium">${ssrInterpolate(bankNotes.value.admin_fee != null ? safeFormatCurrency(bankNotes.value.admin_fee) : "-")}</p></div><div><p class="text-[11px] text-muted-foreground">Net</p><p class="text-foreground/90 font-medium">${ssrInterpolate(bankNotes.value.net_amount != null ? safeFormatCurrency(bankNotes.value.net_amount) : "-")}</p></div></div></div>`);
       } else {
         _push(`<!---->`);
       }
-      _push(`<p>Ref: ${ssrInterpolate(__props.transaction.transaction_ref)}</p></div><div class="grid grid-cols-3 gap-2 text-xs border-t pt-2"><div class="text-center"><p class="text-muted-foreground mb-0.5">Debit</p><p class="font-semibold text-red-600 dark:text-red-400">${ssrInterpolate(!isCredit.value && localStatus.value === "completed" ? safeFormatCurrency(__props.transaction.amount) : "-")}</p></div><div class="text-center border-x"><p class="text-muted-foreground mb-0.5">Kredit</p><p class="font-semibold text-emerald-600 dark:text-emerald-400">${ssrInterpolate(isCredit.value && localStatus.value === "completed" ? safeFormatCurrency(__props.transaction.amount) : "-")}</p></div><div class="text-center"><p class="text-muted-foreground mb-0.5">Saldo</p><p class="font-semibold">${ssrInterpolate(safeFormatCurrency(__props.transaction.balance_after))}</p></div></div>`);
+      _push(`<p>Ref: ${ssrInterpolate(__props.transaction.transaction_ref)}</p></div><div class="grid grid-cols-3 gap-2 text-xs border-t pt-2"><div class="text-center"><p class="text-muted-foreground mb-0.5">Debit</p><p class="font-semibold text-red-600 dark:text-red-400">${ssrInterpolate(!isCredit.value ? safeFormatCurrency(__props.transaction.amount) : "-")}</p></div><div class="text-center border-x"><p class="text-muted-foreground mb-0.5">Kredit</p><p class="font-semibold text-emerald-600 dark:text-emerald-400">${ssrInterpolate(isCredit.value ? safeFormatCurrency(__props.transaction.amount) : "-")}</p></div><div class="text-center"><p class="text-muted-foreground mb-0.5">Saldo</p><p class="font-semibold">${ssrInterpolate(safeFormatCurrency(__props.transaction.balance_after))}</p></div></div>`);
       if (__props.transaction.type === "topup" && localStatus.value === "pending" && __props.transaction.midtrans_transaction_id) {
-        _push(`<div class="mt-3 pt-3 border-t"><div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"><p class="text-xs text-muted-foreground"> Pembayaran menunggu konfirmasi </p><div class="flex gap-2">`);
+        _push(`<div class="mt-3 pt-3 border-t"><div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2"><p class="text-xs text-muted-foreground">Pembayaran menunggu konfirmasi</p><div class="flex gap-2">`);
         _push(ssrRenderComponent(unref(_sfc_main$w), {
           size: "sm",
           variant: "outline",
