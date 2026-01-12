@@ -12,13 +12,21 @@ class MidtransService
 
     protected string $baseUrl;
 
+    protected string $irisKey;
+
+    protected string $irisBaseUrl;
+
     public function __construct()
     {
         $this->serverKey = config('services.midtrans.server_key');
+        $this->irisKey = config('services.midtrans.iris_key') ?: $this->serverKey;
         $isProduction = config('services.midtrans.is_production', false);
         $this->baseUrl = $isProduction
             ? 'https://api.midtrans.com/v2'
             : 'https://api.sandbox.midtrans.com/v2';
+        $this->irisBaseUrl = $isProduction
+            ? 'https://app.midtrans.com/iris/api/v1'
+            : 'https://app.sandbox.midtrans.com/iris/api/v1';
     }
 
     /**
@@ -57,9 +65,16 @@ class MidtransService
         }
 
         // Production: Use Midtrans IRIS API
-        $endpoint = str_replace('/v2', '/iris/api/v1', $this->baseUrl).'/payouts';
+        $endpoint = $this->irisBaseUrl.'/payouts';
 
         $referenceNo = 'WD-'.now()->format('YmdHis').'-'.strtoupper(Str::random(6));
+
+        if (! $this->irisKey) {
+            return [
+                'success' => false,
+                'message' => 'IRIS API key belum dikonfigurasi (MIDTRANS_IRIS_KEY).',
+            ];
+        }
 
         $payload = [
             'payouts' => [
@@ -83,10 +98,9 @@ class MidtransService
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Basic '.base64_encode($this->serverKey.':'),
+                'Authorization' => 'Basic '.base64_encode($this->irisKey.':'),
             ])
                 ->post($endpoint, $payload);
-
             $result = $response->json();
 
             Log::info('Midtrans IRIS Payout Response', [
@@ -100,6 +114,14 @@ class MidtransService
                     'data' => $result['payouts'][0],
                     'reference_no' => $result['payouts'][0]['reference_no'] ?? $referenceNo,
                     'status' => $result['payouts'][0]['status'] ?? 'pending',
+                ];
+            }
+            dd($response, $result);
+            if ($response->status() === 401) {
+                return [
+                    'success' => false,
+                    'message' => 'Unauthorized (401). Pastikan MIDTRANS_IRIS_KEY benar dan akun IRIS sudah aktif.',
+                    'error' => $result,
                 ];
             }
 
@@ -142,12 +164,12 @@ class MidtransService
         }
 
         // Production: Query IRIS API
-        $endpoint = str_replace('/v2', '/iris/api/v1', $this->baseUrl).'/payouts/'.$referenceNo;
+        $endpoint = $this->irisBaseUrl.'/payouts/'.$referenceNo;
 
         try {
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
-                'Authorization' => 'Basic '.base64_encode($this->serverKey.':'),
+                'Authorization' => 'Basic '.base64_encode($this->irisKey.':'),
             ])
                 ->get($endpoint);
 

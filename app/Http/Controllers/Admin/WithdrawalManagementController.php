@@ -67,10 +67,8 @@ class WithdrawalManagementController extends Controller
         DB::beginTransaction();
         try {
             $customer = $withdrawal->customer;
-
-            if ($customer->ewallet_saldo < $withdrawal->amount) {
+            if ((float) $withdrawal->balance_before < (float) $withdrawal->amount) {
                 DB::rollBack();
-
                 return back()->with('error', 'Saldo pelanggan tidak mencukupi');
             }
 
@@ -78,36 +76,34 @@ class WithdrawalManagementController extends Controller
             $bankInfo = json_decode($withdrawal->notes, true);
             if (! $bankInfo || ! isset($bankInfo['bank_name'], $bankInfo['bank_account'], $bankInfo['bank_holder'])) {
                 DB::rollBack();
-
                 return back()->with('error', 'Informasi rekening bank tidak lengkap');
             }
 
-            // Create payout via Midtrans
-            Log::info('Processing withdrawal payout', [
-                'withdrawal_id' => $withdrawal->id,
-                'customer_id' => $customer->id,
-                'amount' => $withdrawal->amount,
-                'bank_info' => $bankInfo,
-            ]);
+            // // Create payout via Midtrans
+            // Log::info('Processing withdrawal payout', [
+            //     'withdrawal_id' => $withdrawal->id,
+            //     'customer_id' => $customer->id,
+            //     'amount' => $withdrawal->amount,
+            //     'bank_info' => $bankInfo,
+            // ]);
 
-            $payoutResult = $midtrans->createPayout([
-                'beneficiary_name' => $bankInfo['bank_holder'],
-                'beneficiary_account' => $bankInfo['bank_account'],
-                'beneficiary_bank' => strtolower($bankInfo['bank_name']),
-                'beneficiary_email' => $customer->email ?? 'noreply@puranusa.id',
-                'amount' => $withdrawal->amount,
-                'notes' => 'Withdrawal '.$withdrawal->transaction_ref,
-            ]);
+            // $payoutResult = $midtrans->createPayout([
+            //     'beneficiary_name' => $bankInfo['bank_holder'],
+            //     'beneficiary_account' => $bankInfo['bank_account'],
+            //     'beneficiary_bank' => strtolower($bankInfo['bank_name']),
+            //     'beneficiary_email' => $customer->email ?? 'noreply@puranusa.id',
+            //     'amount' => $withdrawal->amount,
+            //     'notes' => 'Withdrawal '.$withdrawal->transaction_ref,
+            // ]);
+            // if (! $payoutResult['success']) {
+            //     DB::rollBack();
+            //     Log::error('Midtrans payout failed', [
+            //         'withdrawal_id' => $withdrawal->id,
+            //         'error' => $payoutResult['message'] ?? 'Unknown error',
+            //     ]);
 
-            if (! $payoutResult['success']) {
-                DB::rollBack();
-                Log::error('Midtrans payout failed', [
-                    'withdrawal_id' => $withdrawal->id,
-                    'error' => $payoutResult['message'] ?? 'Unknown error',
-                ]);
-
-                return back()->with('error', 'Gagal memproses transfer: '.($payoutResult['message'] ?? 'Kesalahan sistem'));
-            }
+            //     return back()->with('error', 'Gagal memproses transfer: '.($payoutResult['message'] ?? 'Kesalahan sistem'));
+            // }
 
             // Update withdrawal with payout info
             $newBalance = $customer->ewallet_saldo - $withdrawal->amount;
@@ -141,7 +137,6 @@ class WithdrawalManagementController extends Controller
             return back()->with('success', "Withdrawal berhasil disetujui dan dana sedang ditransfer{$simulatedNote}");
         } catch (\Exception $e) {
             DB::rollBack();
-
             Log::error('Withdrawal approval error', [
                 'withdrawal_id' => $withdrawal->id,
                 'error' => $e->getMessage(),
