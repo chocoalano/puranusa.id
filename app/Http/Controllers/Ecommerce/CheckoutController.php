@@ -950,14 +950,14 @@ class CheckoutController extends Controller
 
         $localSignature = hash('sha512', $orderId.$statusCode.$grossAmount.config('services.midtrans.server_key'));
 
-        // if (! hash_equals($localSignature, (string) $signatureKey)) {
-        //     Log::warning('Midtrans callback invalid signature', [
-        //         'order_id' => $orderId,
-        //         'expected' => $localSignature,
-        //         'given' => $signatureKey,
-        //     ]);
-        //     return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
-        // }
+        if (! hash_equals($localSignature, (string) $signatureKey)) {
+            Log::warning('Midtrans callback invalid signature', [
+                'order_id' => $orderId,
+                'expected' => $localSignature,
+                'given' => $signatureKey,
+            ]);
+            return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
+        }
 
         // 2) Resolve Order (prioritas: Payment.transaction_id/provider_txn_id = order_id)
         $payment = Payment::with('order')
@@ -978,55 +978,62 @@ class CheckoutController extends Controller
         // Supaya Midtrans tidak retry berkali-kali kalau order tidak ketemu
         if (! $order) {
             $statusResponse = \Midtrans\Transaction::status($orderId);
-            $topup = CustomerWalletTransaction::where([
-                'transaction_ref' => $orderId,
-                'type' => 'topup',
-            ])->first();
-            if ($topup) {
-                switch ($transactionStatus) {
-                    case 'settlement':
-                        $topup->update([
-                            'balance_before' => $topup->customer->ewallet_saldo,
-                            'balance_after' => $topup->customer->ewallet_saldo + $topup->amount,
-                            'status' => 'completed',
-                            'midtrans_transaction_id' => $transactionId,
-                            'midtrans_signature_key' => $signatureKey,
-                            'completed_at' => now(),
-                        ]);
-                        $topup->customer->increment('ewallet_saldo', $topup->amount);
-                        break;
-                    case 'capture':
-                        $topup->update([
-                            'balance_before' => $topup->customer->ewallet_saldo,
-                            'balance_after' => $topup->customer->ewallet_saldo + $topup->amount,
-                            'status' => 'completed',
-                            'midtrans_transaction_id' => $transactionId,
-                            'midtrans_signature_key' => $signatureKey,
-                            'completed_at' => now(),
-                        ]);
-                        $topup->customer->increment('ewallet_saldo', $topup->amount);
-                        break;
-                    case 'deny':
-                        $topup->update(['status' => 'failed']);
-                        break;
-                    case 'cancel':
-                        $topup->update(['status' => 'failed']);
-                        break;
-                    case 'expire':
-                        $topup->update(['status' => 'failed']);
-                        break;
-                }
-                Log::info('Midtrans callback topup processed', [
+            if ($statusResponse) {
+                $topup = CustomerWalletTransaction::where([
                     'transaction_ref' => $orderId,
+                    'type' => 'topup',
+                ])->first();
+                if ($topup) {
+                    switch ($transactionStatus) {
+                        case 'settlement':
+                            $topup->update([
+                                'balance_before' => $topup->customer->ewallet_saldo,
+                                'balance_after' => $topup->customer->ewallet_saldo + $topup->amount,
+                                'status' => 'completed',
+                                'midtrans_transaction_id' => $transactionId,
+                                'midtrans_signature_key' => $signatureKey,
+                                'completed_at' => now(),
+                            ]);
+                            $topup->customer->increment('ewallet_saldo', $topup->amount);
+                            break;
+                        case 'capture':
+                            $topup->update([
+                                'balance_before' => $topup->customer->ewallet_saldo,
+                                'balance_after' => $topup->customer->ewallet_saldo + $topup->amount,
+                                'status' => 'completed',
+                                'midtrans_transaction_id' => $transactionId,
+                                'midtrans_signature_key' => $signatureKey,
+                                'completed_at' => now(),
+                            ]);
+                            $topup->customer->increment('ewallet_saldo', $topup->amount);
+                            break;
+                        case 'deny':
+                            $topup->update(['status' => 'failed']);
+                            break;
+                        case 'cancel':
+                            $topup->update(['status' => 'failed']);
+                            break;
+                        case 'expire':
+                            $topup->update(['status' => 'failed']);
+                            break;
+                    }
+                    Log::info('Midtrans callback topup processed', [
+                        'transaction_ref' => $orderId,
+                        'status_response' => $statusResponse,
+                    ]);
+
+                    return response()->json(['status' => 'success'], 200);
+                }
+                Log::warning('Midtrans callback order not found', [
+                    'order_id' => $orderId,
                     'status_response' => $statusResponse,
                 ]);
-
-                return response()->json(['status' => 'success'], 200);
+            }else{
+                return response()->json(['status' => 'Midtrans callback order not found and status check failed'], 404);
+                Log::warning('Midtrans callback order not found and status check failed', [
+                    'order_id' => $orderId,
+                ]);
             }
-            Log::warning('Midtrans callback order not found', [
-                'order_id' => $orderId,
-                'status_response' => $statusResponse,
-            ]);
         }
 
         $wasPaid = ($order->status === 'PAID');
