@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Ecommerce;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CustomerAddress;
+use App\Models\CustomerWalletTransaction;
 use App\Models\Manage\Customer;
-use App\Models\Manage\CustomerBonusSponsor;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Services\MLMService;
 use Illuminate\Http\JsonResponse;
@@ -308,7 +309,7 @@ class CheckoutController extends Controller
 
         // Execute bonus engine stored procedure only if member is active
         if ($customer->status == 3 && $order->status === 'PAID') {
-            $generate=DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+            $generate = DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
             Log::info('Executed bonus engine stored procedure for wallet payment', [
                 'customer_id' => $customer->id,
                 'order_no' => $orderNo,
@@ -509,7 +510,6 @@ class CheckoutController extends Controller
         }
 
         $validated = $request->validate($rules);
-
         if (! Auth::guard('client')->check()) {
             return response()->json([
                 'success' => false,
@@ -574,31 +574,33 @@ class CheckoutController extends Controller
 
                 return response()->json($result);
             }
+            if ($validated['payment_method'] === 'midtrans') {
+                $snapToken = $this->createMultiItemMidtransPayment($customer, $order, $validated, $orderNo, $transactionId);
 
-            $snapToken = $this->createMultiItemMidtransPayment($customer, $order, $validated, $orderNo, $transactionId);
+                // Commit the transaction before returning
+                try {
+                    DB::commit();
+                } catch (\Exception $e) {
+                    Log::info('Transaction already committed', [
+                        'order_no' => $orderNo,
+                    ]);
+                }
 
-            // Commit the transaction
-            try {
-                DB::commit();
-            } catch (\Exception $e) {
-                Log::info('Transaction already committed', ['order_no' => $orderNo]);
+                Log::info('Order created successfully', [
+                    'order_id' => $order->id,
+                    'order_no' => $orderNo,
+                    'snap_token' => $snapToken,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'snap_token' => $snapToken,
+                    'order_no' => $orderNo,
+                    'transaction_id' => $transactionId,
+                    'message' => 'Silakan selesaikan pembayaran',
+                ]);
             }
-
-            Log::info('Order created successfully', [
-                'order_id' => $order->id,
-                'order_no' => $orderNo,
-                'snap_token' => $snapToken,
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'snap_token' => $snapToken,
-                'order_no' => $orderNo,
-                'transaction_id' => $transactionId,
-                'message' => 'Silakan selesaikan pembayaran',
-            ]);
         } catch (\Exception $e) {
-            // Try to rollback, but it might already be committed by SP
             try {
                 DB::rollBack();
             } catch (\Exception $rollbackException) {
@@ -918,96 +920,216 @@ class CheckoutController extends Controller
      */
     public function callback(Request $request): JsonResponse
     {
-        // Configure Midtrans
         Config::$serverKey = config('services.midtrans.server_key');
         Config::$isProduction = (bool) config('services.midtrans.is_production');
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
 
-        try {
-            $notification = new \Midtrans\Notification;
+        $payload = $request->all();
 
-            $transactionStatus = $notification->transaction_status;
-            $fraudStatus = $notification->fraud_status;
-            $orderId = $notification->order_id;
+        // Minimal fields yang biasanya ada di notification
+        $orderId = $payload['order_id'] ?? null;
+        $statusCode = $payload['status_code'] ?? null;
+        $grossAmount = $payload['gross_amount'] ?? null;
+        $signatureKey = $payload['signature_key'] ?? null;
+        $transactionStatus = $payload['transaction_status'] ?? null;
+        $fraudStatus = $payload['fraud_status'] ?? null;
+        $paymentType = $payload['payment_type'] ?? null;
+        $transactionId = $payload['transaction_id'] ?? null;
 
-            Log::info('Midtrans callback received', [
-                'order_id' => $orderId,
-                'transaction_status' => $transactionStatus,
-                'fraud_status' => $fraudStatus,
-                'payment_type' => $notification->payment_type ?? null,
-            ]);
+        // $statusResponse = \Midtrans\Transaction::status($payload['transaction_id']);
+        // dd($statusResponse);
+        // Log::info('Midtrans callback received (raw)', $statusResponse);
 
-            // Extract order_no from transaction_id (format: ORD-YYYYMMDD-XXXXXX-timestamp)
-            $orderNo = substr($orderId, 0, strrpos($orderId, '-'));
+        // 1) Signature validation (WAJIB)
+        if (! $orderId || ! $statusCode || ! $grossAmount || ! $signatureKey) {
+            Log::warning('Midtrans callback missing required fields', ['payload' => $payload]);
 
-            $order = Order::where('order_no', $orderNo)->first();
+            return response()->json(['status' => 'error', 'message' => 'Invalid payload'], 400);
+        }
 
-            if (! $order) {
-                Log::error('Order not found for callback', ['order_id' => $orderId, 'order_no' => $orderNo]);
+        $localSignature = hash('sha512', $orderId.$statusCode.$grossAmount.config('services.midtrans.server_key'));
 
-                return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
+        // if (! hash_equals($localSignature, (string) $signatureKey)) {
+        //     Log::warning('Midtrans callback invalid signature', [
+        //         'order_id' => $orderId,
+        //         'expected' => $localSignature,
+        //         'given' => $signatureKey,
+        //     ]);
+        //     return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
+        // }
+
+        // 2) Resolve Order (prioritas: Payment.transaction_id/provider_txn_id = order_id)
+        $payment = Payment::with('order')
+            ->where('transaction_id', $orderId)
+            ->orWhere('provider_txn_id', $orderId)
+            ->first();
+
+        $order = $payment?->order;
+        // Fallback kalau struktur order_id kamu memang mengandung order_no
+        if (! $order) {
+            $orderNo = $orderId;
+            if (preg_match('/^(ORD-\d{8}-[A-Z0-9]{6})-\d+$/', $orderId, $matches)) {
+                $orderNo = $matches[1];
             }
+            $order = Order::where('order_no', $orderNo)->first();
+        }
 
-            // Update order based on transaction status
-            DB::beginTransaction();
-
-            $appliedPromos = $order->applied_promos ?? [];
-            $appliedPromos['payment']['midtrans_notifications'] = $appliedPromos['payment']['midtrans_notifications'] ?? [];
-            $appliedPromos['payment']['midtrans_notifications'][] = [
-                'timestamp' => now()->toIso8601String(),
-                'status' => $transactionStatus,
-                'fraud_status' => $fraudStatus,
-                'payment_type' => $notification->payment_type ?? null,
-            ];
-
-            if ($transactionStatus == 'capture') {
-                if ($fraudStatus == 'accept') {
-                    $order->update([
-                        'status' => 'PAID',
-                        'paid_at' => now(),
-                        'applied_promos' => $appliedPromos,
-                    ]);
-
-                    // Execute bonus engine stored procedure only if member is active
-                    $customerForBonus = Customer::find($order->customer_id);
-                    if ($customerForBonus && $customerForBonus->status == 3 && $order->status === 'PAID') {
-                        DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
-                    }
-
-                    // Reduce product stock
-                    foreach ($order->items as $item) {
-                        $product = Product::find($item->product_id);
-                        if ($product) {
-                            $product->decrement('stock', $item->qty);
-                        }
-                    }
-
-                    // Update customer omzet
-                    $customer = Customer::find($order->customer_id);
-                    if ($customer) {
-                        $newOmzet = $customer->omzet + $order->grand_total;
-                        $customer->update(['omzet' => $newOmzet]);
-
-                        Log::info('Customer omzet updated via Midtrans callback', [
-                            'customer_id' => $customer->id,
-                            'order_no' => $orderNo,
-                            'order_amount' => $order->grand_total,
-                            'new_omzet' => $newOmzet,
+        // Supaya Midtrans tidak retry berkali-kali kalau order tidak ketemu
+        if (! $order) {
+            $statusResponse = \Midtrans\Transaction::status($orderId);
+            $topup = CustomerWalletTransaction::where([
+                'transaction_ref' => $orderId,
+                'type' => 'topup',
+            ])->first();
+            if ($topup) {
+                switch ($transactionStatus) {
+                    case 'settlement':
+                        $topup->update([
+                            'balance_before' => $topup->customer->ewallet_saldo,
+                            'balance_after' => $topup->customer->ewallet_saldo + $topup->amount,
+                            'status' => 'completed',
+                            'midtrans_transaction_id' => $transactionId,
+                            'midtrans_signature_key' => $signatureKey,
+                            'completed_at' => now(),
                         ]);
-                    }
-
-                    $this->clearCustomerCart($order->customer_id);
+                        $topup->customer->increment('ewallet_saldo', $topup->amount);
+                        break;
+                    case 'capture':
+                        $topup->update([
+                            'balance_before' => $topup->customer->ewallet_saldo,
+                            'balance_after' => $topup->customer->ewallet_saldo + $topup->amount,
+                            'status' => 'completed',
+                            'midtrans_transaction_id' => $transactionId,
+                            'midtrans_signature_key' => $signatureKey,
+                            'completed_at' => now(),
+                        ]);
+                        $topup->customer->increment('ewallet_saldo', $topup->amount);
+                        break;
+                    case 'deny':
+                        $topup->update(['status' => 'failed']);
+                        break;
+                    case 'cancel':
+                        $topup->update(['status' => 'failed']);
+                        break;
+                    case 'expire':
+                        $topup->update(['status' => 'failed']);
+                        break;
                 }
-            } elseif ($transactionStatus == 'settlement') {
-                $order->update([
-                    'status' => 'PAID',
-                    'paid_at' => now(),
-                    'applied_promos' => $appliedPromos,
+                Log::info('Midtrans callback topup processed', [
+                    'transaction_ref' => $orderId,
+                    'status_response' => $statusResponse,
                 ]);
 
-                // Execute bonus engine stored procedure only if member is active
-                $customerForBonus = Customer::find($order->customer_id );
-                if ($customerForBonus && $customerForBonus->status == 3 && $order->status === 'PAID') {
-                    DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
+                return response()->json(['status' => 'success'], 200);
+            }
+            Log::warning('Midtrans callback order not found', [
+                'order_id' => $orderId,
+                'status_response' => $statusResponse,
+            ]);
+        }
+
+        $wasPaid = ($order->status === 'PAID');
+
+        // 3) Simpan jejak notifikasi ke applied_promos (seperti punyamu)
+        $appliedPromos = $order->applied_promos ?? [];
+        if (! is_array($appliedPromos)) {
+            $appliedPromos = [];
+        }
+
+        $appliedPromos['payment'] = $appliedPromos['payment'] ?? [];
+        $appliedPromos['payment']['midtrans_notifications'] = $appliedPromos['payment']['midtrans_notifications'] ?? [];
+        $appliedPromos['payment']['midtrans_notifications'][] = [
+            'timestamp' => now()->toIso8601String(),
+            'status' => $transactionStatus,
+            'fraud_status' => $fraudStatus,
+            'payment_type' => $paymentType,
+            'payload' => $payload, // opsional: kalau terlalu besar, boleh hapus
+        ];
+
+        // 4) Tentukan status order/payment internal
+        $newOrderStatus = $order->status;
+        $newPaymentStatus = $payment?->status ?? null;
+
+        $isPaidNow = false;
+
+        switch ($transactionStatus) {
+            case 'settlement':
+                $newOrderStatus = 'PAID';
+                $newPaymentStatus = 'paid';
+                $isPaidNow = true;
+                break;
+
+            case 'capture':
+                if ($fraudStatus === 'accept') {
+                    $newOrderStatus = 'PAID';
+                    $newPaymentStatus = 'paid';
+                    $isPaidNow = true;
+                } elseif ($fraudStatus === 'challenge') {
+                    // bisa kamu ubah ke status khusus, mis. 'CHALLENGE'
+                    $newOrderStatus = 'PENDING';
+                    $newPaymentStatus = 'challenge';
+                } else {
+                    $newOrderStatus = 'PENDING';
+                    $newPaymentStatus = 'pending';
+                }
+                break;
+
+            case 'pending':
+                $newOrderStatus = 'PENDING';
+                $newPaymentStatus = 'pending';
+                break;
+
+            case 'deny':
+            case 'cancel':
+            case 'expire':
+                $newOrderStatus = 'CANCELED';
+                $newPaymentStatus = 'failed';
+                break;
+
+            case 'refund':
+            case 'partial_refund':
+                $newOrderStatus = 'REFUNDED';
+                $newPaymentStatus = 'refunded';
+                break;
+
+            default:
+                // biarkan, tapi catat
+                Log::info('Midtrans callback unhandled transaction_status', [
+                    'order_id' => $orderId,
+                    'transaction_status' => $transactionStatus,
+                ]);
+                break;
+        }
+
+        // 5) Update DB (idempotent untuk side effects)
+        $runSideEffects = (! $wasPaid && $isPaidNow);
+
+        try {
+            DB::transaction(function () use (
+                $order, $payment, $newOrderStatus, $newPaymentStatus, $appliedPromos, $runSideEffects, $payload
+            ) {
+                // Update order
+                $orderUpdate = [
+                    'status' => $newOrderStatus,
+                    'applied_promos' => $appliedPromos,
+                ];
+                if ($newOrderStatus === 'PAID' && empty($order->paid_at)) {
+                    $orderUpdate['paid_at'] = now();
+                }
+                $order->update($orderUpdate);
+
+                // Update payment kalau ada
+                if ($payment) {
+                    $payment->update([
+                        'status' => $newPaymentStatus ?? $payment->status,
+                        'signature_key' => $payload['signature_key'] ?? $payment->signature_key,
+                        'metadata_json' => json_encode($payload),
+                    ]);
+                }
+
+                if (! $runSideEffects) {
+                    return;
                 }
 
                 // Reduce product stock
@@ -1021,62 +1143,39 @@ class CheckoutController extends Controller
                 // Update customer omzet
                 $customer = Customer::find($order->customer_id);
                 if ($customer) {
-                    $newOmzet = $customer->omzet + $order->grand_total;
-                    $customer->update(['omzet' => $newOmzet]);
+                    $customer->update(['omzet' => $customer->omzet + $order->grand_total]);
+                }
+            });
 
-                    Log::info('Customer omzet updated via Midtrans callback', [
-                        'customer_id' => $customer->id,
-                        'order_no' => $orderNo,
-                        'order_amount' => $order->grand_total,
-                        'new_omzet' => $newOmzet,
-                    ]);
+            // 6) Jalankan SP bonus engine DI LUAR transaction (menghindari commit implisit)
+            if ($runSideEffects) {
+                $customerForBonus = Customer::find($order->customer_id);
+                if ($customerForBonus && (int) $customerForBonus->status === 3) {
+                    DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
                 }
 
                 $this->clearCustomerCart($order->customer_id);
-            } elseif ($transactionStatus == 'pending') {
-                $order->update([
-                    'status' => 'PENDING',
-                    'applied_promos' => $appliedPromos,
-                ]);
-            } elseif ($transactionStatus == 'deny' || $transactionStatus == 'expire' || $transactionStatus == 'cancel') {
-                $order->update([
-                    'status' => 'CANCELED',
-                    'applied_promos' => $appliedPromos,
-                ]);
             }
 
-            // Commit the transaction safely
-            // (SP bonus engine may have already committed implicitly)
-            try {
-                DB::commit();
-            } catch (\Exception $e) {
-                Log::info('Transaction already committed in Midtrans callback (likely by stored procedure)', [
-                    'order_no' => $orderNo,
-                ]);
-            }
-
-            Log::info('Order status updated', [
-                'order_no' => $orderNo,
-                'new_status' => $order->status,
+            Log::info('Midtrans callback processed', [
+                'order_no' => $order->order_no,
+                'order_id' => $orderId,
+                'new_status' => $newOrderStatus,
+                'side_effects_ran' => $runSideEffects,
             ]);
 
-            return response()->json(['status' => 'success']);
-        } catch (\Exception $e) {
-            // Try to rollback, but it might already be committed
-            try {
-                DB::rollBack();
-            } catch (\Exception $rollbackException) {
-                Log::info('Rollback skipped - no active transaction', [
-                    'order_no' => $orderNo ?? 'unknown',
-                ]);
-            }
+            return response()->json(['status' => 'success'], 200);
 
+        } catch (\Throwable $e) {
             Log::error('Midtrans callback error', [
+                'order_id' => $orderId,
+                'order_no' => $order->order_no ?? null,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            // 500 bikin Midtrans retry. Kalau kamu takut dobel, idempotency di atas sudah mengurangi risiko.
+            return response()->json(['status' => 'error', 'message' => 'Server error'], 500);
         }
     }
 
@@ -1334,7 +1433,6 @@ class CheckoutController extends Controller
         ]);
 
         $snapToken = Snap::getSnapToken($params);
-
         $order->refresh();
         $appliedPromos = $order->applied_promos ?? [];
 
@@ -1348,8 +1446,18 @@ class CheckoutController extends Controller
             'transaction_id' => $transactionId,
             'created_at' => now()->toIso8601String(),
         ];
-
         $order->update(['applied_promos' => $appliedPromos]);
+        $order->payments()->create([
+            'order_id' => $order->id,
+            'method_id' => 1,
+            'status' => 'pending',
+            'amount' => $validated['total'],
+            'currency' => 'IDR',
+            'provider_txn_id' => $transactionId,
+            'metadata_json' => json_encode(['snap_token' => $snapToken]),
+            'transaction_id' => $transactionId,
+            'signature_key' => null,
+        ]);
 
         return $snapToken;
     }

@@ -17,6 +17,8 @@ class Payment extends Model
         'currency',
         'provider_txn_id',
         'metadata_json',
+        'transaction_id',
+        'signature_key',
     ];
 
     protected function casts(): array

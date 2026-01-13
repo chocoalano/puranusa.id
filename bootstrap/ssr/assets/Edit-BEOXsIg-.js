@@ -1538,7 +1538,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(` ${ssrInterpolate(__props.categories)} ${ssrInterpolate(form.value.categories)} <div class="grid grid-cols-3 gap-2"${_scopeId3}><!--[-->`);
+                        _push4(`<div class="grid grid-cols-3 gap-2"${_scopeId3}><!--[-->`);
                         ssrRenderList(__props.categories, (category) => {
                           _push4(`<label class="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent"${_scopeId3}>`);
                           _push4(ssrRenderComponent(unref(_sfc_main$e), {
@@ -1603,7 +1603,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
-                            createTextVNode(" " + toDisplayString(__props.categories) + " " + toDisplayString(form.value.categories) + " ", 1),
                             createVNode("div", { class: "grid grid-cols-3 gap-2" }, [
                               (openBlock(true), createBlock(Fragment, null, renderList(__props.categories, (category) => {
                                 return openBlock(), createBlock("label", {
@@ -1685,7 +1684,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createTextVNode(" " + toDisplayString(__props.categories) + " " + toDisplayString(form.value.categories) + " ", 1),
                           createVNode("div", { class: "grid grid-cols-3 gap-2" }, [
                             (openBlock(true), createBlock(Fragment, null, renderList(__props.categories, (category) => {
                               return openBlock(), createBlock("label", {
@@ -2928,7 +2926,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
-                                createTextVNode(" " + toDisplayString(__props.categories) + " " + toDisplayString(form.value.categories) + " ", 1),
                                 createVNode("div", { class: "grid grid-cols-3 gap-2" }, [
                                   (openBlock(true), createBlock(Fragment, null, renderList(__props.categories, (category) => {
                                     return openBlock(), createBlock("label", {

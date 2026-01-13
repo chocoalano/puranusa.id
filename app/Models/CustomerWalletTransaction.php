@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $payment_method
  * @property string|null $transaction_ref
  * @property string|null $midtrans_transaction_id
+ * @property string|null $midtrans_signature_key
  * @property string|null $notes
  * @property \Illuminate\Support\Carbon|null $completed_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -37,6 +38,7 @@ class CustomerWalletTransaction extends Model
         'midtrans_transaction_id',
         'notes',
         'completed_at',
+        'midtrans_signature_key'
     ];
 
     protected function casts(): array

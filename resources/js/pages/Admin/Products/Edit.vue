@@ -458,8 +458,6 @@ const submit = () => {
                             <CardContent class="space-y-4">
                                 <div class="space-y-2">
                                     <Label>Kategori</Label>
-                                    {{ categories }}
-                                    {{ form.categories }}
                                     <div class="grid grid-cols-3 gap-2">
                                         <label v-for="category in categories" :key="category.id"
                                             class="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent">

@@ -223,11 +223,11 @@ class WalletController extends Controller
             ]);
 
             // Get Snap token from Midtrans (call API first before creating DB record)
-            $snapToken = Snap::getSnapToken($params);
+            $snaptoken = Snap::getSnapToken($params);
 
             Log::info('Snap token received successfully', [
                 'transaction_ref' => $transactionRef,
-                'snap_token' => $snapToken,
+                'snap_token' => $snaptoken,
                 'enabled_payments' => $forcePayment ? [$forcePayment] : 'default',
                 'force_payment' => $forcePayment,
             ]);
@@ -244,7 +244,8 @@ class WalletController extends Controller
                 'status' => 'pending',
                 'payment_method' => $request->payment_method,
                 'transaction_ref' => $transactionRef,
-                'midtrans_transaction_id' => $snapToken,
+                'midtrans_transaction_id' => null,
+                'is_system' => 1,
             ]);
 
             DB::commit();
@@ -252,14 +253,14 @@ class WalletController extends Controller
             Log::info('Top-up transaction created', [
                 'transaction_id' => $transaction->id,
                 'transaction_ref' => $transactionRef,
-                'snap_token' => $snapToken,
+                'snap_token' => $snaptoken,
                 'amount' => $request->amount,
             ]);
 
             // Return JSON response with snap token
             return response()->json([
                 'success' => true,
-                'snap_token' => $snapToken,
+                'snap_token' => $snaptoken,
                 'transaction_ref' => $transactionRef,
                 'message' => 'Silakan selesaikan pembayaran',
             ]);
