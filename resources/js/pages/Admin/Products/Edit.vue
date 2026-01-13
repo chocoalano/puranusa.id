@@ -167,7 +167,7 @@ const form = ref({
     b_cashback: props.product.b_cashback || 0,
     b_retail: props.product.b_retail || 0,
     is_active: props.product.is_active,
-    categories: props.product.categories.map((c) => c.id),
+    categories: props.product.categories.map((c) => Number(c.id)),
     images: [] as File[],
 });
 
@@ -458,16 +458,23 @@ const submit = () => {
                             <CardContent class="space-y-4">
                                 <div class="space-y-2">
                                     <Label>Kategori</Label>
+                                    {{ categories }}
+                                    {{ form.categories }}
                                     <div class="grid grid-cols-3 gap-2">
                                         <label v-for="category in categories" :key="category.id"
                                             class="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent">
                                             <Checkbox :id="`category-${category.id}`"
-                                                :checked="form.categories.includes(category.id)" @update:checked="
-                                                    (checked: boolean) => {
+                                                :model-value="form.categories.includes(Number(category.id))"
+                                                @update:model-value="
+                                                    (checked: boolean | 'indeterminate') => {
+                                                        if (checked === 'indeterminate') {
+                                                            return;
+                                                        }
+                                                        const categoryId = Number(category.id);
                                                         if (checked) {
-                                                            form.categories.push(category.id);
+                                                            form.categories.push(categoryId);
                                                         } else {
-                                                            const index = form.categories.indexOf(category.id);
+                                                            const index = form.categories.indexOf(categoryId);
                                                             if (index > -1) {
                                                                 form.categories.splice(index, 1);
                                                             }
@@ -479,8 +486,12 @@ const submit = () => {
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <Checkbox id="is_active" :checked="form.is_active"
-                                        @update:checked="(checked: boolean) => (form.is_active = checked)" />
+                                    <Checkbox id="is_active" :model-value="form.is_active"
+                                        @update:model-value="(checked: boolean | 'indeterminate') => {
+                                            if (checked !== 'indeterminate') {
+                                                form.is_active = checked;
+                                            }
+                                        }" />
                                     <Label for="is_active">Produk Aktif</Label>
                                 </div>
                                 <p v-if="errors.is_active" class="text-sm text-destructive">{{ errors.is_active }}</p>

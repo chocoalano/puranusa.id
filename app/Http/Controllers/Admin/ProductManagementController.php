@@ -121,13 +121,53 @@ class ProductManagementController extends Controller
 
     public function edit(Product $product)
     {
-        $product->load(['categories', 'media' => function ($query) {
-            $query->orderBy('sort_order');
-        }]);
-        $categories = Category::where('is_active', true)->get();
-
+        $product->load([
+            'categories:id,name',
+            'media' => function ($query) {
+                $query->orderBy('sort_order')
+                    ->select(['id', 'product_id', 'url', 'alt_text', 'sort_order', 'is_primary']);
+            },
+        ]);
+        $categories = Category::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+        $product_data = [
+                'id' => $product->id,
+                'sku' => $product->sku,
+                'slug' => $product->slug,
+                'name' => $product->name,
+                'short_desc' => $product->short_desc,
+                'long_desc' => $product->long_desc,
+                'brand' => $product->brand,
+                'warranty_months' => $product->warranty_months,
+                'base_price' => $product->base_price,
+                'currency' => $product->currency,
+                'stock' => $product->stock,
+                'weight_gram' => $product->weight_gram,
+                'length_mm' => $product->length_mm,
+                'width_mm' => $product->width_mm,
+                'height_mm' => $product->height_mm,
+                'bv' => $product->bv,
+                'b_sponsor' => $product->b_sponsor,
+                'b_matching' => $product->b_matching,
+                'b_pairing' => $product->b_pairing,
+                'b_cashback' => $product->b_cashback,
+                'b_retail' => $product->b_retail,
+                'is_active' => $product->is_active,
+                'categories' => $product->categories->map(fn ($category) => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                ]),
+                'media' => $product->media->map(fn ($media) => [
+                    'id' => $media->id,
+                    'url' => $media->url,
+                    'alt_text' => $media->alt_text,
+                    'sort_order' => $media->sort_order,
+                    'is_primary' => $media->is_primary,
+                ]),
+            ];
         return Inertia::render('Admin/Products/Edit', [
-            'product' => $product,
+            'product' => $product_data,
             'categories' => $categories,
         ]);
     }
@@ -161,12 +201,9 @@ class ProductManagementController extends Controller
             'images' => 'nullable|array|max:10',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
-
         $product->update($validated);
 
-        if (isset($validated['categories'])) {
-            $product->categories()->sync($validated['categories']);
-        }
+        $product->categories()->sync($validated['categories'] ?? []);
 
         // Process new image uploads
         if ($request->hasFile('images')) {

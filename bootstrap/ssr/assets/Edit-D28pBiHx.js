@@ -117,7 +117,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       b_cashback: props.product.b_cashback || 0,
       b_retail: props.product.b_retail || 0,
       is_active: props.product.is_active,
-      categories: props.product.categories.map((c) => c.id),
+      categories: props.product.categories.map((c) => Number(c.id)),
       images: []
     });
     const loading = ref(false);
@@ -1538,17 +1538,21 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           _: 1
                         }, _parent4, _scopeId3));
-                        _push4(`<div class="grid grid-cols-3 gap-2"${_scopeId3}><!--[-->`);
+                        _push4(` ${ssrInterpolate(__props.categories)} ${ssrInterpolate(form.value.categories)} <div class="grid grid-cols-3 gap-2"${_scopeId3}><!--[-->`);
                         ssrRenderList(__props.categories, (category) => {
                           _push4(`<label class="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent"${_scopeId3}>`);
                           _push4(ssrRenderComponent(unref(_sfc_main$e), {
                             id: `category-${category.id}`,
-                            checked: form.value.categories.includes(category.id),
-                            "onUpdate:checked": (checked) => {
+                            "model-value": form.value.categories.includes(Number(category.id)),
+                            "onUpdate:modelValue": (checked) => {
+                              if (checked === "indeterminate") {
+                                return;
+                              }
+                              const categoryId = Number(category.id);
                               if (checked) {
-                                form.value.categories.push(category.id);
+                                form.value.categories.push(categoryId);
                               } else {
-                                const index = form.value.categories.indexOf(category.id);
+                                const index = form.value.categories.indexOf(categoryId);
                                 if (index > -1) {
                                   form.value.categories.splice(index, 1);
                                 }
@@ -1560,8 +1564,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         _push4(`<!--]--></div></div><div class="flex items-center gap-2"${_scopeId3}>`);
                         _push4(ssrRenderComponent(unref(_sfc_main$e), {
                           id: "is_active",
-                          checked: form.value.is_active,
-                          "onUpdate:checked": (checked) => form.value.is_active = checked
+                          "model-value": form.value.is_active,
+                          "onUpdate:modelValue": (checked) => {
+                            if (checked !== "indeterminate") {
+                              form.value.is_active = checked;
+                            }
+                          }
                         }, null, _parent4, _scopeId3));
                         _push4(ssrRenderComponent(unref(_sfc_main$b), { for: "is_active" }, {
                           default: withCtx((_4, _push5, _parent5, _scopeId4) => {
@@ -1595,6 +1603,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               ]),
                               _: 1
                             }),
+                            createTextVNode(" " + toDisplayString(__props.categories) + " " + toDisplayString(form.value.categories) + " ", 1),
                             createVNode("div", { class: "grid grid-cols-3 gap-2" }, [
                               (openBlock(true), createBlock(Fragment, null, renderList(__props.categories, (category) => {
                                 return openBlock(), createBlock("label", {
@@ -1603,18 +1612,22 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 }, [
                                   createVNode(unref(_sfc_main$e), {
                                     id: `category-${category.id}`,
-                                    checked: form.value.categories.includes(category.id),
-                                    "onUpdate:checked": (checked) => {
+                                    "model-value": form.value.categories.includes(Number(category.id)),
+                                    "onUpdate:modelValue": (checked) => {
+                                      if (checked === "indeterminate") {
+                                        return;
+                                      }
+                                      const categoryId = Number(category.id);
                                       if (checked) {
-                                        form.value.categories.push(category.id);
+                                        form.value.categories.push(categoryId);
                                       } else {
-                                        const index = form.value.categories.indexOf(category.id);
+                                        const index = form.value.categories.indexOf(categoryId);
                                         if (index > -1) {
                                           form.value.categories.splice(index, 1);
                                         }
                                       }
                                     }
-                                  }, null, 8, ["id", "checked", "onUpdate:checked"]),
+                                  }, null, 8, ["id", "model-value", "onUpdate:modelValue"]),
                                   createVNode("span", { class: "text-sm" }, toDisplayString(category.name), 1)
                                 ]);
                               }), 128))
@@ -1623,9 +1636,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           createVNode("div", { class: "flex items-center gap-2" }, [
                             createVNode(unref(_sfc_main$e), {
                               id: "is_active",
-                              checked: form.value.is_active,
-                              "onUpdate:checked": (checked) => form.value.is_active = checked
-                            }, null, 8, ["checked", "onUpdate:checked"]),
+                              "model-value": form.value.is_active,
+                              "onUpdate:modelValue": (checked) => {
+                                if (checked !== "indeterminate") {
+                                  form.value.is_active = checked;
+                                }
+                              }
+                            }, null, 8, ["model-value", "onUpdate:modelValue"]),
                             createVNode(unref(_sfc_main$b), { for: "is_active" }, {
                               default: withCtx(() => [
                                 createTextVNode("Produk Aktif")
@@ -1668,6 +1685,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
+                          createTextVNode(" " + toDisplayString(__props.categories) + " " + toDisplayString(form.value.categories) + " ", 1),
                           createVNode("div", { class: "grid grid-cols-3 gap-2" }, [
                             (openBlock(true), createBlock(Fragment, null, renderList(__props.categories, (category) => {
                               return openBlock(), createBlock("label", {
@@ -1676,18 +1694,22 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               }, [
                                 createVNode(unref(_sfc_main$e), {
                                   id: `category-${category.id}`,
-                                  checked: form.value.categories.includes(category.id),
-                                  "onUpdate:checked": (checked) => {
+                                  "model-value": form.value.categories.includes(Number(category.id)),
+                                  "onUpdate:modelValue": (checked) => {
+                                    if (checked === "indeterminate") {
+                                      return;
+                                    }
+                                    const categoryId = Number(category.id);
                                     if (checked) {
-                                      form.value.categories.push(category.id);
+                                      form.value.categories.push(categoryId);
                                     } else {
-                                      const index = form.value.categories.indexOf(category.id);
+                                      const index = form.value.categories.indexOf(categoryId);
                                       if (index > -1) {
                                         form.value.categories.splice(index, 1);
                                       }
                                     }
                                   }
-                                }, null, 8, ["id", "checked", "onUpdate:checked"]),
+                                }, null, 8, ["id", "model-value", "onUpdate:modelValue"]),
                                 createVNode("span", { class: "text-sm" }, toDisplayString(category.name), 1)
                               ]);
                             }), 128))
@@ -1696,9 +1718,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         createVNode("div", { class: "flex items-center gap-2" }, [
                           createVNode(unref(_sfc_main$e), {
                             id: "is_active",
-                            checked: form.value.is_active,
-                            "onUpdate:checked": (checked) => form.value.is_active = checked
-                          }, null, 8, ["checked", "onUpdate:checked"]),
+                            "model-value": form.value.is_active,
+                            "onUpdate:modelValue": (checked) => {
+                              if (checked !== "indeterminate") {
+                                form.value.is_active = checked;
+                              }
+                            }
+                          }, null, 8, ["model-value", "onUpdate:modelValue"]),
                           createVNode(unref(_sfc_main$b), { for: "is_active" }, {
                             default: withCtx(() => [
                               createTextVNode("Produk Aktif")
@@ -2902,6 +2928,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                   ]),
                                   _: 1
                                 }),
+                                createTextVNode(" " + toDisplayString(__props.categories) + " " + toDisplayString(form.value.categories) + " ", 1),
                                 createVNode("div", { class: "grid grid-cols-3 gap-2" }, [
                                   (openBlock(true), createBlock(Fragment, null, renderList(__props.categories, (category) => {
                                     return openBlock(), createBlock("label", {
@@ -2910,18 +2937,22 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                     }, [
                                       createVNode(unref(_sfc_main$e), {
                                         id: `category-${category.id}`,
-                                        checked: form.value.categories.includes(category.id),
-                                        "onUpdate:checked": (checked) => {
+                                        "model-value": form.value.categories.includes(Number(category.id)),
+                                        "onUpdate:modelValue": (checked) => {
+                                          if (checked === "indeterminate") {
+                                            return;
+                                          }
+                                          const categoryId = Number(category.id);
                                           if (checked) {
-                                            form.value.categories.push(category.id);
+                                            form.value.categories.push(categoryId);
                                           } else {
-                                            const index = form.value.categories.indexOf(category.id);
+                                            const index = form.value.categories.indexOf(categoryId);
                                             if (index > -1) {
                                               form.value.categories.splice(index, 1);
                                             }
                                           }
                                         }
-                                      }, null, 8, ["id", "checked", "onUpdate:checked"]),
+                                      }, null, 8, ["id", "model-value", "onUpdate:modelValue"]),
                                       createVNode("span", { class: "text-sm" }, toDisplayString(category.name), 1)
                                     ]);
                                   }), 128))
@@ -2930,9 +2961,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               createVNode("div", { class: "flex items-center gap-2" }, [
                                 createVNode(unref(_sfc_main$e), {
                                   id: "is_active",
-                                  checked: form.value.is_active,
-                                  "onUpdate:checked": (checked) => form.value.is_active = checked
-                                }, null, 8, ["checked", "onUpdate:checked"]),
+                                  "model-value": form.value.is_active,
+                                  "onUpdate:modelValue": (checked) => {
+                                    if (checked !== "indeterminate") {
+                                      form.value.is_active = checked;
+                                    }
+                                  }
+                                }, null, 8, ["model-value", "onUpdate:modelValue"]),
                                 createVNode(unref(_sfc_main$b), { for: "is_active" }, {
                                   default: withCtx(() => [
                                     createTextVNode("Produk Aktif")
