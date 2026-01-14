@@ -42,6 +42,7 @@ use Illuminate\Support\Str;
  * @property int $pv_left
  * @property int $pv_right
  * @property float $omzet
+ * @property float $omzet_group
  * @property float $omzet_group_left
  * @property float $omzet_group_right
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -100,6 +101,7 @@ class Customer extends Authenticatable
         'pv_left',
         'pv_right',
         'omzet',
+        'omzet_group',
         'omzet_group_left',
         'omzet_group_right',
         'status',
@@ -164,6 +166,7 @@ class Customer extends Authenticatable
             'pv_left' => 'integer',
             'pv_right' => 'integer',
             'omzet' => 'decimal:2',
+            'omzet_group' => 'decimal:2',
             'omzet_group_left' => 'decimal:2',
             'omzet_group_right' => 'decimal:2',
         ];

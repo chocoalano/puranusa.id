@@ -81,6 +81,7 @@ class ProfileController extends Controller
             'omzet_group_right_plana' => $customer->omzet_group_right_plana ?? 0,
             'omzet_group_left_planb' => $customer->omzet_group_left_planb ?? 0,
             'omzet_group_right_planb' => $customer->omzet_group_right_planb ?? 0,
+            'omzet_group' => $customer->omzet_group ?? 0,
         ];
 
         // Optimized bonus stats using raw queries

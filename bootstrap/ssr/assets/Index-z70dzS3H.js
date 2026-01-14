@@ -17993,6 +17993,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                   _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Retail Kiri</span><span class="font-semibold text-blue-600 dark:text-blue-400"${_scopeId2}>${ssrInterpolate(formatCurrency2(__props.customer.network_stats.omzet_group_left_planb))}</span></div>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
                   _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Retail Kanan</span><span class="font-semibold text-green-600 dark:text-green-400"${_scopeId2}>${ssrInterpolate(formatCurrency2(__props.customer.network_stats.omzet_group_right_planb))}</span></div>`);
+                  _push3(ssrRenderComponent(unref(_sfc_main$z), null, null, _parent3, _scopeId2));
+                  _push3(`<div class="flex items-center justify-between"${_scopeId2}><span class="text-sm text-gray-600 dark:text-gray-400"${_scopeId2}>Omset Group</span><span class="font-semibold text-green-600 dark:text-green-400"${_scopeId2}>${ssrInterpolate(formatCurrency2(__props.customer.network_stats.omzet_group))}</span></div>`);
                 } else {
                   return [
                     createVNode("div", { class: "flex items-center justify-between" }, [
@@ -18033,6 +18035,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     createVNode("div", { class: "flex items-center justify-between" }, [
                       createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Retail Kanan"),
                       createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group_right_planb)), 1)
+                    ]),
+                    createVNode(unref(_sfc_main$z)),
+                    createVNode("div", { class: "flex items-center justify-between" }, [
+                      createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Group"),
+                      createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group)), 1)
                     ])
                   ];
                 }
@@ -18093,6 +18100,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                   createVNode("div", { class: "flex items-center justify-between" }, [
                     createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Retail Kanan"),
                     createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group_right_planb)), 1)
+                  ]),
+                  createVNode(unref(_sfc_main$z)),
+                  createVNode("div", { class: "flex items-center justify-between" }, [
+                    createVNode("span", { class: "text-sm text-gray-600 dark:text-gray-400" }, "Omset Group"),
+                    createVNode("span", { class: "font-semibold text-green-600 dark:text-green-400" }, toDisplayString(formatCurrency2(__props.customer.network_stats.omzet_group)), 1)
                   ])
                 ]),
                 _: 1

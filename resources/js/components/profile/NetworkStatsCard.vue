@@ -62,6 +62,11 @@ const formatCurrency = (value: number) => {
                 <span class="text-sm text-gray-600 dark:text-gray-400">Omset Retail Kanan</span>
                 <span class="font-semibold text-green-600 dark:text-green-400">{{ formatCurrency(customer.network_stats.omzet_group_right_planb) }}</span>
             </div>
+            <Separator />
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400">Omset Group</span>
+                <span class="font-semibold text-green-600 dark:text-green-400">{{ formatCurrency(customer.network_stats.omzet_group) }}</span>
+            </div>
         </CardContent>
     </Card>
 </template>

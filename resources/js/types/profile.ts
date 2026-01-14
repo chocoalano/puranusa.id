@@ -68,6 +68,7 @@ export interface Customer {
         omzet_group_right_plana: number;
         omzet_group_left_planb: number;
         omzet_group_right_planb: number;
+        omzet_group: number;
     };
     bonus_stats: {
         total_released: number;
