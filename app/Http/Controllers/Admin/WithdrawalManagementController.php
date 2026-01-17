@@ -58,92 +58,71 @@ class WithdrawalManagementController extends Controller
         ]);
     }
 
-    public function approve(CustomerWalletTransaction $withdrawal, MidtransService $midtrans)
+    public function approve(CustomerWalletTransaction $withdrawal)
     {
         if ($withdrawal->type !== 'withdrawal' || $withdrawal->status !== 'pending') {
             return back()->with('error', 'Withdrawal tidak dapat disetujui');
         }
 
-        DB::beginTransaction();
         try {
-            $customer = $withdrawal->customer;
-            if ((float) $withdrawal->balance_before < (float) $withdrawal->amount) {
-                DB::rollBack();
-                return back()->with('error', 'Saldo pelanggan tidak mencukupi');
-            }
-
-            // Parse bank info from notes
+            // (Opsional) cepat fail di level aplikasi (SP juga akan validasi)
             $bankInfo = json_decode($withdrawal->notes, true);
             if (! $bankInfo || ! isset($bankInfo['bank_name'], $bankInfo['bank_account'], $bankInfo['bank_holder'])) {
-                DB::rollBack();
                 return back()->with('error', 'Informasi rekening bank tidak lengkap');
             }
+            $payoutReference = 'MANUAL-' . now()->format('YmdHis') . '-' . strtoupper(str()->random(6));
+            $payoutStatus    = 'manual_approved';
+            $simulated       = 0;
+            $midtransTxnId   = null;
 
-            // // Create payout via Midtrans
-            // Log::info('Processing withdrawal payout', [
-            //     'withdrawal_id' => $withdrawal->id,
-            //     'customer_id' => $customer->id,
-            //     'amount' => $withdrawal->amount,
-            //     'bank_info' => $bankInfo,
-            // ]);
+            $pdo = DB::connection()->getPdo();
 
-            // $payoutResult = $midtrans->createPayout([
-            //     'beneficiary_name' => $bankInfo['bank_holder'],
-            //     'beneficiary_account' => $bankInfo['bank_account'],
-            //     'beneficiary_bank' => strtolower($bankInfo['bank_name']),
-            //     'beneficiary_email' => $customer->email ?? 'noreply@puranusa.id',
-            //     'amount' => $withdrawal->amount,
-            //     'notes' => 'Withdrawal '.$withdrawal->transaction_ref,
-            // ]);
-            // if (! $payoutResult['success']) {
-            //     DB::rollBack();
-            //     Log::error('Midtrans payout failed', [
-            //         'withdrawal_id' => $withdrawal->id,
-            //         'error' => $payoutResult['message'] ?? 'Unknown error',
-            //     ]);
+            // reset session vars (opsional tapi bagus)
+            $pdo->exec("SET @ok = 0, @msg = NULL, @newbal = NULL");
 
-            //     return back()->with('error', 'Gagal memproses transfer: '.($payoutResult['message'] ?? 'Kesalahan sistem'));
-            // }
-
-            // Update withdrawal with payout info
-            $newBalance = $customer->ewallet_saldo - $withdrawal->amount;
-
-            $simulatedNote = ($payoutResult['simulated'] ?? false) ? ' (Sandbox Mode - Simulasi)' : '';
-
-            $withdrawal->update([
-                'status' => 'completed',
-                'balance_after' => $newBalance,
-                'completed_at' => now(),
-                'midtrans_transaction_id' => $payoutResult['reference_no'] ?? null,
-                'notes' => json_encode(array_merge($bankInfo, [
-                    'payout_reference' => $payoutResult['reference_no'] ?? null,
-                    'payout_status' => $payoutResult['status'] ?? 'unknown',
-                    'simulated' => $payoutResult['simulated'] ?? false,
-                    'processed_at' => now()->toDateTimeString(),
-                ])),
+            // CALL SP
+            $stmt = $pdo->prepare("CALL sp_approve_withdrawal(?, ?, ?, ?, ?, @ok, @msg, @newbal)");
+            $stmt->execute([
+                $withdrawal->id,
+                $payoutReference,
+                $payoutStatus,
+                $simulated,
+                $midtransTxnId,
             ]);
+            $stmt->closeCursor(); // penting agar bisa query lagi setelah CALL
 
-            $customer->update(['ewallet_saldo' => $newBalance]);
+            // Ambil output dari koneksi PDO yang sama
+            $outStmt = $pdo->query("SELECT @ok AS success, @msg AS message, @newbal AS new_balance");
+            $out = $outStmt->fetch(\PDO::FETCH_ASSOC);
+            $success = (int)($out['success'] ?? 0) === 1;
+            $message = (string)($out['message'] ?? 'Gagal menyetujui withdrawal');
+            $newBal  = $out['new_balance'] ?? null;
 
-            DB::commit();
+            if (! $success) {
+                Log::warning('Withdrawal approve failed (SP)', [
+                    'withdrawal_id' => $withdrawal->id,
+                    'sp_message' => $message,
+                    'sp_new_balance' => $newBal,
+                ]);
+                return back()->withErrors('error', $message);
+            }
 
-            Log::info('Withdrawal approved and payout created', [
+            Log::info('Withdrawal approved (SP)', [
                 'withdrawal_id' => $withdrawal->id,
-                'payout_reference' => $payoutResult['reference_no'] ?? null,
-                'simulated' => $payoutResult['simulated'] ?? false,
-                'new_balance' => $newBalance,
+                'payout_reference' => $payoutReference,
+                'payout_status' => $payoutStatus,
+                'new_balance' => $newBal,
             ]);
 
-            return back()->with('success', "Withdrawal berhasil disetujui dan dana sedang ditransfer{$simulatedNote}");
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Withdrawal approval error', [
+            return back()->with('success', $message);
+        } catch (\Throwable $e) {
+            Log::error('Withdrawal approval error (controller)', [
                 'withdrawal_id' => $withdrawal->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return back()->with('error', 'Gagal menyetujui withdrawal: '.$e->getMessage());
+            return back()->withErrors('error', 'Gagal menyetujui withdrawal: ' . $e->getMessage());
         }
     }
 

@@ -12,6 +12,7 @@ import { _ as _sfc_main$a, a as _sfc_main$b, b as _sfc_main$c, c as _sfc_main$d,
 import { _ as _sfc_main$f, a as _sfc_main$g, b as _sfc_main$i, d as _sfc_main$j } from "./DropdownMenuTrigger-B1v6pHML.js";
 import { _ as _sfc_main$k, a as _sfc_main$l, b as _sfc_main$m, c as _sfc_main$n, d as _sfc_main$o, e as _sfc_main$p } from "./TableHeader-emcE6QAC.js";
 import { _ as _sfc_main$q } from "./ConfirmDialog-CTU0x0KG.js";
+import { toast } from "vue-sonner";
 import { useVueTable, getFilteredRowModel, getSortedRowModel, getCoreRowModel, FlexRender } from "@tanstack/vue-table";
 import { _ as _sfc_main$r } from "./index-BpQimeTM.js";
 import "class-variance-authority";
@@ -20,7 +21,6 @@ import "@vueuse/core";
 import "./index--D7ld9AJ.js";
 import "./AvatarImage-DWFQMckn.js";
 import "./index-B0NlPG4h.js";
-import "vue-sonner";
 import "./AppLogoIcon-CtV9aC-8.js";
 import "./BreadcrumbSeparator-YMzfzP6z.js";
 import "clsx";
@@ -1036,13 +1036,38 @@ function useWithdrawalActions() {
   const openRejectDialog = (withdrawal) => rejectDialog.value = { open: true, withdrawal };
   const closeApprove = () => approveDialog.value = { open: false, withdrawal: null };
   const closeReject = () => rejectDialog.value = { open: false, withdrawal: null };
+  function extractErrorMessage(err) {
+    if (!err) return "Terjadi kesalahan";
+    if (typeof err === "string") return err;
+    const firstVal = Object.values(err)[0];
+    if (typeof firstVal === "string") return firstVal;
+    if (Array.isArray(firstVal) && typeof firstVal[0] === "string") return firstVal[0];
+    const firstKey = Object.keys(err)[0];
+    if (firstKey) return firstKey;
+    return "Terjadi kesalahan";
+  }
   const handleApprove = () => {
     const wd = approveDialog.value.withdrawal;
     if (!wd) return;
     const form = useForm({});
     form.post(approve.url(wd.id), {
       preserveScroll: true,
-      onSuccess: closeApprove
+      // kalau server pakai flash (back()->with('error'/'success'))
+      onSuccess: (page) => {
+        const flash = page.props.flash;
+        if (flash?.error) {
+          toast.error(flash.error);
+          return;
+        }
+        if (flash?.success) toast.success(flash.success);
+        closeApprove();
+      },
+      // kalau server pakai withErrors()
+      onError: (errors) => {
+        const msg = errors.approve || errors.general || errors.error || extractErrorMessage(errors);
+        toast.error(msg);
+        console.error("Error approving withdrawal:", errors);
+      }
     });
   };
   const handleReject = () => {
@@ -1051,7 +1076,21 @@ function useWithdrawalActions() {
     const form = useForm({});
     form.post(reject.url(wd.id), {
       preserveScroll: true,
-      onSuccess: closeReject
+      onSuccess: (page) => {
+        const flash = page.props.flash;
+        if (flash?.error) {
+          toast.error(flash.error);
+          return;
+        }
+        if (flash?.success) toast.success(flash.success);
+        closeReject();
+      },
+      // kalau server pakai withErrors()
+      onError: (errors) => {
+        const msg = errors.approve || errors.general || errors.error || extractErrorMessage(errors);
+        toast.error(msg);
+        console.error("Error approving withdrawal:", errors);
+      }
     });
   };
   return {

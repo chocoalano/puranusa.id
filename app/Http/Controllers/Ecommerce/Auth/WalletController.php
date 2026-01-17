@@ -291,82 +291,70 @@ class WalletController extends Controller
 
         $customer = Auth::guard('client')->user();
 
-        // Check if profile is complete (NIK and bank info required)
-        if (empty($customer->nik) || empty($customer->bank_name) || empty($customer->bank_account)) {
-            throw ValidationException::withMessages([
-                'profile' => 'Lengkapi NIK dan informasi bank di profil Anda terlebih dahulu.',
-            ]);
-        }
-
-        // Validate password
+        // Validate password (tetap di app layer)
         if (! \Hash::check($request->password, $customer->password)) {
             throw ValidationException::withMessages([
                 'password' => 'Password yang Anda masukkan salah.',
             ]);
         }
 
-        // Check if there's any pending withdrawal
-        $hasPendingWithdrawal = CustomerWalletTransaction::where('customer_id', $customer->id)
-            ->where('type', 'withdrawal')
-            ->where('status', 'pending')
-            ->exists();
-
-        if ($hasPendingWithdrawal) {
-            throw ValidationException::withMessages([
-                'pending' => 'Anda masih memiliki permintaan penarikan yang belum diproses. Silakan tunggu hingga permintaan sebelumnya selesai.',
-            ]);
-        }
-
-        // Check if balance is sufficient
-        if ($customer->ewallet_saldo < $request->amount) {
-            throw ValidationException::withMessages([
-                'amount' => 'Saldo tidak mencukupi. Saldo Anda: '.number_format($customer->ewallet_saldo, 0, ',', '.'),
-            ]);
-        }
+        // Biaya admin (kalau nanti dinamis, ambil dari Setting)
+        $adminFee = 6500;
 
         try {
-            DB::beginTransaction();
+            // Pakai PDO: CALL + ambil OUT vars harus di koneksi yang sama
+            $pdo = DB::connection()->getPdo();
 
-            // Biaya administrasi penarikan
-            $adminFee = 6500;
-            $netAmount = bcsub((string) $request->amount, (string) $adminFee, 2);
+            // reset session vars (opsional, tapi bikin output selalu bersih)
+            $pdo->exec("SET @ok=0, @msg=NULL, @wdid=NULL, @wdref=NULL, @bal_before=NULL");
 
-            $balanceBefore = $customer->ewallet_saldo;
-            $balanceAfter = bcsub((string) $balanceBefore, (string) $request->amount, 2);
+            // CALL sp_request_withdrawal
+            $stmt = $pdo->prepare("
+                CALL sp_request_withdrawal(
+                    ?, ?, ?,
+                    @ok, @msg, @wdid, @wdref, @bal_before
+                )
+            ");
 
-            // Create withdrawal transaction using customer's stored bank info
-            CustomerWalletTransaction::create([
-                'customer_id' => $customer->id,
-                'type' => 'withdrawal',
-                'amount' => $request->amount,
-                'balance_before' => $balanceBefore,
-                'balance_after' => (float) $balanceAfter,
-                'status' => 'pending',
-                'transaction_ref' => 'WD-'.date('YmdHis').'-'.strtoupper(Str::random(6)),
-                'notes' => json_encode([
-                    'bank_name' => $customer->bank_name,
-                    'bank_account' => $customer->bank_account,
-                    'bank_holder' => $customer->name,
-                    'gross_amount' => (float) $request->amount ?? 0,
-                    'admin_fee' => $adminFee ?? 0,
-                    'net_amount' => (float) $netAmount ?? 0,
-                ]),
-                'created_at' => now(),
-                'updated_at' => now(),
-                'is_system' => 1,
+            $stmt->execute([
+                $customer->id,
+                (float) $request->amount,
+                (float) $adminFee,
             ]);
 
-            // Deduct balance directly (without calling deductBalance to avoid double transaction record)
-            $customer->ewallet_saldo = (float) $balanceAfter;
-            $customer->save();
+            // penting untuk menghindari "commands out of sync"
+            $stmt->closeCursor();
 
-            DB::commit();
+            // Ambil output
+            $out = $pdo->query("
+                SELECT
+                @ok AS success,
+                @msg AS message,
+                @wdid AS withdrawal_id,
+                @wdref AS transaction_ref,
+                @bal_before AS balance_before
+            ")->fetch(\PDO::FETCH_ASSOC);
 
-            return redirect()->back()->with('success', 'Permintaan penarikan berhasil dibuat. Akan diproses dalam 1-3 hari kerja.');
-        } catch (\Exception $e) {
-            DB::rollBack();
+            $success = (int)($out['success'] ?? 0) === 1;
+            $message = (string)($out['message'] ?? 'Gagal membuat permintaan penarikan');
 
-            return redirect()->back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
+            if (! $success) {
+                // supaya Inertia useForm().onError dapet stringnya:
+                throw ValidationException::withMessages([
+                    // pakai key yang kamu suka di frontend
+                    'withdrawal' => $message,
+                ]);
+            }
+
+            return redirect()->back()->with('success', $message);
+        } catch (ValidationException $e) {
+            // lempar lagi biar inertia tangkap errors
+            throw $e;
+        } catch (\Throwable $e) {
+            // error tak terduga (SQL, koneksi, dll)
+            throw ValidationException::withMessages([
+                'withdrawal' => 'Terjadi kesalahan sistem. Silakan coba lagi.',
+            ]);
         }
     }
 
