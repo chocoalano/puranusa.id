@@ -57,7 +57,7 @@ class ShippingController extends Controller
         $courier = $validated['courier'] ?? null;
 
         // Get origin from config or use default (1391 = Jakarta Pusat)
-        $originDistrictId = config('services.rajaongkir.origin_district_id', 1391);
+        $originDistrictId = config('services.rajaongkir.origin_district_id', 135);
 
         // Ensure it's an integer
         if (empty($originDistrictId) || ! is_numeric($originDistrictId)) {
@@ -82,7 +82,20 @@ class ShippingController extends Controller
             }
         } else {
             // Multiple couriers (jne, pos, tiki)
-            $couriers = ['jne', 'pos', 'tiki'];
+            $couriers = [
+                'jne',
+                'pos',
+                'tiki',
+                'jnt',
+                'sicepat',
+                'anteraja',
+                'ninja',
+                'idexpress',
+                'rpx',
+                'sap'
+            ];
+
+            // dd($originDistrictId, $destinationDistrictId, $weight);
 
             foreach ($couriers as $courierCode) {
                 $result = $this->rajaOngkir->getCost(
@@ -91,7 +104,6 @@ class ShippingController extends Controller
                     $weight,
                     $courierCode
                 );
-
                 if (! isset($result['error'])) {
                     $results[] = $result;
                 }
