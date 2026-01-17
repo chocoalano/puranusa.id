@@ -361,7 +361,19 @@ class CustomerController extends Controller
                 // Re-validate status from database to prevent race condition
                 $freshCustomer = Customer::find($customer->id);
                 if ($freshCustomer && $freshCustomer->status === 3) {
-                    $customer->update(['package_id' => $request->package_id]);
+                    if ($freshCustomer->package_id === 1) {
+                        $customer_daily_pairing = 15;
+                    }elseif ($freshCustomer->package_id === 2) {
+                        $customer_daily_pairing = 50;
+                    }elseif ($freshCustomer->package_id === 3) {
+                        $customer_daily_pairing = 100;
+                    } else {
+                        $customer_daily_pairing = 0;
+                    }
+                    $customer->update([
+                        'package_id' => $request->package_id,
+                        'customer_daily_pairing' => $customer_daily_pairing,
+                    ]);
                 }
             }
 
