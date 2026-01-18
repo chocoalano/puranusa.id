@@ -1,4 +1,4 @@
-import { defineComponent, mergeModels, useModel, ref, computed, mergeProps, unref, withCtx, createTextVNode, createVNode, createBlock, createCommentVNode, openBlock, toDisplayString, withDirectives, vModelCheckbox, useSSRContext } from "vue";
+import { defineComponent, mergeModels, useModel, ref, watch, computed, mergeProps, unref, withCtx, createTextVNode, createVNode, createBlock, createCommentVNode, openBlock, toDisplayString, withDirectives, vModelCheckbox, useSSRContext } from "vue";
 import { ssrRenderAttrs, ssrRenderComponent, ssrInterpolate, ssrRenderClass, ssrRenderAttr, ssrIncludeBooleanAttr, ssrLooseContain, ssrRenderSlot } from "vue/server-renderer";
 import { _ as _sfc_main$7 } from "./Input-BGi8wCMh.js";
 import { _ as _sfc_main$6 } from "./Label-16aMY2sx.js";
@@ -25,17 +25,25 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const fileInput = ref(null);
     const imagePreview = ref(null);
     const isDragging = ref(false);
+    const removedExistingImage = ref(false);
+    watch(
+      () => props.existingImage,
+      () => {
+        removedExistingImage.value = false;
+        imagePreview.value = null;
+        if (fileInput.value) fileInput.value.value = "";
+        if (formData.value) formData.value.remove_image = false;
+      }
+    );
     const displayImage = computed(() => {
       if (imagePreview.value) return imagePreview.value;
-      if (props.existingImage) return props.existingImage;
+      if (!removedExistingImage.value && props.existingImage) return props.existingImage;
       return null;
     });
     const handleFileSelect = (event) => {
       const target = event.target;
       const file = target.files?.[0];
-      if (file) {
-        processFile(file);
-      }
+      if (file) processFile(file);
     };
     const processFile = (file) => {
       const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -48,6 +56,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         alert("Ukuran file maksimal 2MB");
         return;
       }
+      removedExistingImage.value = true;
+      formData.value.remove_image = false;
       formData.value.image = file;
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -59,9 +69,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       event.preventDefault();
       isDragging.value = false;
       const file = event.dataTransfer?.files?.[0];
-      if (file) {
-        processFile(file);
-      }
+      if (file) processFile(file);
     };
     const handleDragOver = (event) => {
       event.preventDefault();
@@ -71,11 +79,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       isDragging.value = false;
     };
     const removeImage = () => {
-      formData.value.image = null;
+      removedExistingImage.value = true;
       imagePreview.value = null;
-      if (fileInput.value) {
-        fileInput.value.value = "";
-      }
+      formData.value.image = null;
+      formData.value.remove_image = true;
+      if (fileInput.value) fileInput.value.value = "";
     };
     const triggerFileInput = () => {
       fileInput.value?.click();
@@ -155,8 +163,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     class: "uppercase",
                     required: ""
                   }, null, _parent3, _scopeId2));
-                  if (__props.errors?.code) {
-                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(__props.errors.code)}</p>`);
+                  if (props.errors?.code) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(props.errors.code)}</p>`);
                   } else {
                     _push3(`<!---->`);
                   }
@@ -180,8 +188,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     placeholder: "Flash Sale Akhir Tahun",
                     required: ""
                   }, null, _parent3, _scopeId2));
-                  if (__props.errors?.name) {
-                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(__props.errors.name)}</p>`);
+                  if (props.errors?.name) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(props.errors.name)}</p>`);
                   } else {
                     _push3(`<!---->`);
                   }
@@ -341,8 +349,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     }),
                     _: 1
                   }, _parent3, _scopeId2));
-                  if (__props.errors?.type) {
-                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(__props.errors.type)}</p>`);
+                  if (props.errors?.type) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(props.errors.type)}</p>`);
                   } else {
                     _push3(`<!---->`);
                   }
@@ -427,7 +435,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   } else {
                     _push3(`<div class="text-center p-6"${_scopeId2}><div class="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4"${_scopeId2}>`);
                     _push3(ssrRenderComponent(unref(ImagePlus), { class: "h-6 w-6 text-muted-foreground" }, null, _parent3, _scopeId2));
-                    _push3(`</div><p class="text-sm text-muted-foreground mb-2"${_scopeId2}> Drag &amp; drop gambar di sini, atau </p>`);
+                    _push3(`</div><p class="text-sm text-muted-foreground mb-2"${_scopeId2}>Drag &amp; drop gambar di sini, atau</p>`);
                     _push3(ssrRenderComponent(unref(_sfc_main$e), {
                       type: "button",
                       variant: "outline",
@@ -447,11 +455,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       }),
                       _: 1
                     }, _parent3, _scopeId2));
-                    _push3(`<p class="text-xs text-muted-foreground mt-2"${_scopeId2}> PNG, JPG, GIF, WebP (maks. 2MB) </p></div>`);
+                    _push3(`<p class="text-xs text-muted-foreground mt-2"${_scopeId2}>PNG, JPG, GIF, WebP (maks. 2MB)</p></div>`);
                   }
                   _push3(`<input type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden"${_scopeId2}></div>`);
-                  if (__props.errors?.image) {
-                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(__props.errors.image)}</p>`);
+                  if (props.errors?.image) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(props.errors.image)}</p>`);
                   } else {
                     _push3(`<!---->`);
                   }
@@ -474,10 +482,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           class: "uppercase",
                           required: ""
                         }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                        __props.errors?.code ? (openBlock(), createBlock("p", {
+                        props.errors?.code ? (openBlock(), createBlock("p", {
                           key: 0,
                           class: "text-sm text-destructive"
-                        }, toDisplayString(__props.errors.code), 1)) : createCommentVNode("", true)
+                        }, toDisplayString(props.errors.code), 1)) : createCommentVNode("", true)
                       ]),
                       createVNode("div", { class: "space-y-2" }, [
                         createVNode(unref(_sfc_main$6), { for: "name" }, {
@@ -493,10 +501,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           placeholder: "Flash Sale Akhir Tahun",
                           required: ""
                         }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                        __props.errors?.name ? (openBlock(), createBlock("p", {
+                        props.errors?.name ? (openBlock(), createBlock("p", {
                           key: 0,
                           class: "text-sm text-destructive"
-                        }, toDisplayString(__props.errors.name), 1)) : createCommentVNode("", true)
+                        }, toDisplayString(props.errors.name), 1)) : createCommentVNode("", true)
                       ])
                     ]),
                     createVNode("div", { class: "grid gap-4 md:grid-cols-2" }, [
@@ -551,10 +559,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }, 8, ["modelValue", "onUpdate:modelValue"]),
-                        __props.errors?.type ? (openBlock(), createBlock("p", {
+                        props.errors?.type ? (openBlock(), createBlock("p", {
                           key: 0,
                           class: "text-sm text-destructive"
-                        }, toDisplayString(__props.errors.type), 1)) : createCommentVNode("", true)
+                        }, toDisplayString(props.errors.type), 1)) : createCommentVNode("", true)
                       ]),
                       createVNode("div", { class: "space-y-2" }, [
                         createVNode(unref(_sfc_main$6), { for: "landing_slug" }, {
@@ -631,7 +639,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           createVNode("div", { class: "mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4" }, [
                             createVNode(unref(ImagePlus), { class: "h-6 w-6 text-muted-foreground" })
                           ]),
-                          createVNode("p", { class: "text-sm text-muted-foreground mb-2" }, " Drag & drop gambar di sini, atau "),
+                          createVNode("p", { class: "text-sm text-muted-foreground mb-2" }, "Drag & drop gambar di sini, atau"),
                           createVNode(unref(_sfc_main$e), {
                             type: "button",
                             variant: "outline",
@@ -644,7 +652,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }),
-                          createVNode("p", { class: "text-xs text-muted-foreground mt-2" }, " PNG, JPG, GIF, WebP (maks. 2MB) ")
+                          createVNode("p", { class: "text-xs text-muted-foreground mt-2" }, "PNG, JPG, GIF, WebP (maks. 2MB)")
                         ])),
                         createVNode("input", {
                           ref_key: "fileInput",
@@ -655,10 +663,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           onChange: handleFileSelect
                         }, null, 544)
                       ], 34),
-                      __props.errors?.image ? (openBlock(), createBlock("p", {
+                      props.errors?.image ? (openBlock(), createBlock("p", {
                         key: 0,
                         class: "text-sm text-destructive"
-                      }, toDisplayString(__props.errors.image), 1)) : createCommentVNode("", true)
+                      }, toDisplayString(props.errors.image), 1)) : createCommentVNode("", true)
                     ])
                   ];
                 }
@@ -702,10 +710,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         class: "uppercase",
                         required: ""
                       }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                      __props.errors?.code ? (openBlock(), createBlock("p", {
+                      props.errors?.code ? (openBlock(), createBlock("p", {
                         key: 0,
                         class: "text-sm text-destructive"
-                      }, toDisplayString(__props.errors.code), 1)) : createCommentVNode("", true)
+                      }, toDisplayString(props.errors.code), 1)) : createCommentVNode("", true)
                     ]),
                     createVNode("div", { class: "space-y-2" }, [
                       createVNode(unref(_sfc_main$6), { for: "name" }, {
@@ -721,10 +729,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         placeholder: "Flash Sale Akhir Tahun",
                         required: ""
                       }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                      __props.errors?.name ? (openBlock(), createBlock("p", {
+                      props.errors?.name ? (openBlock(), createBlock("p", {
                         key: 0,
                         class: "text-sm text-destructive"
-                      }, toDisplayString(__props.errors.name), 1)) : createCommentVNode("", true)
+                      }, toDisplayString(props.errors.name), 1)) : createCommentVNode("", true)
                     ])
                   ]),
                   createVNode("div", { class: "grid gap-4 md:grid-cols-2" }, [
@@ -779,10 +787,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }, 8, ["modelValue", "onUpdate:modelValue"]),
-                      __props.errors?.type ? (openBlock(), createBlock("p", {
+                      props.errors?.type ? (openBlock(), createBlock("p", {
                         key: 0,
                         class: "text-sm text-destructive"
-                      }, toDisplayString(__props.errors.type), 1)) : createCommentVNode("", true)
+                      }, toDisplayString(props.errors.type), 1)) : createCommentVNode("", true)
                     ]),
                     createVNode("div", { class: "space-y-2" }, [
                       createVNode(unref(_sfc_main$6), { for: "landing_slug" }, {
@@ -859,7 +867,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         createVNode("div", { class: "mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4" }, [
                           createVNode(unref(ImagePlus), { class: "h-6 w-6 text-muted-foreground" })
                         ]),
-                        createVNode("p", { class: "text-sm text-muted-foreground mb-2" }, " Drag & drop gambar di sini, atau "),
+                        createVNode("p", { class: "text-sm text-muted-foreground mb-2" }, "Drag & drop gambar di sini, atau"),
                         createVNode(unref(_sfc_main$e), {
                           type: "button",
                           variant: "outline",
@@ -872,7 +880,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode("p", { class: "text-xs text-muted-foreground mt-2" }, " PNG, JPG, GIF, WebP (maks. 2MB) ")
+                        createVNode("p", { class: "text-xs text-muted-foreground mt-2" }, "PNG, JPG, GIF, WebP (maks. 2MB)")
                       ])),
                       createVNode("input", {
                         ref_key: "fileInput",
@@ -883,10 +891,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         onChange: handleFileSelect
                       }, null, 544)
                     ], 34),
-                    __props.errors?.image ? (openBlock(), createBlock("p", {
+                    props.errors?.image ? (openBlock(), createBlock("p", {
                       key: 0,
                       class: "text-sm text-destructive"
-                    }, toDisplayString(__props.errors.image), 1)) : createCommentVNode("", true)
+                    }, toDisplayString(props.errors.image), 1)) : createCommentVNode("", true)
                   ])
                 ]),
                 _: 1
@@ -968,8 +976,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     type: "datetime-local",
                     required: ""
                   }, null, _parent3, _scopeId2));
-                  if (__props.errors?.start_at) {
-                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(__props.errors.start_at)}</p>`);
+                  if (props.errors?.start_at) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(props.errors.start_at)}</p>`);
                   } else {
                     _push3(`<!---->`);
                   }
@@ -993,8 +1001,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     type: "datetime-local",
                     required: ""
                   }, null, _parent3, _scopeId2));
-                  if (__props.errors?.end_at) {
-                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(__props.errors.end_at)}</p>`);
+                  if (props.errors?.end_at) {
+                    _push3(`<p class="text-sm text-destructive"${_scopeId2}>${ssrInterpolate(props.errors.end_at)}</p>`);
                   } else {
                     _push3(`<!---->`);
                   }
@@ -1020,7 +1028,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     min: "0",
                     placeholder: "0"
                   }, null, _parent3, _scopeId2));
-                  _push3(`<p class="text-sm text-muted-foreground"${_scopeId2}> Angka lebih tinggi = prioritas lebih tinggi </p></div><div class="space-y-2"${_scopeId2}>`);
+                  _push3(`<p class="text-sm text-muted-foreground"${_scopeId2}>Angka lebih tinggi = prioritas lebih tinggi</p></div><div class="space-y-2"${_scopeId2}>`);
                   _push3(ssrRenderComponent(unref(_sfc_main$6), { for: "max_redemption" }, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
@@ -1093,10 +1101,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           type: "datetime-local",
                           required: ""
                         }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                        __props.errors?.start_at ? (openBlock(), createBlock("p", {
+                        props.errors?.start_at ? (openBlock(), createBlock("p", {
                           key: 0,
                           class: "text-sm text-destructive"
-                        }, toDisplayString(__props.errors.start_at), 1)) : createCommentVNode("", true)
+                        }, toDisplayString(props.errors.start_at), 1)) : createCommentVNode("", true)
                       ]),
                       createVNode("div", { class: "space-y-2" }, [
                         createVNode(unref(_sfc_main$6), { for: "end_at" }, {
@@ -1112,10 +1120,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           type: "datetime-local",
                           required: ""
                         }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                        __props.errors?.end_at ? (openBlock(), createBlock("p", {
+                        props.errors?.end_at ? (openBlock(), createBlock("p", {
                           key: 0,
                           class: "text-sm text-destructive"
-                        }, toDisplayString(__props.errors.end_at), 1)) : createCommentVNode("", true)
+                        }, toDisplayString(props.errors.end_at), 1)) : createCommentVNode("", true)
                       ])
                     ]),
                     createVNode("div", { class: "grid gap-4 md:grid-cols-3" }, [
@@ -1135,7 +1143,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           min: "0",
                           placeholder: "0"
                         }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                        createVNode("p", { class: "text-sm text-muted-foreground" }, " Angka lebih tinggi = prioritas lebih tinggi ")
+                        createVNode("p", { class: "text-sm text-muted-foreground" }, "Angka lebih tinggi = prioritas lebih tinggi")
                       ]),
                       createVNode("div", { class: "space-y-2" }, [
                         createVNode(unref(_sfc_main$6), { for: "max_redemption" }, {
@@ -1227,10 +1235,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         type: "datetime-local",
                         required: ""
                       }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                      __props.errors?.start_at ? (openBlock(), createBlock("p", {
+                      props.errors?.start_at ? (openBlock(), createBlock("p", {
                         key: 0,
                         class: "text-sm text-destructive"
-                      }, toDisplayString(__props.errors.start_at), 1)) : createCommentVNode("", true)
+                      }, toDisplayString(props.errors.start_at), 1)) : createCommentVNode("", true)
                     ]),
                     createVNode("div", { class: "space-y-2" }, [
                       createVNode(unref(_sfc_main$6), { for: "end_at" }, {
@@ -1246,10 +1254,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         type: "datetime-local",
                         required: ""
                       }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                      __props.errors?.end_at ? (openBlock(), createBlock("p", {
+                      props.errors?.end_at ? (openBlock(), createBlock("p", {
                         key: 0,
                         class: "text-sm text-destructive"
-                      }, toDisplayString(__props.errors.end_at), 1)) : createCommentVNode("", true)
+                      }, toDisplayString(props.errors.end_at), 1)) : createCommentVNode("", true)
                     ])
                   ]),
                   createVNode("div", { class: "grid gap-4 md:grid-cols-3" }, [
@@ -1269,7 +1277,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         min: "0",
                         placeholder: "0"
                       }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                      createVNode("p", { class: "text-sm text-muted-foreground" }, " Angka lebih tinggi = prioritas lebih tinggi ")
+                      createVNode("p", { class: "text-sm text-muted-foreground" }, "Angka lebih tinggi = prioritas lebih tinggi")
                     ]),
                     createVNode("div", { class: "space-y-2" }, [
                       createVNode(unref(_sfc_main$6), { for: "max_redemption" }, {
@@ -1687,7 +1695,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     rows: "3",
                     class: "font-mono text-sm"
                   }, null, _parent3, _scopeId2));
-                  _push3(`<p class="text-sm text-muted-foreground"${_scopeId2}> Format JSON untuk kondisi spesifik promosi </p></div>`);
+                  _push3(`<p class="text-sm text-muted-foreground"${_scopeId2}>Format JSON untuk kondisi spesifik promosi</p></div>`);
                 } else {
                   return [
                     createVNode("div", { class: "grid gap-4 md:grid-cols-2" }, [
@@ -1803,7 +1811,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         rows: "3",
                         class: "font-mono text-sm"
                       }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                      createVNode("p", { class: "text-sm text-muted-foreground" }, " Format JSON untuk kondisi spesifik promosi ")
+                      createVNode("p", { class: "text-sm text-muted-foreground" }, "Format JSON untuk kondisi spesifik promosi")
                     ])
                   ];
                 }
@@ -1944,7 +1952,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       rows: "3",
                       class: "font-mono text-sm"
                     }, null, 8, ["modelValue", "onUpdate:modelValue"]),
-                    createVNode("p", { class: "text-sm text-muted-foreground" }, " Format JSON untuk kondisi spesifik promosi ")
+                    createVNode("p", { class: "text-sm text-muted-foreground" }, "Format JSON untuk kondisi spesifik promosi")
                   ])
                 ]),
                 _: 1
@@ -1955,7 +1963,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         _: 1
       }, _parent));
       _push(`<div class="flex justify-end gap-4">`);
-      ssrRenderSlot(_ctx.$slots, "actions", { processing: __props.processing }, null, _push, _parent);
+      ssrRenderSlot(_ctx.$slots, "actions", {
+        processing: props.processing
+      }, null, _push, _parent);
       _push(`</div></form>`);
     };
   }

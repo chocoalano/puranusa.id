@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Manage\Customer;
-use App\Models\Order;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -14,9 +12,7 @@ class DashboardController extends Controller
     public function index()
     {
         // Cache stats for 5 minutes to reduce database load
-        $stats = Cache::remember('admin_dashboard_stats', 300, function () {
-            return $this->getStats();
-        });
+        $stats = $this->getStats();
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,
@@ -29,18 +25,37 @@ class DashboardController extends Controller
         $orderStats = DB::table('orders')
             ->selectRaw('COUNT(*) as total_orders')
             ->selectRaw('SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_orders')
-            ->selectRaw('SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as completed_orders')
-            ->selectRaw('COALESCE(SUM(CASE WHEN paid_at IS NOT NULL THEN grand_total ELSE 0 END), 0) as total_revenue')
-            ->selectRaw('COALESCE(SUM(CASE WHEN paid_at IS NOT NULL THEN bv_amount ELSE 0 END), 0) as total_bv')
-            ->selectRaw('COALESCE(SUM(CASE WHEN paid_at IS NOT NULL THEN COALESCE(sponsor_amount, 0) + COALESCE(match_amount, 0) + COALESCE(pairing_amount, 0) + COALESCE(cashback_amount, 0) ELSE 0 END), 0) as total_bonuses')
+            ->selectRaw(
+        'COALESCE(SUM(CASE WHEN status IN (?, ?) THEN COALESCE(subtotal_amount, 0) ELSE 0 END), 0) as total_revenue',
+        ['PAID', 'PROCESSING']
+            )
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN status IN (?, ?) THEN COALESCE(bv_amount, 0) ELSE 0 END), 0) as total_bv',
+                ['PAID', 'PROCESSING']
+            )
             ->first();
+        $totalBonuses = DB::query()
+            ->fromSub(function ($q) {
+                $q->selectRaw('SUM(amount) as sub_total FROM customer_bonus_sponsors')
+                ->unionAll(DB::table('customer_bonus_pairings')->selectRaw('SUM(amount) as sub_total'))
+                ->unionAll(DB::table('customer_bonus_matchings')->selectRaw('SUM(amount) as sub_total'))
+                ->unionAll(DB::table('customer_bonus_retails')->selectRaw('SUM(amount) as sub_total'))
+                ->unionAll(DB::table('customer_bonus_cashbacks')->selectRaw('SUM(amount) as sub_total'));
+            }, 'total')
+            ->selectRaw('COALESCE(SUM(sub_total), 0) as total_bonuses')
+            ->value('total_bonuses');
+
+        $widthrawal = DB::table('customer_wallet_transactions')
+            ->where([
+                'type' => 'withdrawal',
+                'status' => 'pending',
+            ])
+            ->sum('amount');
 
         $totalOrders = (int) ($orderStats->total_orders ?? 0);
         $pendingOrders = (int) ($orderStats->pending_orders ?? 0);
-        $completedOrders = (int) ($orderStats->completed_orders ?? 0);
         $totalRevenue = (float) ($orderStats->total_revenue ?? 0);
         $totalBV = (float) ($orderStats->total_bv ?? 0);
-        $totalBonuses = (float) ($orderStats->total_bonuses ?? 0);
 
         // Basic counts using raw queries for speed
         $totalCustomers = DB::table('customers')->count();
@@ -71,18 +86,17 @@ class DashboardController extends Controller
                     'created_at' => $order->created_at,
                 ];
             });
-
         // Top products by revenue
-        $topProducts = DB::table('orders')
-            ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-            ->whereNotNull('orders.paid_at')
+        $topProducts = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
             ->select(
-                'order_items.name',
+                DB::raw('MAX(order_items.name) as name'),
                 DB::raw('SUM(order_items.qty) as total_sold'),
                 DB::raw('SUM(order_items.row_total) as total_revenue')
             )
-            ->groupBy('order_items.name')
-            ->orderByDesc('total_revenue')
+            ->groupBy('order_items.product_id')
+            ->orderByDesc('total_sold') // = total_terjual
             ->limit(5)
             ->get()
             ->map(function ($item) {
@@ -92,6 +106,7 @@ class DashboardController extends Controller
                     'total_revenue' => (float) $item->total_revenue,
                 ];
             });
+
 
         // Monthly revenue for last 6 months
         $monthlyRevenue = DB::table('orders')
@@ -117,6 +132,7 @@ class DashboardController extends Controller
         $orderStatusDistribution = DB::table('orders')
             ->select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
+            ->whereBetween('created_at', [now()->subMonths(6), now()])
             ->get()
             ->map(function ($item) {
                 return [
@@ -154,7 +170,7 @@ class DashboardController extends Controller
             'totalBonuses' => $totalBonuses,
             'totalNetworkMembers' => $totalNetworkMembers,
             'pendingOrders' => $pendingOrders,
-            'completedOrders' => $completedOrders,
+            'widthrawal' => $widthrawal,
             'activeCustomers' => $activeCustomers,
             'recentOrders' => $recentOrders,
             'topProducts' => $topProducts,

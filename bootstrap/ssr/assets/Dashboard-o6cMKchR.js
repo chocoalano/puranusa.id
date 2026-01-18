@@ -595,10 +595,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         _push4(ssrRenderComponent(unref(_sfc_main$4), { class: "text-sm font-medium" }, {
                           default: withCtx((_4, _push5, _parent5, _scopeId4) => {
                             if (_push5) {
-                              _push5(`Completed Orders`);
+                              _push5(`New Withdrawals`);
                             } else {
                               return [
-                                createTextVNode("Completed Orders")
+                                createTextVNode("New Withdrawals")
                               ];
                             }
                           }),
@@ -609,7 +609,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         return [
                           createVNode(unref(_sfc_main$4), { class: "text-sm font-medium" }, {
                             default: withCtx(() => [
-                              createTextVNode("Completed Orders")
+                              createTextVNode("New Withdrawals")
                             ]),
                             _: 1
                           }),
@@ -622,11 +622,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   _push3(ssrRenderComponent(unref(_sfc_main$5), null, {
                     default: withCtx((_3, _push4, _parent4, _scopeId3) => {
                       if (_push4) {
-                        _push4(`<div class="text-2xl font-bold"${_scopeId3}>${ssrInterpolate(__props.stats.completedOrders)}</div><p class="text-xs text-muted-foreground"${_scopeId3}>${ssrInterpolate((__props.stats.completedOrders / __props.stats.totalOrders * 100).toFixed(1))}% completion rate </p>`);
+                        _push4(`<div class="text-2xl font-bold"${_scopeId3}>${ssrInterpolate(__props.stats.widthrawal)}</div><p class="text-xs text-muted-foreground"${_scopeId3}> Permintaan penarikan baru </p>`);
                       } else {
                         return [
-                          createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(__props.stats.completedOrders), 1),
-                          createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString((__props.stats.completedOrders / __props.stats.totalOrders * 100).toFixed(1)) + "% completion rate ", 1)
+                          createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(__props.stats.widthrawal), 1),
+                          createVNode("p", { class: "text-xs text-muted-foreground" }, " Permintaan penarikan baru ")
                         ];
                       }
                     }),
@@ -638,7 +638,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       default: withCtx(() => [
                         createVNode(unref(_sfc_main$4), { class: "text-sm font-medium" }, {
                           default: withCtx(() => [
-                            createTextVNode("Completed Orders")
+                            createTextVNode("New Withdrawals")
                           ]),
                           _: 1
                         }),
@@ -648,8 +648,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     }),
                     createVNode(unref(_sfc_main$5), null, {
                       default: withCtx(() => [
-                        createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(__props.stats.completedOrders), 1),
-                        createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString((__props.stats.completedOrders / __props.stats.totalOrders * 100).toFixed(1)) + "% completion rate ", 1)
+                        createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(__props.stats.widthrawal), 1),
+                        createVNode("p", { class: "text-xs text-muted-foreground" }, " Permintaan penarikan baru ")
                       ]),
                       _: 1
                     })
@@ -1897,7 +1897,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         default: withCtx(() => [
                           createVNode(unref(_sfc_main$4), { class: "text-sm font-medium" }, {
                             default: withCtx(() => [
-                              createTextVNode("Completed Orders")
+                              createTextVNode("New Withdrawals")
                             ]),
                             _: 1
                           }),
@@ -1907,8 +1907,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       }),
                       createVNode(unref(_sfc_main$5), null, {
                         default: withCtx(() => [
-                          createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(__props.stats.completedOrders), 1),
-                          createVNode("p", { class: "text-xs text-muted-foreground" }, toDisplayString((__props.stats.completedOrders / __props.stats.totalOrders * 100).toFixed(1)) + "% completion rate ", 1)
+                          createVNode("div", { class: "text-2xl font-bold" }, toDisplayString(__props.stats.widthrawal), 1),
+                          createVNode("p", { class: "text-xs text-muted-foreground" }, " Permintaan penarikan baru ")
                         ]),
                         _: 1
                       })

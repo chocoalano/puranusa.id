@@ -26,7 +26,7 @@ interface DashboardStats {
     totalBV: number;
     totalBonuses: number;
     pendingOrders: number;
-    completedOrders: number;
+    widthrawal: number;
     activeCustomers: number;
     totalNetworkMembers: number;
     recentOrders: Array<{
@@ -221,14 +221,13 @@ const getStatusVariant = (status: string) => {
                 <!-- Completed Orders -->
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Completed Orders</CardTitle>
+                        <CardTitle class="text-sm font-medium">New Withdrawals</CardTitle>
                         <TrendingUp class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ stats.completedOrders }}</div>
+                        <div class="text-2xl font-bold">{{ stats.widthrawal }}</div>
                         <p class="text-xs text-muted-foreground">
-                            {{ ((stats.completedOrders / stats.totalOrders) * 100).toFixed(1) }}%
-                            completion rate
+                            Permintaan penarikan baru
                         </p>
                     </CardContent>
                 </Card>

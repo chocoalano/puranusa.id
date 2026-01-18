@@ -3,7 +3,7 @@ import { ssrRenderComponent, ssrInterpolate } from "vue/server-renderer";
 import { Head, Link, router } from "@inertiajs/vue3";
 import { _ as _sfc_main$1 } from "./AppLayout-DI-Jpkmn.js";
 import { _ as _sfc_main$2 } from "./index-SN_CnQ_F.js";
-import { _ as _sfc_main$3 } from "./PromotionForm-VWwnv-LW.js";
+import { _ as _sfc_main$3 } from "./PromotionForm-BaNKFZxV.js";
 import { ArrowLeft } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import "class-variance-authority";
