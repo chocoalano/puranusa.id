@@ -267,7 +267,6 @@ onMounted(() => {
                             :dimensions="product.dimensions"
                         />
                     </TabsContent>
-
                     <TabsContent value="reviews" class="mt-6">
                         <ProductReviews
                             :reviews="product.reviews"

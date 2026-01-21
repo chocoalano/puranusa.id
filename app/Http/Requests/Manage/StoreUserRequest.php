@@ -26,6 +26,7 @@ class StoreUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'role' => ['required', 'in:admin,superadmin'], // Example roles
         ];
     }
 
@@ -44,6 +45,8 @@ class StoreUserRequest extends FormRequest
             'email.unique' => 'This email is already registered.',
             'password.required' => 'Password is required.',
             'password.confirmed' => 'Password confirmation does not match.',
+            'role.required' => 'Role is required.',
+            'role.in' => 'Selected role is invalid.',
         ];
     }
 }

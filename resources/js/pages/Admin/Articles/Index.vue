@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Plus, Search, Pencil, Trash2 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Article {
     id: number;
@@ -72,7 +73,7 @@ interface Props {
         per_page: number;
     };
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const search = ref(props.filters.search || '');
@@ -153,7 +154,7 @@ const goToPage = (page: number) => {
                         Kelola semua artikel dan konten blog
                     </p>
                 </div>
-                <Button as-child>
+                <Button as-child v-if="isSuperAdmin || isAdmin">
                     <a href="/admin/articles/create">
                         <Plus class="mr-2 h-4 w-4" />
                         Tambah Artikel
@@ -166,13 +167,10 @@ const goToPage = (page: number) => {
                     <div class="flex flex-col md:flex-row gap-4">
                         <div class="flex-1">
                             <div class="relative">
-                                <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    v-model="search"
-                                    placeholder="Cari artikel..."
-                                    class="pl-10"
-                                    @keyup.enter="applyFilters"
-                                />
+                                <Search
+                                    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input v-model="search" placeholder="Cari artikel..." class="pl-10"
+                                    @keyup.enter="applyFilters" />
                             </div>
                         </div>
                         <div class="flex gap-2">
@@ -235,20 +233,13 @@ const goToPage = (page: number) => {
                                 </TableCell>
                                 <TableCell class="text-right">
                                     <div class="flex justify-end gap-2">
-                                        <Button
-                                            as-child
-                                            variant="ghost"
-                                            size="icon"
-                                        >
+                                        <Button as-child variant="ghost" size="icon" v-if="isSuperAdmin || isAdmin">
                                             <a :href="`/admin/articles/${article.id}/edit`">
                                                 <Pencil class="h-4 w-4" />
                                             </a>
                                         </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            @click="deleteArticle(article.id)"
-                                        >
+                                        <Button variant="ghost" size="icon" @click="deleteArticle(article.id)"
+                                            v-if="isSuperAdmin || isAdmin">
                                             <Trash2 class="h-4 w-4 text-destructive" />
                                         </Button>
                                     </div>
@@ -266,20 +257,12 @@ const goToPage = (page: number) => {
                             Menampilkan {{ articles.from }} - {{ articles.to }} dari {{ articles.total }} artikel
                         </p>
                         <div class="flex gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                :disabled="articles.current_page === 1"
-                                @click="goToPage(articles.current_page - 1)"
-                            >
+                            <Button variant="outline" size="sm" :disabled="articles.current_page === 1"
+                                @click="goToPage(articles.current_page - 1)">
                                 Sebelumnya
                             </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                :disabled="articles.current_page === articles.last_page"
-                                @click="goToPage(articles.current_page + 1)"
-                            >
+                            <Button variant="outline" size="sm" :disabled="articles.current_page === articles.last_page"
+                                @click="goToPage(articles.current_page + 1)">
                                 Selanjutnya
                             </Button>
                         </div>
@@ -299,10 +282,7 @@ const goToPage = (page: number) => {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Batal</AlertDialogCancel>
-                    <AlertDialogAction
-                        :disabled="isDeleting"
-                        @click="confirmDelete"
-                    >
+                    <AlertDialogAction :disabled="isDeleting" @click="confirmDelete">
                         {{ isDeleting ? 'Menghapus...' : 'Hapus' }}
                     </AlertDialogAction>
                 </AlertDialogFooter>

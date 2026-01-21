@@ -100,13 +100,21 @@ Route::middleware(['client.auth'])->prefix('api/client/orders')->name('api.clien
     Route::post('/{order}/pay', [OrderController::class, 'pay'])->name('pay');
     Route::post('/{order}/pay-wallet', [OrderController::class, 'payWithWallet'])->name('pay-wallet');
     Route::post('/{order}/complete', [OrderController::class, 'complete'])->name('complete');
-    Route::post('/{order}/check-payment-status', [OrderController::class, 'checkPaymentStatus'])->name('check-payment-status');
     Route::post('/{order}/reviews', [OrderController::class, 'submitReview'])->name('reviews.submit');
 });
 
+// Check payment status - outside middleware group to bypass CSRF validation (session-protected)
+Route::post('/api/client/orders/{order}/check-payment-status', [OrderController::class, 'checkPaymentStatus'])
+    ->middleware('client.auth')
+    ->name('api.client.orders.check-payment-status');
+
+// Checkout process - outside middleware group to bypass CSRF validation (session-protected)
+Route::post('/checkout/process', [CheckoutController::class, 'process'])
+    ->middleware('client.auth')
+    ->name('checkout.process');
+
 // Checkout routes (require authentication)
 Route::middleware(['client.auth'])->group(function () {
-    Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/finish', [CheckoutController::class, 'finish'])->name('checkout.finish');
 });
 

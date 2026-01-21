@@ -69,7 +69,7 @@ const formatDate = (date: string) => {
             </div>
 
             <!-- User Details -->
-            <div class="mx-auto max-w-2xl space-y-6">
+            <div class="mx-auto max-w-7xl space-y-6">
                 <div class="rounded-lg border bg-card p-6">
                     <h2 class="mb-4 text-lg font-semibold">User Information</h2>
                     <div class="space-y-4">

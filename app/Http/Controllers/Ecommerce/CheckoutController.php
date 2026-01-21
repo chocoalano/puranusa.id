@@ -307,6 +307,8 @@ class CheckoutController extends Controller
             'applied_promos' => $appliedPromos,
         ]);
 
+
+
         // Execute bonus engine stored procedure only if member is active
         if ($customer->status == 3 && $order->status === 'PAID') {
             $generate = DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
@@ -356,71 +358,84 @@ class CheckoutController extends Controller
      */
     protected function createCartMidtransPayment($customer, Order $order, Cart $cart, array $validated, string $orderNo, string $transactionId): string
     {
-        Config::$serverKey = config('services.midtrans.server_key');
-        Config::$clientKey = config('services.midtrans.client_key');
-        Config::$isProduction = (bool) config('services.midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+        try {
+            Config::$serverKey = config('services.midtrans.server_key');
+            Config::$clientKey = config('services.midtrans.client_key');
+            Config::$isProduction = (bool) config('services.midtrans.is_production');
+            Config::$isSanitized = true;
+            Config::$is3ds = true;
 
-        $splitName = explode(' ', trim($customer->name));
-        $firstName = $splitName[0] ?? 'Customer';
-        $lastName = count($splitName) > 1 ? implode(' ', array_slice($splitName, 1)) : '';
+            $splitName = explode(' ', trim($customer->name));
+            $firstName = $splitName[0] ?? 'Customer';
+            $lastName = count($splitName) > 1 ? implode(' ', array_slice($splitName, 1)) : '';
 
-        $itemDetails = $this->buildCartMidtransItemDetails($cart, $validated);
+            $itemDetails = $this->buildCartMidtransItemDetails($cart, $validated);
 
-        $params = [
-            'transaction_details' => [
-                'order_id' => $transactionId,
-                'gross_amount' => (int) $validated['total'],
-            ],
-            'customer_details' => [
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'email' => $customer->email,
-                'phone' => $validated['shipping']['recipient_phone'],
-                'billing_address' => $this->formatMidtransAddress($validated['shipping']),
-                'shipping_address' => $this->formatMidtransAddress($validated['shipping']),
-            ],
-            'item_details' => $itemDetails,
-            'callbacks' => [
-                'finish' => url('/checkout/finish?order_no='.$orderNo),
-            ],
-            'expiry' => [
-                'start_time' => now()->format('Y-m-d H:i:s O'),
-                'unit' => 'hours',
-                'duration' => 24,
-            ],
-            'custom_field1' => 'ORDER',
-            'custom_field2' => $orderNo,
-        ];
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $transactionId,
+                    'gross_amount' => (int) $validated['total'],
+                ],
+                'customer_details' => [
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'email' => $customer->email,
+                    'phone' => $validated['shipping']['recipient_phone'],
+                    'billing_address' => $this->formatMidtransAddress($validated['shipping']),
+                    'shipping_address' => $this->formatMidtransAddress($validated['shipping']),
+                ],
+                'item_details' => $itemDetails,
+                'callbacks' => [
+                    'finish' => url('/checkout/finish?order_no='.$orderNo),
+                ],
+                'expiry' => [
+                    'start_time' => now()->format('Y-m-d H:i:s O'),
+                    'unit' => 'hours',
+                    'duration' => 24,
+                ],
+                'custom_field1' => 'ORDER',
+                'custom_field2' => $orderNo,
+            ];
 
-        Log::info('Creating Midtrans Snap token for cart checkout', [
-            'order_no' => $orderNo,
-            'transaction_id' => $transactionId,
-            'total' => $validated['total'],
-            'customer_id' => $customer->id,
-            'items_count' => $cart->items->count(),
-        ]);
+            Log::info('Creating Midtrans Snap token for cart checkout', [
+                'order_no' => $orderNo,
+                'transaction_id' => $transactionId,
+                'total' => $validated['total'],
+                'customer_id' => $customer->id,
+                'items_count' => $cart->items->count(),
+            ]);
 
-        $snapToken = Snap::getSnapToken($params);
+            $snapToken = Snap::getSnapToken($params);
 
-        $order->refresh();
-        $appliedPromos = $order->applied_promos ?? [];
+            $order->refresh();
+            $appliedPromos = $order->applied_promos ?? [];
 
-        if (! is_array($appliedPromos)) {
-            $appliedPromos = [];
+            if (! is_array($appliedPromos)) {
+                $appliedPromos = [];
+            }
+
+            $appliedPromos['payment'] = [
+                'gateway' => 'midtrans',
+                'snap_token' => $snapToken,
+                'transaction_id' => $transactionId,
+                'created_at' => now()->toIso8601String(),
+            ];
+
+            $order->update(['applied_promos' => $appliedPromos]);
+
+            return $snapToken;
+        } catch (\Exception $e) {
+            Log::error('Midtrans Snap token creation failed for cart checkout', [
+                'order_no' => $orderNo,
+                'transaction_id' => $transactionId,
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw new \Exception('Gagal menghubungi payment gateway. Silakan coba lagi nanti. ('.$e->getMessage().')', 503);
         }
-
-        $appliedPromos['payment'] = [
-            'gateway' => 'midtrans',
-            'snap_token' => $snapToken,
-            'transaction_id' => $transactionId,
-            'created_at' => now()->toIso8601String(),
-        ];
-
-        $order->update(['applied_promos' => $appliedPromos]);
-
-        return $snapToken;
     }
 
     /**
@@ -557,7 +572,6 @@ class CheckoutController extends Controller
 
             $order = $this->createMultiItemOrder($customer->id, $orderNo, $validated, $shippingAddressId);
             $this->createMultiOrderItems($order->id, $validated['items']);
-
             if ($validated['payment_method'] === 'wallet') {
                 $result = $this->processMultiItemWalletPayment($customer, $order, $validated, $orderNo);
 
@@ -600,6 +614,7 @@ class CheckoutController extends Controller
                     'message' => 'Silakan selesaikan pembayaran',
                 ]);
             }
+            DB::statement('CALL sp_accumulation_stockist_retail_amount_orders(?)', [$order->id]);
         } catch (\Exception $e) {
             try {
                 DB::rollBack();
@@ -809,68 +824,82 @@ class CheckoutController extends Controller
      */
     protected function createMidtransPayment($customer, Order $order, Product $product, array $validated, string $orderNo, string $transactionId): string
     {
-        Config::$serverKey = config('services.midtrans.server_key');
-        Config::$clientKey = config('services.midtrans.client_key');
-        Config::$isProduction = (bool) config('services.midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+        try {
+            Config::$serverKey = config('services.midtrans.server_key');
+            Config::$clientKey = config('services.midtrans.client_key');
+            Config::$isProduction = (bool) config('services.midtrans.is_production');
+            Config::$isSanitized = true;
+            Config::$is3ds = true;
 
-        $splitName = explode(' ', trim($customer->name));
-        $firstName = $splitName[0] ?? 'Customer';
-        $lastName = count($splitName) > 1 ? implode(' ', array_slice($splitName, 1)) : '';
+            $splitName = explode(' ', trim($customer->name));
+            $firstName = $splitName[0] ?? 'Customer';
+            $lastName = count($splitName) > 1 ? implode(' ', array_slice($splitName, 1)) : '';
 
-        $params = [
-            'transaction_details' => [
-                'order_id' => $transactionId,
-                'gross_amount' => (int) $validated['total'],
-            ],
-            'customer_details' => [
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'email' => $customer->email,
-                'phone' => $validated['shipping']['recipient_phone'],
-                'billing_address' => $this->formatMidtransAddress($validated['shipping']),
-                'shipping_address' => $this->formatMidtransAddress($validated['shipping']),
-            ],
-            'item_details' => $this->buildMidtransItemDetails($validated, $product),
-            'callbacks' => [
-                'finish' => url('/checkout/finish?order_no='.$orderNo),
-            ],
-            'expiry' => [
-                'start_time' => now()->format('Y-m-d H:i:s O'),
-                'unit' => 'hours',
-                'duration' => 24,
-            ],
-            'custom_field1' => 'ORDER',
-            'custom_field2' => $orderNo,
-        ];
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $transactionId,
+                    'gross_amount' => (int) $validated['total'],
+                ],
+                'customer_details' => [
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'email' => $customer->email,
+                    'phone' => $validated['shipping']['recipient_phone'],
+                    'billing_address' => $this->formatMidtransAddress($validated['shipping']),
+                    'shipping_address' => $this->formatMidtransAddress($validated['shipping']),
+                ],
+                'item_details' => $this->buildMidtransItemDetails($validated, $product),
+                'callbacks' => [
+                    'finish' => url('/checkout/finish?order_no='.$orderNo),
+                ],
+                'expiry' => [
+                    'start_time' => now()->format('Y-m-d H:i:s O'),
+                    'unit' => 'hours',
+                    'duration' => 24,
+                ],
+                'custom_field1' => 'ORDER',
+                'custom_field2' => $orderNo,
+            ];
 
-        Log::info('Creating Midtrans Snap token for order', [
-            'order_no' => $orderNo,
-            'transaction_id' => $transactionId,
-            'total' => $validated['total'],
-            'customer_id' => $customer->id,
-        ]);
+            Log::info('Creating Midtrans Snap token for order', [
+                'order_no' => $orderNo,
+                'transaction_id' => $transactionId,
+                'total' => $validated['total'],
+                'customer_id' => $customer->id,
+            ]);
 
-        $snapToken = Snap::getSnapToken($params);
+            $snapToken = Snap::getSnapToken($params);
 
-        $order->refresh();
-        $appliedPromos = $order->applied_promos ?? [];
+            $order->refresh();
+            $appliedPromos = $order->applied_promos ?? [];
 
-        if (! is_array($appliedPromos)) {
-            $appliedPromos = [];
+            if (! is_array($appliedPromos)) {
+                $appliedPromos = [];
+            }
+
+            $appliedPromos['payment'] = [
+                'gateway' => 'midtrans',
+                'snap_token' => $snapToken,
+                'transaction_id' => $transactionId,
+                'created_at' => now()->toIso8601String(),
+            ];
+
+            $order->update(['applied_promos' => $appliedPromos]);
+
+            return $snapToken;
+        } catch (\Exception $e) {
+            Log::error('Midtrans Snap token creation failed for single item order', [
+                'order_no' => $orderNo,
+                'transaction_id' => $transactionId,
+                'customer_id' => $customer->id,
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw new \Exception('Gagal menghubungi payment gateway. Silakan coba lagi nanti. ('.$e->getMessage().')', 503);
         }
-
-        $appliedPromos['payment'] = [
-            'gateway' => 'midtrans',
-            'snap_token' => $snapToken,
-            'transaction_id' => $transactionId,
-            'created_at' => now()->toIso8601String(),
-        ];
-
-        $order->update(['applied_promos' => $appliedPromos]);
-
-        return $snapToken;
     }
 
     /**
@@ -1389,83 +1418,96 @@ class CheckoutController extends Controller
      */
     protected function createMultiItemMidtransPayment($customer, Order $order, array $validated, string $orderNo, string $transactionId): string
     {
-        Config::$serverKey = config('services.midtrans.server_key');
-        Config::$isProduction = (bool) config('services.midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+        try {
+            Config::$serverKey = config('services.midtrans.server_key');
+            Config::$isProduction = (bool) config('services.midtrans.is_production');
+            Config::$isSanitized = true;
+            Config::$is3ds = true;
 
-        // Build item details for all products
-        $itemDetails = [];
-        foreach ($validated['items'] as $item) {
-            $product = Product::find($item['product_id']);
+            // Build item details for all products
+            $itemDetails = [];
+            foreach ($validated['items'] as $item) {
+                $product = Product::find($item['product_id']);
+                $itemDetails[] = [
+                    'id' => $item['product_id'],
+                    'price' => (int) $item['product_price'],
+                    'quantity' => $item['quantity'],
+                    'name' => Str::limit($item['product_name'], 50),
+                    'brand' => $product->brand ?? 'Puranusa',
+                    'category' => $product->categories->first()->name ?? 'Product',
+                ];
+            }
+
+            // Add shipping cost
             $itemDetails[] = [
-                'id' => $item['product_id'],
-                'price' => (int) $item['product_price'],
-                'quantity' => $item['quantity'],
-                'name' => Str::limit($item['product_name'], 50),
-                'brand' => $product->brand ?? 'Puranusa',
-                'category' => $product->categories->first()->name ?? 'Product',
+                'id' => 'SHIPPING',
+                'price' => (int) $validated['shipping_cost'],
+                'quantity' => 1,
+                'name' => 'Ongkos Kirim ('.strtoupper($validated['shipping']['courier']).' - '.$validated['shipping']['service'].')',
             ];
+
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $transactionId,
+                    'gross_amount' => (int) $validated['total'],
+                ],
+                'item_details' => $itemDetails,
+                'customer_details' => [
+                    'first_name' => $customer->name,
+                    'email' => $customer->email,
+                    'phone' => $customer->phone,
+                    'billing_address' => $this->formatMidtransAddress($validated['shipping']),
+                    'shipping_address' => $this->formatMidtransAddress($validated['shipping']),
+                ],
+            ];
+
+            Log::info('Creating Midtrans Snap token for multi-item order', [
+                'order_no' => $orderNo,
+                'transaction_id' => $transactionId,
+                'total' => $validated['total'],
+                'items_count' => count($validated['items']),
+                'customer_id' => $customer->id,
+            ]);
+
+            $snapToken = Snap::getSnapToken($params);
+            $order->refresh();
+            $appliedPromos = $order->applied_promos ?? [];
+
+            if (! is_array($appliedPromos)) {
+                $appliedPromos = [];
+            }
+
+            $appliedPromos['payment'] = [
+                'gateway' => 'midtrans',
+                'snap_token' => $snapToken,
+                'transaction_id' => $transactionId,
+                'created_at' => now()->toIso8601String(),
+            ];
+            $order->update(['applied_promos' => $appliedPromos]);
+            $order->payments()->create([
+                'order_id' => $order->id,
+                'method_id' => 1,
+                'status' => 'pending',
+                'amount' => $validated['total'],
+                'currency' => 'IDR',
+                'provider_txn_id' => $transactionId,
+                'metadata_json' => json_encode(['snap_token' => $snapToken]),
+                'transaction_id' => $transactionId,
+                'signature_key' => null,
+            ]);
+
+            return $snapToken;
+        } catch (\Exception $e) {
+            Log::error('Midtrans Snap token creation failed', [
+                'order_no' => $orderNo,
+                'transaction_id' => $transactionId,
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage(),
+                'error_class' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw new \Exception('Gagal menghubungi payment gateway. Silakan coba lagi nanti. ('.$e->getMessage().')', 503);
         }
-
-        // Add shipping cost
-        $itemDetails[] = [
-            'id' => 'SHIPPING',
-            'price' => (int) $validated['shipping_cost'],
-            'quantity' => 1,
-            'name' => 'Ongkos Kirim ('.strtoupper($validated['shipping']['courier']).' - '.$validated['shipping']['service'].')',
-        ];
-
-        $params = [
-            'transaction_details' => [
-                'order_id' => $transactionId,
-                'gross_amount' => (int) $validated['total'],
-            ],
-            'item_details' => $itemDetails,
-            'customer_details' => [
-                'first_name' => $customer->name,
-                'email' => $customer->email,
-                'phone' => $customer->phone,
-                'billing_address' => $this->formatMidtransAddress($validated['shipping']),
-                'shipping_address' => $this->formatMidtransAddress($validated['shipping']),
-            ],
-        ];
-
-        Log::info('Creating Midtrans Snap token for multi-item order', [
-            'order_no' => $orderNo,
-            'transaction_id' => $transactionId,
-            'total' => $validated['total'],
-            'items_count' => count($validated['items']),
-            'customer_id' => $customer->id,
-        ]);
-
-        $snapToken = Snap::getSnapToken($params);
-        $order->refresh();
-        $appliedPromos = $order->applied_promos ?? [];
-
-        if (! is_array($appliedPromos)) {
-            $appliedPromos = [];
-        }
-
-        $appliedPromos['payment'] = [
-            'gateway' => 'midtrans',
-            'snap_token' => $snapToken,
-            'transaction_id' => $transactionId,
-            'created_at' => now()->toIso8601String(),
-        ];
-        $order->update(['applied_promos' => $appliedPromos]);
-        $order->payments()->create([
-            'order_id' => $order->id,
-            'method_id' => 1,
-            'status' => 'pending',
-            'amount' => $validated['total'],
-            'currency' => 'IDR',
-            'provider_txn_id' => $transactionId,
-            'metadata_json' => json_encode(['snap_token' => $snapToken]),
-            'transaction_id' => $transactionId,
-            'signature_key' => null,
-        ]);
-
-        return $snapToken;
     }
 }

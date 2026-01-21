@@ -34,6 +34,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Pagination from '@/components/Pagination.vue';
 import { index, create, edit, destroy } from '@/actions/App/Http/Controllers/Admin/StockistController';
 import { toast } from 'vue-sonner';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Stockist {
     id: number;
@@ -77,7 +78,7 @@ interface Props {
     };
     provinces: Province[];
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const search = ref(props.filters.search || '');
@@ -243,30 +244,34 @@ const columns: ColumnDef<Stockist>[] = [
         header: () => h('div', { class: 'text-center' }, 'Aksi'),
         cell: ({ row }) => {
             const stockist = row.original;
-            return h('div', { class: 'flex items-center justify-center gap-2' }, [
-                h(
-                    Link,
-                    {
-                        href: edit.url(stockist.id),
-                    },
-                    () =>
-                        h(
-                            Button,
-                            { variant: 'ghost', size: 'icon', title: 'Edit Kabupaten' },
-                            () => h(Pencil, { class: 'h-4 w-4' })
-                        )
-                ),
-                h(
-                    Button,
-                    {
-                        variant: 'ghost',
-                        size: 'icon',
-                        onClick: () => openDeleteDialog(stockist),
-                        title: 'Hapus Status Stokist',
-                    },
-                    () => h(Trash2, { class: 'h-4 w-4 text-destructive' })
-                ),
-            ]);
+            const actions = []
+            if ((isSuperAdmin.value || isAdmin.value)) {
+                actions.push(
+                    h(
+                        Link,
+                        {
+                            href: edit.url(stockist.id),
+                        },
+                        () =>
+                            h(
+                                Button,
+                                { variant: 'ghost', size: 'icon', title: 'Edit Kabupaten' },
+                                () => h(Pencil, { class: 'h-4 w-4' })
+                            )
+                    ),
+                    h(
+                        Button,
+                        {
+                            variant: 'ghost',
+                            size: 'icon',
+                            onClick: () => openDeleteDialog(stockist),
+                            title: 'Hapus Status Stokist',
+                        },
+                        () => h(Trash2, { class: 'h-4 w-4 text-destructive' })
+                    ),
+                );
+            }
+            return h('div', { class: 'flex items-center justify-center gap-2' }, actions);
         },
     },
 ];
@@ -286,6 +291,7 @@ const table = useVueTable({
 
 <template>
     <AppLayout>
+
         <Head title="Kelola Stokist" />
 
         <div class="rounded-xl p-4 space-y-6 py-6">
@@ -293,10 +299,11 @@ const table = useVueTable({
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Kelola Stokist</h1>
                     <p class="text-muted-foreground">
-                        Kelola data stokist berdasarkan kabupaten/kota. Setiap kabupaten/kota hanya dapat memiliki 1 stokist.
+                        Kelola data stokist berdasarkan kabupaten/kota. Setiap kabupaten/kota hanya dapat memiliki 1
+                        stokist.
                     </p>
                 </div>
-                <Link :href="create.url()">
+                <Link :href="create.url()" v-if="(isSuperAdmin || isAdmin)">
                     <Button>
                         <Plus class="mr-2 h-4 w-4" />
                         Tambah Stokist
@@ -307,57 +314,32 @@ const table = useVueTable({
             <div class="mb-4 flex items-center gap-4">
                 <div class="relative flex-1">
                     <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        v-model="search"
-                        placeholder="Cari nama, email, telepon, ewallet ID, atau kabupaten..."
-                        class="pl-10"
-                        @input="performSearch"
-                    />
+                    <Input v-model="search" placeholder="Cari nama, email, telepon, ewallet ID, atau kabupaten..."
+                        class="pl-10" @input="performSearch" />
                 </div>
             </div>
 
             <div class="rounded-md border">
                 <Table>
                     <TableHeader>
-                        <TableRow
-                            v-for="headerGroup in table.getHeaderGroups()"
-                            :key="headerGroup.id"
-                        >
-                            <TableHead
-                                v-for="header in headerGroup.headers"
-                                :key="header.id"
-                            >
-                                <FlexRender
-                                    v-if="!header.isPlaceholder"
-                                    :render="header.column.columnDef.header"
-                                    :props="header.getContext()"
-                                />
+                        <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                            <TableHead v-for="header in headerGroup.headers" :key="header.id">
+                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+                                    :props="header.getContext()" />
                             </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <template v-if="table.getRowModel().rows?.length">
-                            <TableRow
-                                v-for="row in table.getRowModel().rows"
-                                :key="row.id"
-                            >
-                                <TableCell
-                                    v-for="cell in row.getVisibleCells()"
-                                    :key="cell.id"
-                                >
-                                    <FlexRender
-                                        :render="cell.column.columnDef.cell"
-                                        :props="cell.getContext()"
-                                    />
+                            <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
+                                <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                                    <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                                 </TableCell>
                             </TableRow>
                         </template>
                         <template v-else>
                             <TableRow>
-                                <TableCell
-                                    :colspan="columns.length"
-                                    class="h-24 text-center"
-                                >
+                                <TableCell :colspan="columns.length" class="h-24 text-center">
                                     <div class="flex flex-col items-center gap-2 text-muted-foreground">
                                         <Store class="h-8 w-8" />
                                         <span>Belum ada stokist terdaftar.</span>
@@ -369,27 +351,17 @@ const table = useVueTable({
                 </Table>
             </div>
 
-            <Pagination
-                :data="stockists"
-                :url="index.url()"
-                :filters="{
-                    search: search,
-                    sort_by: sortBy,
-                    sort_order: sortOrder,
-                    per_page: perPage,
-                }"
-            />
+            <Pagination :data="stockists" :url="index.url()" :filters="{
+                search: search,
+                sort_by: sortBy,
+                sort_order: sortOrder,
+                per_page: perPage,
+            }" />
         </div>
 
         <!-- Delete Dialog -->
-        <ConfirmDialog
-            v-model:open="deleteDialog.open"
-            title="Hapus Status Stokist?"
+        <ConfirmDialog v-model:open="deleteDialog.open" title="Hapus Status Stokist?"
             :description="`Apakah Anda yakin ingin menghapus status stokist dari ${deleteDialog.data?.name}? Pelanggan ini akan tetap ada namun tidak lagi menjadi stokist untuk ${deleteDialog.data?.stockist_kabupaten_name}.`"
-            confirm-text="Hapus"
-            cancel-text="Batal"
-            variant="destructive"
-            @confirm="handleDelete"
-        />
+            confirm-text="Hapus" cancel-text="Batal" variant="destructive" @confirm="handleDelete" />
     </AppLayout>
 </template>

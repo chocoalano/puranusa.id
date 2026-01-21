@@ -619,9 +619,11 @@ class CustomerController extends Controller
         try {
             // Get impersonation data
             $impersonating = session()->get('impersonating');
-
             if (! $impersonating) {
-                return redirect()->route('dashboard');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada sesi impersonating',
+                ], 400);
             }
 
             // Logout from client guard
@@ -630,17 +632,19 @@ class CustomerController extends Controller
             // Clear impersonation flag
             session()->forget('impersonating');
 
-            return redirect()
-                ->route('customers.index')
-                ->with('success', 'Kembali ke akun admin');
+            return response()->json([
+                'success' => true,
+                'message' => 'Kembali ke akun admin',
+            ]);
         } catch (\Exception $e) {
             \Log::error('Stop impersonating failed', [
                 'error' => $e->getMessage(),
             ]);
 
-            return redirect()
-                ->route('dashboard')
-                ->with('error', 'Gagal kembali ke akun admin: '.$e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal kembali ke akun admin: ' . $e->getMessage(),
+            ], 500);
         }
     }
 }

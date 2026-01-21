@@ -19,7 +19,7 @@ import {
     Wallet,
     XCircle,
 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 interface Bonus {
     id: number;
@@ -43,16 +43,17 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const breadcrumbItems: BreadcrumbItem[] = [
+const bonusId = computed(() => props.bonus?.id);
+const breadcrumbItems = computed<BreadcrumbItem[]>(() => [
     {
         title: 'Bonus Pairing',
         href: index.url(),
     },
     {
-        title: `Detail Bonus #${props.bonus.id}`,
-        href: show.url(props.bonus.id),
+        title: bonusId.value ? `Detail Bonus #${bonusId.value}` : 'Detail Bonus',
+        href: bonusId.value ? show.url(bonusId.value) : index.url(),
     },
-];
+]);
 
 const deleteDialog = ref(false);
 const releaseDialog = ref(false);
@@ -76,8 +77,11 @@ const formatDate = (date: string) => {
 };
 
 const handleDelete = () => {
+    const bonusIdValue = bonusId.value;
+    if (!bonusIdValue) return;
+
     const deleteForm = useForm({});
-    deleteForm.delete(destroy.url(props.bonus.id), {
+    deleteForm.delete(destroy.url(bonusIdValue), {
         onSuccess: () => {
             router.visit(index.url());
         },
@@ -85,8 +89,11 @@ const handleDelete = () => {
 };
 
 const handleRelease = () => {
+    const bonusIdValue = bonusId.value;
+    if (!bonusIdValue) return;
+
     const releaseForm = useForm({});
-    releaseForm.post(release.url(props.bonus.id), {
+    releaseForm.post(release.url(bonusIdValue), {
         preserveScroll: true,
         onSuccess: () => {
             releaseDialog.value = false;

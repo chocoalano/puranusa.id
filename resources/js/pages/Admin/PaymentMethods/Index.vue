@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { CreditCard } from 'lucide-vue-next'
 import { router } from '@inertiajs/vue3'
+import { usePermissions } from '@/composables/usePermissions'
 
 interface PaymentMethod {
   id: number
@@ -24,7 +25,7 @@ interface Props {
     total_inactive: number
   }
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>()
 
 const statistics = computed(() => [
@@ -86,6 +87,7 @@ const toggleActive = (method: PaymentMethod) => {
                       :variant="method.is_active ? 'outline' : 'default'"
                       size="sm"
                       @click="toggleActive(method)"
+                      v-if="isSuperAdmin || isAdmin"
                     >
                       {{ method.is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                     </Button>

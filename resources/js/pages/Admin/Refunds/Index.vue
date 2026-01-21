@@ -49,6 +49,7 @@ import {
     Search,
 } from 'lucide-vue-next';
 import { h, ref, watch } from 'vue';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Refund {
     id: number;
@@ -94,7 +95,7 @@ interface Props {
         sort_order?: 'asc' | 'desc';
     };
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -232,9 +233,10 @@ const columns: ColumnDef<Refund>[] = [
         cell: ({ row }) => {
             const refund = row.original;
             if (refund.status === 'completed') return null;
+            const actions=[]
+            if (isSuperAdmin || isAdmin) {
 
-            return h('div', { class: 'flex justify-end gap-2' }, [
-                h(
+                actions.push(h(
                     Button,
                     {
                         variant: 'default',
@@ -242,7 +244,9 @@ const columns: ColumnDef<Refund>[] = [
                         onClick: () => openProcessDialog(refund),
                     },
                     () => [h(CheckCircle, { class: 'mr-2 h-4 w-4' }), 'Proses']
-                ),
+                ),)
+            }
+            return h('div', { class: 'flex justify-end gap-2' }, [
             ]);
         },
     },

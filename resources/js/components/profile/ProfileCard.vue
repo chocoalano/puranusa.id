@@ -31,7 +31,7 @@ const referralLink = computed(() => {
         return '';
     }
     const baseUrl = window.location.origin;
-    return `${baseUrl}/client/register?ref=${props.customer.ref_code}`;
+    return `${baseUrl}/beranda?ref=${props.customer.username}`;
 });
 
 const copyReferralLink = async () => {
@@ -56,7 +56,7 @@ const shareReferralLink = async () => {
 
     const shareData = {
         title: 'Bergabung dengan Referral Saya',
-        text: `Gunakan kode referral saya: ${props.customer.ref_code}`,
+        text: `Gunakan Username saya untuk mengajak teman: ${props.customer.username}`,
         url: referralLink.value,
     };
 

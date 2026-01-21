@@ -27,6 +27,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { usePermissions } from '@/composables/usePermissions';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { valueUpdater } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
@@ -109,6 +110,7 @@ interface Props {
     };
 }
 
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -351,8 +353,9 @@ const columns: ColumnDef<Bonus>[] = [
         header: () => h('div', { class: 'text-right' }, 'Actions'),
         cell: ({ row }) => {
             const bonus = row.original;
-            return h('div', { class: 'flex justify-end gap-2' }, [
-                h(
+            const actions=[]
+            if (isSuperAdmin || isAdmin) {
+                actions.push(h(
                     Button,
                     {
                         variant: 'outline',
@@ -382,8 +385,9 @@ const columns: ColumnDef<Bonus>[] = [
                           },
                           () => h(Trash2, { class: 'h-4 w-4 text-destructive' })
                       )
-                    : null,
-            ]);
+                    : null,)
+            }
+            return h('div', { class: 'flex justify-end gap-2' }, actions);
         },
     },
 ];
@@ -473,11 +477,11 @@ watch([search, statusFilter], () => {
                     <p class="text-muted-foreground">Kelola bonus pairing binary tree</p>
                 </div>
                 <div class="flex gap-2">
-                    <Button variant="outline" @click="flushDialog.open = true">
+                    <Button variant="outline" @click="flushDialog.open = true" v-if="isSuperAdmin || isAdmin">
                         <GitMerge class="h-4 w-4" />
                         Proses Semua Pairing
                     </Button>
-                    <Button @click="router.visit(create.url())">
+                    <Button @click="router.visit(create.url())" v-if="isSuperAdmin || isAdmin">
                         <Plus class="h-4 w-4" />
                         Proses Member
                     </Button>

@@ -34,6 +34,7 @@ import {
 } from '@tanstack/vue-table'
 import { ArrowUpDown, ChevronDown, Search, Wallet } from 'lucide-vue-next'
 import { h } from 'vue'
+import { usePermissions } from '@/composables/usePermissions'
 
 interface Customer {
   id: number
@@ -75,6 +76,8 @@ const formatCurrency = (amount: number) => {
     minimumFractionDigits: 0,
   }).format(amount)
 }
+
+const { isSuperAdmin, isAdmin } = usePermissions()
 
 const columns: ColumnDef<Customer>[] = [
   {
@@ -203,7 +206,7 @@ watch(search, () => {
       </div>
 
       <!-- Statistics -->
-      <div class="grid gap-4 md:grid-cols-3">
+      <div class="grid gap-4 md:grid-cols-3" v-if="isSuperAdmin || isAdmin">
         <Card>
           <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium">Total Customer</CardTitle>

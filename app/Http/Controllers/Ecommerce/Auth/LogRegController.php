@@ -80,10 +80,11 @@ class LogRegController extends Controller
     /**
      * Show register form
      */
-    public function showRegister(Request $request): Response
+    public function showRegister(): Response
     {
+        $referrer = session('referral');
         return Inertia::render('ecommerce/auth/Register', [
-            'ref_code' => $request->query('ref'),
+            'ref_code' => $referrer ?? null,
         ]);
     }
 

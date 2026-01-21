@@ -36,6 +36,9 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    role: 'superadmin' | 'admin' | string;
+    is_admin: boolean;
+    is_superadmin: boolean;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { MoreHorizontal, Plus, Search, ArrowUpDown } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Product {
     id: number;
@@ -63,7 +64,7 @@ interface Props {
         per_page?: number;
     };
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const searchQuery = ref(props.filters.search || '');
@@ -129,7 +130,7 @@ const deleteProduct = (id: number) => {
                     <h2 class="text-3xl font-bold tracking-tight">Kelola Produk</h2>
                     <p class="text-muted-foreground">Kelola semua produk yang tersedia di toko</p>
                 </div>
-                <Button @click="router.visit('/admin/products/create')">
+                <Button @click="router.visit('/admin/products/create')" v-if="(isSuperAdmin || isAdmin)">
                     <Plus class="mr-2 h-4 w-4" />
                     Tambah Produk
                 </Button>
@@ -271,10 +272,10 @@ const deleteProduct = (id: number) => {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                        <DropdownMenuItem @click="router.visit(`/admin/products/${product.id}/edit`)">
+                                        <DropdownMenuItem @click="router.visit(`/admin/products/${product.id}/edit`)" v-if="(isSuperAdmin || isAdmin)">
                                             Edit
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem @click="deleteProduct(product.id)" class="text-destructive">
+                                        <DropdownMenuItem @click="deleteProduct(product.id)" class="text-destructive" v-if="(isSuperAdmin || isAdmin)">
                                             Hapus
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>

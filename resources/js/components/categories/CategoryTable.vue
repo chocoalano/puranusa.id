@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, ImageIcon } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Category {
     id: number;
@@ -33,7 +34,7 @@ interface Category {
 interface Props {
     categories: Category[];
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 defineProps<Props>();
 
 const emit = defineEmits<{
@@ -109,12 +110,13 @@ const getImageUrl = (image: string | null) => {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <Link :href="`/admin/categories/${category.id}/edit`">
+                                <Link :href="`/admin/categories/${category.id}/edit`" v-if="isSuperAdmin || isAdmin">
                                     <DropdownMenuItem>Edit</DropdownMenuItem>
                                 </Link>
                                 <DropdownMenuItem
                                     @click="emit('delete', category.id)"
                                     class="text-destructive"
+                                    v-if="isSuperAdmin || isAdmin"
                                 >
                                     Hapus
                                 </DropdownMenuItem>

@@ -2,37 +2,41 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Page;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePageRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
-        $pageId = $this->route('page');
-        $page = \App\Models\Page::find($pageId);
         $protectedSlugs = ['terms', 'about', 'privacy', 'faq'];
 
-        // If this is a protected page, only allow title, content, and blocks to be updated
-        if ($page && in_array($page->slug, $protectedSlugs)) {
+        // Route model binding idealnya sudah ngasih instance Page
+        $routePage = $this->route('page');
+
+        // Kalau ada kasus route bind kamu ngembaliin Collection, ambil first (lebih baik perbaiki bind-nya)
+        if ($routePage instanceof \Illuminate\Database\Eloquent\Collection) {
+            $routePage = $routePage->first();
+        }
+
+        // Pastikan $page adalah Model Page
+        $page = $routePage instanceof Page
+            ? $routePage
+            : Page::query()->findOrFail($routePage); // kalau route param masih id
+
+        // Jika halaman protected, slug tidak boleh berubah
+        if (in_array($page->slug, $protectedSlugs, true)) {
             return [
-                'title' => ['required', 'string', 'max:255'],
+                'title'   => ['required', 'string', 'max:255'],
                 'content' => ['nullable', 'string'],
-                'blocks' => ['nullable', 'json'],
-                // Slug cannot be changed for protected pages
-                'slug' => ['required', 'string', 'in:'.$page->slug],
+                'blocks'  => ['nullable', 'json'],
+                'slug'    => ['required', 'string', Rule::in([$page->slug])],
             ];
         }
 
@@ -42,15 +46,15 @@ class UpdatePageRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                'unique:pages,slug,'.$pageId,
-                'not_in:terms,about,privacy,faq',
+                Rule::unique('pages', 'slug')->ignore($page->id),
+                Rule::notIn($protectedSlugs), // non-protected tidak boleh pakai slug sistem
             ],
             'content' => ['nullable', 'string'],
             'blocks' => ['nullable', 'json'],
             'seo_title' => ['nullable', 'string', 'max:255'],
             'seo_description' => ['nullable', 'string', 'max:500'],
             'is_published' => ['boolean'],
-            'template' => ['required', 'string', 'in:default,full-width,narrow'],
+            'template' => ['required', 'string', Rule::in(['default', 'full-width', 'narrow'])],
             'order' => ['integer', 'min:0'],
         ];
     }
@@ -65,5 +69,14 @@ class UpdatePageRequest extends FormRequest
             'slug.in' => 'Slug halaman sistem tidak dapat diubah.',
             'template.in' => 'Template tidak valid.',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('slug')) {
+            $this->merge([
+                'slug' => strtolower(trim((string) $this->input('slug'))),
+            ]);
+        }
     }
 }

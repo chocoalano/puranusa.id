@@ -19,8 +19,14 @@ class BonusPairingController extends Controller
      */
     public function index(Request $request): Response
     {
+        $pairColumn = CustomerBonusPairing::pairColumn();
+        $sortBy = $request->get('sort_by', 'created_at');
+        if ($sortBy === 'pair' || $sortBy === 'pair_count' || $sortBy === 'pairing_count') {
+            $sortBy = $pairColumn;
+        }
+
         $query = CustomerBonusPairing::with(['member'])
-            ->orderBy($request->get('sort_by', 'created_at'), $request->get('sort_order', 'desc'));
+            ->orderBy($sortBy, $request->get('sort_order', 'desc'));
 
         // Filter by status
         if ($request->has('status')) {
@@ -45,12 +51,15 @@ class BonusPairingController extends Controller
 
         $bonuses = $query->paginate($request->get('per_page', 15))
             ->through(function ($bonus) {
+                $pairCount = (int) $bonus->pair;
+
                 return [
                     'id' => $bonus->id,
                     'member_id' => $bonus->member_id,
                     'member_name' => $bonus->member?->name,
                     'member_ewallet_id' => $bonus->member?->ewallet_id,
-                    'pair' => $bonus->pair,
+                    'pair' => $pairCount,
+                    'pair_count' => $pairCount,
                     'amount' => $bonus->amount,
                     'index_value' => $bonus->index_value,
                     'status' => $bonus->status,
@@ -66,7 +75,7 @@ class BonusPairingController extends Controller
             'total_released' => CustomerBonusPairing::where('status', 1)->sum('amount'),
             'count_pending' => CustomerBonusPairing::where('status', 0)->count(),
             'count_released' => CustomerBonusPairing::where('status', 1)->count(),
-            'total_pairs' => CustomerBonusPairing::where('status', 0)->sum('pair'),
+            'total_pairs' => CustomerBonusPairing::where('status', 0)->sum($pairColumn),
         ];
 
         return Inertia::render('bonus/pairing/Index', [
@@ -135,10 +144,12 @@ class BonusPairingController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(CustomerBonusPairing $bonusPairing): Response
+    public function show($id): Response
     {
+        $bonusPairing = CustomerBonusPairing::find($id);
         $bonusPairing->load(['member']);
-
+        $pairCount = (int) $bonusPairing->pair;
+        $bonusPerPair = $pairCount > 0 ? (float) $bonusPairing->amount / $pairCount : 0.0;
         return Inertia::render('bonus/pairing/Show', [
             'bonus' => [
                 'id' => $bonusPairing->id,
@@ -146,7 +157,9 @@ class BonusPairingController extends Controller
                 'member_name' => $bonusPairing->member?->name,
                 'member_ewallet_id' => $bonusPairing->member?->ewallet_id,
                 'member_email' => $bonusPairing->member?->email,
-                'pair' => $bonusPairing->pair,
+                'pair' => $pairCount,
+                'pair_count' => $pairCount,
+                'bonus_per_pair' => $bonusPerPair,
                 'amount' => $bonusPairing->amount,
                 'index_value' => $bonusPairing->index_value,
                 'status' => $bonusPairing->status,

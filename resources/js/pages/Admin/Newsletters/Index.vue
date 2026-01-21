@@ -25,6 +25,7 @@ import {
 } from '@tanstack/vue-table'
 import { h } from 'vue'
 import { Trash2, Mail } from 'lucide-vue-next'
+import { usePermissions } from '@/composables/usePermissions'
 
 interface Newsletter {
   id: number
@@ -53,7 +54,7 @@ interface Props {
     search?: string
   }
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>()
 
 const searchQuery = ref(props.filters?.search || '')
@@ -147,8 +148,9 @@ const columns: ColumnDef<Newsletter>[] = [
     header: () => h('div', { class: 'text-right' }, 'Aksi'),
     cell: ({ row }) => {
       const newsletter = row.original
-      return h('div', { class: 'flex justify-end gap-2' }, [
-        h(
+      const actions = []
+      if (isSuperAdmin || isAdmin) {
+        actions.push(h(
           Button,
           {
             variant: 'ghost',
@@ -156,8 +158,9 @@ const columns: ColumnDef<Newsletter>[] = [
             onClick: () => handleDelete(newsletter.id),
           },
           () => h(Trash2, { class: 'h-4 w-4 text-destructive' }),
-        ),
-      ])
+        ),)
+      }
+      return h('div', { class: 'flex justify-end gap-2' }, actions)
     },
   },
 ]

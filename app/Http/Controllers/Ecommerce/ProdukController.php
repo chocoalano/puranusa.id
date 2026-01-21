@@ -24,7 +24,6 @@ class ProdukController extends Controller
         $reviewCount = $product->reviews()->count();
         $relatedProducts = $this->getRelatedProducts($product);
         $productData = $this->formatProductData($product, $averageRating, $reviewCount);
-
         return Inertia::render('ecommerce/Produk', [
             'product' => $productData,
             'relatedProducts' => $relatedProducts,
@@ -159,7 +158,7 @@ class ProdukController extends Controller
                 'id' => $review->id,
                 'customer_name' => $review->customer->name,
                 'rating' => $review->rating,
-                'comment' => $review->review_text,
+                'comment' => $review->comment,
                 'created_at' => $review->created_at->diffForHumans(),
             ])
             ->toArray();

@@ -38,6 +38,7 @@ import {
     Trash2,
 } from 'lucide-vue-next';
 import { h, ref, watch } from 'vue';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Promotion {
     id: number;
@@ -80,7 +81,7 @@ interface Props {
         sort_order: 'asc' | 'desc';
     };
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -241,8 +242,9 @@ const columns: ColumnDef<Promotion>[] = [
         header: () => h('div', { class: 'text-right' }, 'Actions'),
         cell: ({ row }) => {
             const promotion = row.original;
-            return h('div', { class: 'flex justify-end gap-2' }, [
-                h(
+            const actions = []
+            if (isSuperAdmin || isAdmin) {
+                actions.push(h(
                     Button,
                     {
                         variant: 'outline',
@@ -259,8 +261,9 @@ const columns: ColumnDef<Promotion>[] = [
                         onClick: () => openDeleteDialog(promotion),
                     },
                     () => h(Trash2, { class: 'h-4 w-4 text-destructive' })
-                ),
-            ]);
+                ),)
+            }
+            return h('div', { class: 'flex justify-end gap-2' }, actions);
         },
     },
 ];
@@ -350,7 +353,7 @@ watch([search, typeFilter], () => {
                     <h1 class="text-3xl font-bold tracking-tight">Promosi & Diskon</h1>
                     <p class="text-muted-foreground">Kelola promosi dan diskon produk</p>
                 </div>
-                <Link :href="create.url()">
+                <Link :href="create.url()" v-if="isSuperAdmin || isAdmin">
                     <Button>
                         <Plus class="h-4 w-4" />
                         Tambah Promosi

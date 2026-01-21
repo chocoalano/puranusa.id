@@ -36,7 +36,6 @@ interface Props {
         status?: boolean;
     };
 }
-
 const props = defineProps<Props>();
 
 const searchQuery = ref(props.filters.search || '');

@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/select';
 import { index, show, edit, create, destroy, topUp, loginAsCustomer as loginAsCustomerAction } from '@/actions/App/Http/Controllers/Admin/CustomerController';
 import { toast } from 'vue-sonner';
+import { usePermissions } from '@/composables/usePermissions';
 
 // Inject ewallet dialog state
 const injectDialog = ref({
@@ -177,6 +178,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const { isSuperAdmin, isAdmin } = usePermissions()
 
 const search = ref(props.filters.search || '');
 const sortBy = ref(props.filters.sort_by || 'created_at');
@@ -324,7 +326,7 @@ const columns: ColumnDef<Customer>[] = [
     },
     {
         accessorKey: 'package_name',
-        header: 'Peringkat',
+        header: 'Paket Member',
         cell: ({ row }) => {
             const packageId = row.original.package_id;
             const packageName = row.getValue('package_name') as string;
@@ -334,6 +336,31 @@ const columns: ColumnDef<Customer>[] = [
                 { variant },
                 () => packageName
             );
+        },
+    },
+    {
+        accessorKey: 'level',
+        header: 'Peringkat',
+        cell: ({ row }) => {
+            const levelRaw = row.getValue('level')
+            const level = Number(levelRaw)
+
+            const levelLabels: Record<number, string> = {
+                1: 'Associate',
+                2: 'Senior Associate',
+                3: 'Executive',
+                4: 'Director',
+            }
+
+            const label = levelLabels[level] ?? String(levelRaw ?? '-')
+
+            const variant =
+                level === 4 ? 'default' :
+                    level === 3 ? 'secondary' :
+                        level === 2 ? 'outline' :
+                            'outline'
+
+            return h(Badge, { variant }, () => label)
         },
     },
     {
@@ -407,55 +434,58 @@ const columns: ColumnDef<Customer>[] = [
         header: () => h('div', { class: 'text-center' }, 'Aksi'),
         cell: ({ row }) => {
             const customer = row.original;
-            const actions = [
-                h(
-                    Button,
-                    {
-                        variant: 'ghost',
-                        size: 'icon',
-                        onClick: () => openInjectDialog(customer),
-                        title: 'Inject Ewallet',
-                    },
-                    () => h(Wallet, { class: 'h-4 w-4 text-green-600' })
-                ),
-                h(
-                    Button,
-                    {
-                        variant: 'ghost',
-                        size: 'icon',
-                        onClick: () => loginAsCustomer(customer.id, customer.name),
-                        title: 'Login sebagai customer',
-                    },
-                    () => h(LogIn, { class: 'h-4 w-4 text-primary' })
-                ),
-                h(
-                    Link,
-                    {
-                        href: show.url(customer.id),
-                    },
-                    () =>
-                        h(
-                            Button,
-                            { variant: 'ghost', size: 'icon' },
-                            () => h(Eye, { class: 'h-4 w-4' })
-                        )
-                ),
-                h(
-                    Link,
-                    {
-                        href: edit.url(customer.id),
-                    },
-                    () =>
-                        h(
-                            Button,
-                            { variant: 'ghost', size: 'icon' },
-                            () => h(Pencil, { class: 'h-4 w-4' })
-                        )
-                ),
-            ];
+            const actions = [];
 
             // Only show delete button if status is not Pasif (2) or Aktif (3)
-            if (customer.status !== 2 && customer.status !== 3) {
+            if ((isSuperAdmin.value || isAdmin.value)) {
+                actions.push(
+                    h(
+                        Button,
+                        {
+                            variant: 'ghost',
+                            size: 'icon',
+                            onClick: () => openInjectDialog(customer),
+                            title: 'Inject Ewallet',
+                        },
+                        () => h(Wallet, { class: 'h-4 w-4 text-green-600' })
+                    ),
+                    h(
+                        Button,
+                        {
+                            variant: 'ghost',
+                            size: 'icon',
+                            onClick: () => loginAsCustomer(customer.id, customer.name),
+                            title: 'Login sebagai customer',
+                        },
+                        () => h(LogIn, { class: 'h-4 w-4 text-primary' })
+                    ),
+                    h(
+                        Link,
+                        {
+                            href: show.url(customer.id),
+                        },
+                        () =>
+                            h(
+                                Button,
+                                { variant: 'ghost', size: 'icon' },
+                                () => h(Eye, { class: 'h-4 w-4' })
+                            )
+                    ),
+                    h(
+                        Link,
+                        {
+                            href: edit.url(customer.id),
+                        },
+                        () =>
+                            h(
+                                Button,
+                                { variant: 'ghost', size: 'icon' },
+                                () => h(Pencil, { class: 'h-4 w-4' })
+                            )
+                    ),
+                )
+            }
+            if (customer.status !== 2 && customer.status !== 3 && (isSuperAdmin.value || isAdmin.value)) {
                 actions.push(
                     h(
                         Button,
@@ -485,10 +515,12 @@ const table = useVueTable({
     manualSorting: true,
     manualPagination: true,
 });
+
 </script>
 
 <template>
     <AppLayout>
+
         <Head title="Kelola Pelanggan" />
 
         <div class="rounded-xl p-4 space-y-6 py-6">
@@ -511,19 +543,10 @@ const table = useVueTable({
                 <div class="flex items-center gap-4">
                     <div class="relative flex-1">
                         <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            v-model="search"
-                            placeholder="Cari nama, email, telepon, atau ewallet ID..."
-                            class="pl-10"
-                            @input="performSearch"
-                        />
+                        <Input v-model="search" placeholder="Cari nama, email, telepon, atau ewallet ID..."
+                            class="pl-10" @input="performSearch" />
                     </div>
-                    <Button
-                        v-if="hasActiveFilters"
-                        variant="outline"
-                        size="sm"
-                        @click="clearFilters"
-                    >
+                    <Button v-if="hasActiveFilters" variant="outline" size="sm" @click="clearFilters">
                         Reset Filter
                     </Button>
                 </div>
@@ -580,45 +603,24 @@ const table = useVueTable({
             <div class="rounded-md border">
                 <Table>
                     <TableHeader>
-                        <TableRow
-                            v-for="headerGroup in table.getHeaderGroups()"
-                            :key="headerGroup.id"
-                        >
-                            <TableHead
-                                v-for="header in headerGroup.headers"
-                                :key="header.id"
-                            >
-                                <FlexRender
-                                    v-if="!header.isPlaceholder"
-                                    :render="header.column.columnDef.header"
-                                    :props="header.getContext()"
-                                />
+                        <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                            <TableHead v-for="header in headerGroup.headers" :key="header.id">
+                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+                                    :props="header.getContext()" />
                             </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <template v-if="table.getRowModel().rows?.length">
-                            <TableRow
-                                v-for="row in table.getRowModel().rows"
-                                :key="row.id"
-                            >
-                                <TableCell
-                                    v-for="cell in row.getVisibleCells()"
-                                    :key="cell.id"
-                                >
-                                    <FlexRender
-                                        :render="cell.column.columnDef.cell"
-                                        :props="cell.getContext()"
-                                    />
+                            <TableRow v-for="row in table.getRowModel().rows" :key="row.id">
+                                <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                                    <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                                 </TableCell>
                             </TableRow>
                         </template>
                         <template v-else>
                             <TableRow>
-                                <TableCell
-                                    :colspan="columns.length"
-                                    class="h-24 text-center"
-                                >
+                                <TableCell :colspan="columns.length" class="h-24 text-center">
                                     Tidak ada data pelanggan.
                                 </TableCell>
                             </TableRow>
@@ -627,32 +629,22 @@ const table = useVueTable({
                 </Table>
             </div>
 
-            <Pagination
-                :data="customers"
-                :url="index.url()"
-                :filters="{
-                    search: search || undefined,
-                    sort_by: sortBy,
-                    sort_order: sortOrder,
-                    per_page: perPage,
-                    package_id: packageFilter && packageFilter !== 'all' ? packageFilter : undefined,
-                    position: positionFilter && positionFilter !== 'all' ? positionFilter : undefined,
-                    email_verified: emailVerifiedFilter && emailVerifiedFilter !== 'all' ? emailVerifiedFilter : undefined,
-                    status: statusFilter && statusFilter !== 'all' ? statusFilter : undefined,
-                }"
-            />
+            <Pagination :data="customers" :url="index.url()" :filters="{
+                search: search || undefined,
+                sort_by: sortBy,
+                sort_order: sortOrder,
+                per_page: perPage,
+                package_id: packageFilter && packageFilter !== 'all' ? packageFilter : undefined,
+                position: positionFilter && positionFilter !== 'all' ? positionFilter : undefined,
+                email_verified: emailVerifiedFilter && emailVerifiedFilter !== 'all' ? emailVerifiedFilter : undefined,
+                status: statusFilter && statusFilter !== 'all' ? statusFilter : undefined,
+            }" />
         </div>
 
         <!-- Delete Dialog -->
-        <ConfirmDialog
-            v-model:open="deleteDialog.open"
-            title="Hapus Pelanggan?"
+        <ConfirmDialog v-model:open="deleteDialog.open" title="Hapus Pelanggan?"
             :description="`Apakah Anda yakin ingin menghapus pelanggan ${deleteDialog.data?.name}? Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait termasuk jaringan dan bonus.`"
-            confirm-text="Hapus"
-            cancel-text="Batal"
-            variant="destructive"
-            @confirm="handleDelete"
-        />
+            confirm-text="Hapus" cancel-text="Batal" variant="destructive" @confirm="handleDelete" />
 
         <!-- Inject Ewallet Dialog -->
         <Dialog :open="injectDialog.open" @update:open="(val) => !val && closeInjectDialog()">
@@ -666,41 +658,24 @@ const table = useVueTable({
                 <form @submit.prevent="handleInject" class="space-y-4">
                     <div class="space-y-2">
                         <Label for="amount">Jumlah (Rp)</Label>
-                        <Input
-                            id="amount"
-                            v-model.number="injectForm.amount"
-                            type="number"
-                            min="10000"
-                            step="1000"
-                            placeholder="Minimal Rp 10.000"
-                            required
-                        />
+                        <Input id="amount" v-model.number="injectForm.amount" type="number" min="10000" step="1000"
+                            placeholder="Minimal Rp 10.000" required />
                         <p v-if="injectForm.errors.amount" class="text-sm text-destructive">
                             {{ injectForm.errors.amount }}
                         </p>
                     </div>
                     <div class="space-y-2">
                         <Label for="description">Keterangan (Opsional)</Label>
-                        <Input
-                            id="description"
-                            v-model="injectForm.description"
-                            type="text"
-                            placeholder="Contoh: Top up manual oleh admin"
-                        />
+                        <Input id="description" v-model="injectForm.description" type="text"
+                            placeholder="Contoh: Top up manual oleh admin" />
                     </div>
                     <DialogFooter class="gap-2 sm:gap-0">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            :disabled="injectForm.processing"
-                            @click="closeInjectDialog"
-                        >
+                        <Button type="button" variant="outline" :disabled="injectForm.processing"
+                            @click="closeInjectDialog">
                             Batal
                         </Button>
-                        <Button
-                            type="submit"
-                            :disabled="injectForm.processing || !injectForm.amount || Number(injectForm.amount) < 10000"
-                        >
+                        <Button type="submit"
+                            :disabled="injectForm.processing || !injectForm.amount || Number(injectForm.amount) < 10000">
                             <Wallet class="mr-2 h-4 w-4" />
                             {{ injectForm.processing ? 'Memproses...' : 'Tambahkan Saldo' }}
                         </Button>

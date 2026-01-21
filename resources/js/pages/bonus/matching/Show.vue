@@ -42,7 +42,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
     },
     {
         title: 'Detail Bonus',
-        href: show.url(props.bonus.id),
+        href: props.bonus?.id ? show.url(props.bonus.id) : '#',
     },
 ];
 

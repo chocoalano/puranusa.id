@@ -32,7 +32,7 @@ class NewsletterController extends Controller
             'total_this_month' => NewsletterSubscriber::whereMonth('created_at', now()->month)->count(),
         ];
 
-        return inertia('Admin/Settings/Newsletters/Index', [
+        return inertia('Admin/Newsletters/Index', [
             'newsletters' => $newsletters,
             'statistics' => $statistics,
             'filters' => [

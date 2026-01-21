@@ -320,13 +320,16 @@ class HandleInertiaRequests extends Middleware
     protected function getAuthUser(Request $request): ?array
     {
         // For admin/web routes, check web guard only
-        if ($request->is('admin/*') || $request->is('login') || $request->is('settings/*')) {
+        if (auth('web')->check()) {
             if ($request->user()) {
                 return [
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
                     'avatar' => $request->user()->avatar ?? null,
+                    'role' => $request->user()->role ?? null,
+                    'is_admin' => ($request->user()->role ?? null) === 'admin',
+                    'is_superadmin' => ($request->user()->role ?? null) === 'superadmin',
                 ];
             }
 

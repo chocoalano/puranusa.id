@@ -54,11 +54,13 @@ import {
     XCircle,
 } from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface User {
     id: number;
     name: string;
     email: string;
+    role: 'superadmin' | 'admin' | string
     email_verified_at: string | null;
     created_at: string;
 }
@@ -84,7 +86,6 @@ interface Props {
         sort_order: 'asc' | 'desc';
     };
 }
-
 const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -176,6 +177,8 @@ const handleCopyData = async () => {
     bulkCopyDialog.value.open = false;
 };
 
+const { isSuperAdmin } = usePermissions()
+
 const columns: ColumnDef<User>[] = [
     {
         id: 'select',
@@ -252,6 +255,24 @@ const columns: ColumnDef<User>[] = [
                 () => [
                     h(verified ? CheckCircle : XCircle, { class: 'h-3 w-3' }),
                     verified ? 'Verified' : 'Unverified',
+                ],
+            );
+        },
+    },
+    {
+        accessorKey: 'role',
+        header: 'Role',
+        cell: ({ row }) => {
+            const role = row.getValue('role');
+            return h(
+                Badge,
+                {
+                    variant: role === 'superadmin' ? 'default' : 'secondary',
+                    class: 'gap-1 capitalize',
+                },
+                () => [
+                    h(role === 'superadmin' ? CheckCircle : XCircle, { class: 'h-3 w-3' }),
+                    role === 'superadmin' ? 'Super Admin' : 'Admin',
                 ],
             );
         },
@@ -370,18 +391,18 @@ watch(search, () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem @click="copyToClipboard([user])">
+                <DropdownMenuItem @click="copyToClipboard([user])" v-if="isSuperAdmin">
                     <Copy class="mr-2 h-4 w-4" />
                     Copy user data
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem as-child>
+                <DropdownMenuItem as-child v-if="isSuperAdmin">
                     <Link :href="UserController.edit.url(user.id)">
                         <Edit class="mr-2 h-4 w-4" />
                         Edit user
                     </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem @click="onDelete" class="text-destructive">
+                <DropdownMenuItem @click="onDelete" class="text-destructive" v-if="isSuperAdmin">
                     <Trash2 class="mr-2 h-4 w-4" />
                     Delete user
                 </DropdownMenuItem>
@@ -402,7 +423,7 @@ watch(search, () => {
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <Link :href="UserController.create.url()">
+                    <Link :href="UserController.create.url()" v-if="isSuperAdmin">
                         <Button>
                             <Plus class="h-4 w-4" />
                             Add User

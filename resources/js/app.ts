@@ -9,8 +9,27 @@ import 'vue-sonner/style.css';
 import Toaster from '@/components/ui/sonner/Sonner.vue';
 import axios from 'axios';
 
+const getCookieValue = (name: string): string | null => {
+    const escaped = name.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+};
+
+const setMetaCsrfToken = (token: string): void => {
+    const metaTag = document.head.querySelector('meta[name="csrf-token"]');
+    if (metaTag) {
+        (metaTag as HTMLMetaElement).content = token;
+    }
+};
+
 // Helper function to get fresh CSRF token
 const getCsrfToken = (): string | null => {
+    const cookieToken = getCookieValue('XSRF-TOKEN');
+    if (cookieToken) {
+        setMetaCsrfToken(cookieToken);
+        return cookieToken;
+    }
+
     const token = document.head.querySelector('meta[name="csrf-token"]');
     return token ? (token as HTMLMetaElement).content : null;
 };
@@ -18,7 +37,7 @@ const getCsrfToken = (): string | null => {
 // Helper function to refresh CSRF token from server
 const refreshCsrfToken = async (): Promise<string | null> => {
     try {
-        const response = await fetch('/sanctum/csrf-cookie', {
+        const response = await fetch('/csrf-token', {
             credentials: 'same-origin',
         });
         if (response.ok) {

@@ -190,6 +190,11 @@ const formatCurrency = (amount: number) => {
 };
 
 const isAuthenticated = computed(() => {
+    // Check if currently impersonating a customer
+    if (page.props.impersonating) {
+        return true;
+    }
+
     // Only consider authenticated if user has client-specific data (ewallet_saldo)
     // This prevents web guard data from being treated as client authentication
     const user = page.props.auth?.user;
@@ -277,16 +282,32 @@ const subscribeNewsletter = async () => {
 };
 
 // Stop impersonating function
-const stopImpersonating = () => {
-    const stopImpersonatingForm = useForm({});
-    stopImpersonatingForm.post('/manage/customers/stop-impersonating', {
-        onSuccess: () => {
+const stopImpersonating = async () => {
+    try {
+        const response = await fetch('/manage/customers/stop-impersonating', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
             toast.success('Kembali ke akun admin');
-        },
-        onError: () => {
-            toast.error('Gagal kembali ke akun admin');
-        },
-    });
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else {
+            console.error('Response:', data);
+            toast.error(data.message || 'Gagal kembali ke akun admin');
+        }
+    } catch (error: any) {
+        console.error('Stop impersonating failed:', error);
+        toast.error('Gagal kembali ke akun admin');
+    }
 };
 
 // Wishlist management

@@ -51,6 +51,7 @@ import {
     ShoppingCart,
 } from 'lucide-vue-next';
 import { h, ref, watch } from 'vue';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Order {
     id: number;
@@ -95,7 +96,7 @@ interface Props {
         sort_order: 'asc' | 'desc';
     };
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -237,8 +238,10 @@ const columns: ColumnDef<Order>[] = [
         header: () => h('div', { class: 'text-right' }, 'Actions'),
         cell: ({ row }) => {
             const order = row.original;
-            return h('div', { class: 'flex justify-end gap-2' }, [
-                h(
+            const actions = []
+            if (isSuperAdmin || isAdmin) {
+
+                actions.push(h(
                     Link,
                     { href: `/admin/orders/${order.id}` },
                     () =>
@@ -247,8 +250,9 @@ const columns: ColumnDef<Order>[] = [
                             { variant: 'outline', size: 'sm' },
                             () => h(Eye, { class: 'h-4 w-4' })
                         )
-                ),
-            ]);
+                ),)
+            }
+            return h('div', { class: 'flex justify-end gap-2' }, actions);
         },
     },
 ];

@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Eye, FileText, MoreVertical, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Page {
     id: number;
@@ -58,7 +59,7 @@ interface Props {
         direction?: string;
     };
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const searchQuery = ref(props.filters.search || '');
@@ -103,6 +104,7 @@ const getTemplateLabel = (template: string) => {
 </script>
 
 <template>
+
     <Head title="Kelola Halaman" />
 
     <AppLayout>
@@ -115,8 +117,8 @@ const getTemplateLabel = (template: string) => {
                         Kelola semua halaman statis di website Anda
                     </p>
                 </div>
-                <Link href="/admin/pages/create">
-                    <Button>
+                <Link href="/admin/pages/create" v-if="isSuperAdmin || isAdmin">
+                    <Button v-if="isSuperAdmin || isAdmin">
                         <Plus class="h-4 w-4 mr-2" />
                         Tambah Halaman
                     </Button>
@@ -133,12 +135,8 @@ const getTemplateLabel = (template: string) => {
                     <div class="flex flex-col md:flex-row gap-4">
                         <div class="flex-1 relative">
                             <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                v-model="searchQuery"
-                                placeholder="Cari berdasarkan judul atau slug..."
-                                class="pl-10"
-                                @keydown.enter="performSearch"
-                            />
+                            <Input v-model="searchQuery" placeholder="Cari berdasarkan judul atau slug..." class="pl-10"
+                                @keydown.enter="performSearch" />
                         </div>
                         <Select v-model="selectedStatus" @update:model-value="performSearch">
                             <SelectTrigger class="w-full md:w-[200px]">
@@ -214,7 +212,8 @@ const getTemplateLabel = (template: string) => {
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
-                                            <Link :href="`/page/${page.slug}`" target="_blank">
+                                            <Link :href="`/page/${page.slug}`" target="_blank"
+                                                v-if="isSuperAdmin || isAdmin">
                                                 <DropdownMenuItem>
                                                     <Eye class="h-4 w-4 mr-2" />
                                                     Lihat
@@ -227,10 +226,9 @@ const getTemplateLabel = (template: string) => {
                                                 </DropdownMenuItem>
                                             </Link>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem
-                                                @click="deletePage(page.id)"
+                                            <DropdownMenuItem @click="deletePage(page.id)"
                                                 class="text-destructive focus:text-destructive"
-                                            >
+                                                v-if="isSuperAdmin || isAdmin">
                                                 <Trash2 class="h-4 w-4 mr-2" />
                                                 Hapus
                                             </DropdownMenuItem>
@@ -247,12 +245,8 @@ const getTemplateLabel = (template: string) => {
             <div v-if="pages.last_page > 1" class="flex justify-center">
                 <nav class="flex items-center gap-2">
                     <template v-for="(link, index) in pages.links" :key="index">
-                        <Button
-                            :variant="link.active ? 'default' : 'outline'"
-                            :disabled="!link.url"
-                            size="sm"
-                            @click="link.url && router.visit(link.url)"
-                        >
+                        <Button :variant="link.active ? 'default' : 'outline'" :disabled="!link.url" size="sm"
+                            @click="link.url && router.visit(link.url)">
                             <span v-html="link.label"></span>
                         </Button>
                     </template>

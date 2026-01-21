@@ -266,6 +266,7 @@ class WalletController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            // dd($e->getMessage());
             Log::error('Midtrans Top-up Error: '.$e->getMessage(), [
                 'customer_id' => $customer->id,
                 'amount' => $request->amount,

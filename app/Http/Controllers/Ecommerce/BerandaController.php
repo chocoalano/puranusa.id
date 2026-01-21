@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Ecommerce;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Manage\Customer;
 use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\Promotion;
@@ -17,6 +18,13 @@ class BerandaController extends Controller
 {
     public function index(Request $request): Response
     {
+        if ($request->filled('ref')) {
+            $customer = Customer::where('username', $request->ref)->first();
+
+            if ($customer) {
+                session(['referral' => $customer->ref_code]);
+            }
+        }
         $seoData = $this->getSeoMetaData();
         $banners = $this->getBanners();
         $categories = $this->getFeaturedCategories();

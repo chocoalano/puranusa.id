@@ -3,10 +3,22 @@
  */
 
 export const useCsrf = () => {
+    const getCookieValue = (name: string): string | null => {
+        const escaped = name.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`));
+        return match ? decodeURIComponent(match[1]) : null;
+    };
+
     /**
      * Get current CSRF token from meta tag
      */
     const getCsrfToken = (): string | null => {
+        const cookieToken = getCookieValue('XSRF-TOKEN');
+        if (cookieToken) {
+            updateCsrfToken(cookieToken);
+            return cookieToken;
+        }
+
         const token = document.head.querySelector('meta[name="csrf-token"]');
         return token ? (token as HTMLMetaElement).content : null;
     };
@@ -16,13 +28,11 @@ export const useCsrf = () => {
      */
     const refreshCsrfToken = async (): Promise<string | null> => {
         try {
-            const response = await fetch('/sanctum/csrf-cookie', {
+            const response = await fetch('/csrf-token', {
                 credentials: 'same-origin',
             });
             
             if (response.ok) {
-                // Wait a bit for cookie to be set
-                await new Promise(resolve => setTimeout(resolve, 100));
                 return getCsrfToken();
             }
         } catch (error) {

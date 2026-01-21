@@ -5,11 +5,13 @@ namespace App\Models\Manage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * @property int $id
  * @property int $member_id
  * @property int $pair
+ * @property int $pairing_count
  * @property float $amount
  * @property float|null $index_value
  * @property int $status
@@ -21,6 +23,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class CustomerBonusPairing extends Model
 {
     use HasFactory;
+
+    public const LEGACY_PAIR_COLUMN = 'pair';
+    public const PAIRING_COUNT_COLUMN = 'pairing_count';
+
+    protected static ?string $pairColumn = null;
 
     protected $table = 'customer_bonus_pairings';
 
@@ -36,7 +43,7 @@ class CustomerBonusPairing extends Model
     protected function casts(): array
     {
         return [
-            'pair' => 'integer',
+            'pairing_count' => 'integer',
             'amount' => 'float',
             'index_value' => 'float',
             'status' => 'integer',
@@ -49,6 +56,42 @@ class CustomerBonusPairing extends Model
     public function member(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'member_id');
+    }
+
+    public static function pairColumn(): string
+    {
+        if (self::$pairColumn !== null) {
+            return self::$pairColumn;
+        }
+
+        $table = (new self())->getTable();
+
+        try {
+            if (Schema::hasColumn($table, self::PAIRING_COUNT_COLUMN)) {
+                self::$pairColumn = self::PAIRING_COUNT_COLUMN;
+
+                return self::$pairColumn;
+            }
+        } catch (\Throwable $e) {
+            // Fallback when schema introspection isn't available.
+        }
+
+        self::$pairColumn = self::LEGACY_PAIR_COLUMN;
+
+        return self::$pairColumn;
+    }
+
+    public function getPairAttribute(): int
+    {
+        $column = self::pairColumn();
+
+        return (int) ($this->attributes[$column] ?? 0);
+    }
+
+    public function setPairAttribute($value): void
+    {
+        $column = self::pairColumn();
+        $this->attributes[$column] = $value;
     }
 
     /**

@@ -11,16 +11,19 @@ use App\Http\Controllers\Admin\StockistController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DocumentationController;
 
+// Impersonating routes - accessible without full auth middleware (protected by session)
+Route::post('manage/customers/{customer}/login-as', [CustomerController::class, 'loginAsCustomer'])
+    ->middleware('auth')
+    ->name('manage.customers.login-as');
+Route::post('manage/customers/stop-impersonating', [CustomerController::class, 'stopImpersonating'])
+    ->name('manage.customers.stop-impersonating');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('manage/users', UserController::class);
 
     // Additional Customer Routes (MUST be before resource to avoid conflicts)
-    Route::post('manage/customers/{customer}/login-as', [CustomerController::class, 'loginAsCustomer'])
-        ->name('manage.customers.login-as');
-    Route::post('manage/customers/stop-impersonating', [CustomerController::class, 'stopImpersonating'])
-        ->name('manage.customers.stop-impersonating');
     Route::post('manage/customers/{customer}/release-bonuses', [CustomerController::class, 'releaseBonuses'])
         ->name('manage.customers.release-bonuses');
     Route::post('manage/customers/{customer}/top-up', [CustomerController::class, 'topUp'])

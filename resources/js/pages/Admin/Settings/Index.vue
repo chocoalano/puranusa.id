@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
+import { usePermissions } from '@/composables/usePermissions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +24,8 @@ import {
 } from 'lucide-vue-next';
 import TiptapEditor from '@/components/admin/TiptapEditor.vue';
 import { ref, computed, watch } from 'vue';
+
+const { isSuperAdmin, isAdmin } = usePermissions();
 
 interface Setting {
     id: number;
@@ -200,14 +203,14 @@ const saveSettings = () => {
                         Kelola pengaturan situs, media sosial, dan metode pembayaran
                     </p>
                 </div>
-                <Button @click="saveSettings" :disabled="form.processing" size="lg">
+                <Button v-if="isSuperAdmin || isAdmin" @click="saveSettings" :disabled="form.processing" size="lg">
                     <Save class="h-4 w-4 mr-2" />
                     {{ form.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}
                 </Button>
             </div>
 
             <!-- Settings Tabs -->
-            <Tabs default-value="general" class="space-y-6">
+            <Tabs v-if="isSuperAdmin || isAdmin" default-value="general" class="space-y-6">
                 <TabsList class="grid w-full grid-cols-3">
                     <TabsTrigger value="general" class="flex items-center gap-2">
                         <Globe class="h-4 w-4" />
@@ -240,6 +243,7 @@ const saveSettings = () => {
                                     id="site_name"
                                     v-model="form.settings['site_name']!"
                                     placeholder="PURANUSA"
+                                    :disabled="!(isSuperAdmin || isAdmin)"
                                 />
                                 <p class="text-xs text-muted-foreground">
                                     Nama situs yang akan ditampilkan di header dan footer
@@ -253,6 +257,7 @@ const saveSettings = () => {
                                 <Label for="site_description">Deskripsi Situs</Label>
                                 <TiptapEditor
                                     v-model="form.settings['site_description']!"
+                                    :disabled="!(isSuperAdmin || isAdmin)"
                                 />
                                 <p class="text-xs text-muted-foreground">
                                     Deskripsi singkat tentang situs yang akan ditampilkan di footer
@@ -299,6 +304,7 @@ const saveSettings = () => {
                                         v-model="form.settings['site_logo']!"
                                         placeholder="https://example.com/logo.png"
                                         type="url"
+                                        :disabled="!(isSuperAdmin || isAdmin)"
                                     />
                                 </div>
 
@@ -312,12 +318,14 @@ const saveSettings = () => {
                                                 accept="image/*"
                                                 @change="handleLogoUpload"
                                                 class="hidden"
+                                                :disabled="!(isSuperAdmin || isAdmin)"
                                             />
                                             <Button
                                                 type="button"
                                                 variant="outline"
                                                 class="w-full"
                                                 @click="triggerFileInput"
+                                                :disabled="!(isSuperAdmin || isAdmin)"
                                             >
                                                 <Upload class="h-4 w-4 mr-2" />
                                                 {{ form.site_logo ? 'Ganti File' : 'Pilih File' }}
@@ -328,6 +336,7 @@ const saveSettings = () => {
                                             type="button"
                                             variant="destructive"
                                             @click="removeLogo"
+                                            :disabled="!(isSuperAdmin || isAdmin)"
                                         >
                                             <X class="h-4 w-4" />
                                         </Button>
@@ -375,6 +384,7 @@ const saveSettings = () => {
                                     v-model="form.settings['social_facebook']!"
                                     placeholder="https://facebook.com/puranusa"
                                     type="url"
+                                    :disabled="!(isSuperAdmin || isAdmin)"
                                 />
                             </div>
 
@@ -391,6 +401,7 @@ const saveSettings = () => {
                                     v-model="form.settings['social_twitter']!"
                                     placeholder="https://twitter.com/puranusa"
                                     type="url"
+                                    :disabled="!(isSuperAdmin || isAdmin)"
                                 />
                             </div>
 
@@ -407,6 +418,7 @@ const saveSettings = () => {
                                     v-model="form.settings['social_instagram']!"
                                     placeholder="https://instagram.com/puranusa"
                                     type="url"
+                                    :disabled="!(isSuperAdmin || isAdmin)"
                                 />
                             </div>
 
@@ -423,6 +435,7 @@ const saveSettings = () => {
                                     v-model="form.settings['social_youtube']!"
                                     placeholder="https://youtube.com/@puranusa"
                                     type="url"
+                                    :disabled="!(isSuperAdmin || isAdmin)"
                                 />
                             </div>
 
@@ -461,6 +474,7 @@ const saveSettings = () => {
                                             @click="removePaymentMethod(method)"
                                             class="hover:text-destructive transition-colors"
                                             type="button"
+                                            :disabled="!(isSuperAdmin || isAdmin)"
                                         >
                                             ×
                                         </button>
@@ -482,11 +496,12 @@ const saveSettings = () => {
                                         v-model="newPaymentMethod"
                                         placeholder="Contoh: VISA, Mastercard, GoPay, OVO"
                                         @keydown.enter.prevent="addPaymentMethod"
+                                        :disabled="!(isSuperAdmin || isAdmin)"
                                     />
                                     <Button
                                         type="button"
                                         @click="addPaymentMethod"
-                                        :disabled="!newPaymentMethod.trim()"
+                                        :disabled="!newPaymentMethod.trim() || !(isSuperAdmin || isAdmin)"
                                     >
                                         Tambah
                                     </Button>
@@ -510,7 +525,7 @@ const saveSettings = () => {
             </Tabs>
 
             <!-- Save Button Bottom -->
-            <div class="flex justify-end">
+            <div v-if="isSuperAdmin || isAdmin" class="flex justify-end">
                 <Button @click="saveSettings" :disabled="form.processing" size="lg">
                     <Save class="h-4 w-4 mr-2" />
                     {{ form.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}

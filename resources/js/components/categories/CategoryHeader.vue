@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Props {
     title: string;
@@ -12,6 +13,7 @@ interface Props {
 withDefaults(defineProps<Props>(), {
     showAddButton: true,
 });
+const { isSuperAdmin, isAdmin } = usePermissions()
 </script>
 
 <template>
@@ -21,7 +23,7 @@ withDefaults(defineProps<Props>(), {
             <p class="text-muted-foreground">{{ description }}</p>
         </div>
         <Link v-if="showAddButton" href="/admin/categories/create">
-            <Button>
+            <Button v-if="isSuperAdmin || isAdmin">
                 <Plus class="mr-2 h-4 w-4" />
                 Tambah Kategori
             </Button>

@@ -50,6 +50,7 @@ import {
     XCircle,
 } from 'lucide-vue-next';
 import { h, ref, watch } from 'vue';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Return {
     id: number;
@@ -96,7 +97,7 @@ interface Props {
         sort_order: 'asc' | 'desc';
     };
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -255,9 +256,10 @@ const columns: ColumnDef<Return>[] = [
         cell: ({ row }) => {
             const returnItem = row.original;
             if (returnItem.status !== 'pending') return null;
+            const actions = []
+            if (isSuperAdmin || isAdmin) {
 
-            return h('div', { class: 'flex justify-end gap-2' }, [
-                h(
+                actions.push(h(
                     Button,
                     {
                         variant: 'default',
@@ -274,8 +276,9 @@ const columns: ColumnDef<Return>[] = [
                         onClick: () => openRejectDialog(returnItem),
                     },
                     () => h(XCircle, { class: 'h-4 w-4' })
-                ),
-            ]);
+                ),)
+            }
+            return h('div', { class: 'flex justify-end gap-2' }, actions);
         },
     },
 ];

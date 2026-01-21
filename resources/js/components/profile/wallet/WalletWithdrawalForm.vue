@@ -40,6 +40,8 @@ const emit = defineEmits<{
 
 // Check if profile is complete (NIK and bank info)
 const isProfileComplete = computed(() => {
+    console.log(props.customer);
+
     return !!props.customer.nik && !!props.customer.bank_name && !!props.customer.bank_account;
 });
 

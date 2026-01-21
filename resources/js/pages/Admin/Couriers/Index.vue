@@ -21,7 +21,6 @@ interface Props {
     total_inactive: number
   }
 }
-
 const props = defineProps<Props>()
 
 const statistics = computed(() => [

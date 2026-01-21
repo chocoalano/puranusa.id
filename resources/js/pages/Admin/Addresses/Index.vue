@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { usePermissions } from '@/composables/usePermissions'
 import AppLayout from '@/layouts/AppLayout.vue'
 import StatisticsCards from '@/components/admin/StatisticsCards.vue'
 import TableFilters, { type FilterConfig } from '@/components/admin/TableFilters.vue'
@@ -26,6 +27,8 @@ import {
 } from '@tanstack/vue-table'
 import { h } from 'vue'
 import { Trash2, MapPin } from 'lucide-vue-next'
+
+const { isSuperAdmin, isAdmin } = usePermissions()
 
 interface Customer {
   id: number
@@ -193,7 +196,7 @@ const columns: ColumnDef<Address>[] = [
     cell: ({ row }) => {
       const address = row.original
       return h('div', { class: 'flex justify-end gap-2' }, [
-        h(
+        (isSuperAdmin.value || isAdmin.value) ? h(
           Button,
           {
             variant: 'ghost',
@@ -201,7 +204,7 @@ const columns: ColumnDef<Address>[] = [
             onClick: () => handleDelete(address.id),
           },
           () => h(Trash2, { class: 'h-4 w-4 text-destructive' }),
-        ),
+        ) : null,
       ])
     },
   },

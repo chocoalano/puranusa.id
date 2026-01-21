@@ -597,9 +597,9 @@ class OrderController extends Controller
 
             // Get status from Midtrans using transaction_id (not order_no)
             $statusResponse = \Midtrans\Transaction::status($transactionId);
-
             // Convert object to array if needed
-            $statusData = is_object($statusResponse) ? (array) $statusResponse : $statusResponse;
+            // $statusData = is_object($statusResponse) ? (array) $statusResponse : $statusResponse;
+            $statusData = (array) $statusResponse;
 
             $transactionStatus = $statusData['transaction_status'] ?? null;
             $fraudStatus = $statusData['fraud_status'] ?? 'accept';

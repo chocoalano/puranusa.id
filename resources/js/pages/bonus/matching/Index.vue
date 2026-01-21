@@ -27,6 +27,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { usePermissions } from '@/composables/usePermissions';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { valueUpdater } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
@@ -114,6 +115,7 @@ interface Props {
     };
 }
 
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -352,8 +354,9 @@ const columns: ColumnDef<Bonus>[] = [
         header: () => h('div', { class: 'text-right' }, 'Actions'),
         cell: ({ row }) => {
             const bonus = row.original;
-            return h('div', { class: 'flex justify-end gap-2' }, [
-                h(
+            const actions = []
+            if (isSuperAdmin || isAdmin) {
+                actions.push(h(
                     Button,
                     {
                         variant: 'outline',
@@ -383,8 +386,9 @@ const columns: ColumnDef<Bonus>[] = [
                           },
                           () => h(Trash2, { class: 'h-4 w-4 text-destructive' })
                       )
-                    : null,
-            ]);
+                    : null,)
+            }
+            return h('div', { class: 'flex justify-end gap-2' }, actions);
         },
     },
 ];
@@ -475,7 +479,7 @@ watch([search, statusFilter, levelFilter], () => {
                     <h1 class="text-3xl font-bold tracking-tight">Bonus Matching</h1>
                     <p class="text-muted-foreground">Kelola bonus matching multi-level</p>
                 </div>
-                <Button @click="router.visit(create.url())">
+                <Button @click="router.visit(create.url())" v-if="isSuperAdmin || isAdmin">
                     <Plus class="h-4 w-4" />
                     Tambah Bonus
                 </Button>

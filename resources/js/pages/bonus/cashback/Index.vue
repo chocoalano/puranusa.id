@@ -30,6 +30,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { usePermissions } from '@/composables/usePermissions';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { valueUpdater } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
@@ -105,7 +106,7 @@ interface Props {
         per_page: number;
     };
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -289,23 +290,26 @@ watch([search, statusFilter], () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <template v-if="bonus.status === 0">
+                <template v-if="bonus.status === 0 && (isSuperAdmin || isAdmin)">
                     <DropdownMenuSeparator />
                     <DropdownMenuItem @click="onRelease">
                         <Wallet class="mr-2 h-4 w-4" />
                         Release Bonus
                     </DropdownMenuItem>
                 </template>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem class="text-destructive" @click="onDelete">
-                    <Trash2 class="mr-2 h-4 w-4" />
-                    Hapus
-                </DropdownMenuItem>
+                <template v-if="isSuperAdmin || isAdmin">
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem class="text-destructive" @click="onDelete">
+                        <Trash2 class="mr-2 h-4 w-4" />
+                        Hapus
+                    </DropdownMenuItem>
+                </template>
             </DropdownMenuContent>
         </DropdownMenu>
     </DefineActionsTemplate>
 
     <AppLayout :breadcrumbs="breadcrumbItems">
+
         <Head title="Bonus Cashback" />
 
         <div class="flex h-full flex-1 flex-col gap-6 p-6">
@@ -315,7 +319,7 @@ watch([search, statusFilter], () => {
                     <h1 class="text-3xl font-bold tracking-tight">Bonus Cashback</h1>
                     <p class="text-muted-foreground">Kelola bonus cashback member</p>
                 </div>
-                <Button @click="router.visit('/bonus/cashback/create')">
+                <Button @click="router.visit('/bonus/cashback/create')" v-if="isSuperAdmin || isAdmin">
                     <Plus class="mr-2 h-4 w-4" />
                     Tambah Bonus
                 </Button>
@@ -339,7 +343,8 @@ watch([search, statusFilter], () => {
                         <Receipt class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold text-green-600">{{ formatCurrency(statistics.total_released) }}</div>
+                        <div class="text-2xl font-bold text-green-600">{{ formatCurrency(statistics.total_released) }}
+                        </div>
                         <p class="text-xs text-muted-foreground">{{ statistics.count_released }} transaksi</p>
                     </CardContent>
                 </Card>
@@ -363,7 +368,7 @@ watch([search, statusFilter], () => {
                         </SelectContent>
                     </Select>
                 </div>
-                <Button v-if="selectedPendingBonuses.length" variant="outline" @click="openMassReleaseDialog">
+                <Button v-if="selectedPendingBonuses.length && (isSuperAdmin || isAdmin)" variant="outline" @click="openMassReleaseDialog">
                     <Wallet class="mr-2 h-4 w-4" />
                     Release {{ selectedPendingBonuses.length }} Bonus
                 </Button>
@@ -375,13 +380,15 @@ watch([search, statusFilter], () => {
                     <TableHeader>
                         <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
                             <TableHead v-for="header in headerGroup.headers" :key="header.id">
-                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
+                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+                                    :props="header.getContext()" />
                             </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <template v-if="table.getRowModel().rows?.length">
-                            <TableRow v-for="row in table.getRowModel().rows" :key="row.id" :data-state="row.getIsSelected() && 'selected'">
+                            <TableRow v-for="row in table.getRowModel().rows" :key="row.id"
+                                :data-state="row.getIsSelected() && 'selected'">
                                 <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
                                     <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                                 </TableCell>
@@ -389,7 +396,8 @@ watch([search, statusFilter], () => {
                         </template>
                         <template v-else>
                             <TableRow>
-                                <TableCell :colspan="columns.length" class="h-24 text-center">Tidak ada data.</TableCell>
+                                <TableCell :colspan="columns.length" class="h-24 text-center">Tidak ada data.
+                                </TableCell>
                             </TableRow>
                         </template>
                     </TableBody>
@@ -401,12 +409,18 @@ watch([search, statusFilter], () => {
         </div>
 
         <!-- Delete Dialog -->
-        <ConfirmDialog :open="deleteDialog.open" title="Hapus Bonus" :description="`Apakah Anda yakin ingin menghapus bonus ini?`" confirm-text="Hapus" @update:open="deleteDialog.open = $event" @confirm="handleDelete" />
+        <ConfirmDialog :open="deleteDialog.open" title="Hapus Bonus"
+            :description="`Apakah Anda yakin ingin menghapus bonus ini?`" confirm-text="Hapus"
+            @update:open="deleteDialog.open = $event" @confirm="handleDelete" />
 
         <!-- Release Dialog -->
-        <ConfirmDialog :open="releaseDialog.open" title="Release Bonus" :description="`Apakah Anda yakin ingin merilis bonus sebesar ${releaseDialog.bonus ? formatCurrency(releaseDialog.bonus.amount) : ''} ke member?`" confirm-text="Release" @update:open="releaseDialog.open = $event" @confirm="handleRelease" />
+        <ConfirmDialog :open="releaseDialog.open" title="Release Bonus"
+            :description="`Apakah Anda yakin ingin merilis bonus sebesar ${releaseDialog.bonus ? formatCurrency(releaseDialog.bonus.amount) : ''} ke member?`"
+            confirm-text="Release" @update:open="releaseDialog.open = $event" @confirm="handleRelease" />
 
         <!-- Mass Release Dialog -->
-        <ConfirmDialog :open="massReleaseDialog.open" title="Mass Release Bonus" :description="`Apakah Anda yakin ingin merilis ${selectedPendingBonuses.length} bonus yang dipilih?`" confirm-text="Release All" @update:open="massReleaseDialog.open = $event" @confirm="handleMassRelease" />
+        <ConfirmDialog :open="massReleaseDialog.open" title="Mass Release Bonus"
+            :description="`Apakah Anda yakin ingin merilis ${selectedPendingBonuses.length} bonus yang dipilih?`"
+            confirm-text="Release All" @update:open="massReleaseDialog.open = $event" @confirm="handleMassRelease" />
     </AppLayout>
 </template>

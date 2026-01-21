@@ -20,6 +20,7 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
+import { useCsrf } from '@/composables/useCsrf';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
@@ -110,6 +111,7 @@ const subtotal = computed(() => {
 });
 
 const page = usePage();
+const { getCsrfToken, refreshCsrfToken } = useCsrf();
 const userWalletBalance = computed(() => {
     return (page.props.auth?.user as any)?.ewallet_saldo ?? 0;
 });
@@ -118,6 +120,14 @@ const userWalletBalance = computed(() => {
 const isActiveCustomer = computed(() => {
     return (page.props.auth?.user as any)?.status === 3;
 });
+
+const syncAxiosCsrfToken = () => {
+    const token = getCsrfToken();
+    if (token) {
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+    }
+    return token;
+};
 
 // Alert state
 const alertMessage = ref<{ type: 'success' | 'error'; message: string } | null>(
@@ -351,11 +361,8 @@ watch(
             if (error.response?.status === 419) {
                 toast.error('Sesi keamanan kedaluwarsa. Memperbarui...');
                 try {
-                    await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
-                    const newToken = document.head.querySelector('meta[name="csrf-token"]');
-                    if (newToken) {
-                        axios.defaults.headers.common['X-CSRF-TOKEN'] = (newToken as HTMLMetaElement).content;
-                    }
+                    await refreshCsrfToken();
+                    syncAxiosCsrfToken();
                     // Retry the request
                     const retryResponse = await axios.post('/api/shipping/calculate', {
                         destination_city_id: parseInt(newCityId),
@@ -601,11 +608,8 @@ const handleCheckout = async () => {
 
             // Refresh CSRF token
             try {
-                await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
-                const newToken = document.head.querySelector('meta[name="csrf-token"]');
-                if (newToken) {
-                    axios.defaults.headers.common['X-CSRF-TOKEN'] = (newToken as HTMLMetaElement).content;
-                }
+                await refreshCsrfToken();
+                syncAxiosCsrfToken();
                 // Wait a moment then prompt user to retry
                 setTimeout(() => {
                     alertMessage.value = {
@@ -657,19 +661,6 @@ const handleCheckout = async () => {
     }
 };
 
-// Helper function to refresh CSRF token proactively
-const refreshCsrfToken = async () => {
-    try {
-        await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
-        const token = document.head.querySelector('meta[name="csrf-token"]');
-        if (token) {
-            axios.defaults.headers.common['X-CSRF-TOKEN'] = (token as HTMLMetaElement).content;
-        }
-    } catch (error) {
-        console.error('Failed to refresh CSRF token:', error);
-    }
-};
-
 // Load provinces when sheet opens
 watch(
     () => props.open,
@@ -677,6 +668,7 @@ watch(
         if (isOpen) {
             // Refresh CSRF token when sheet opens to ensure fresh session
             await refreshCsrfToken();
+            syncAxiosCsrfToken();
 
             if (provinces.value.length === 0) {
                 loadProvinces();

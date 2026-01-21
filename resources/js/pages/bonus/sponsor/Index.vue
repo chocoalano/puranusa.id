@@ -31,6 +31,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { usePermissions } from '@/composables/usePermissions';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { valueUpdater } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
@@ -115,7 +116,7 @@ interface Props {
         per_page: number;
     };
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -442,7 +443,7 @@ watch([search, statusFilter], () => {
                     <Eye class="mr-2 h-4 w-4" />
                     Lihat Detail
                 </DropdownMenuItem>
-                <template v-if="bonus.status === 0">
+                <template v-if="bonus.status === 0 && (isSuperAdmin || isAdmin)">
                     <DropdownMenuSeparator />
                     <DropdownMenuItem @click="onRelease">
                         <Wallet class="mr-2 h-4 w-4" />
@@ -467,7 +468,7 @@ watch([search, statusFilter], () => {
                     <h1 class="text-3xl font-bold tracking-tight">Bonus Sponsor</h1>
                     <p class="text-muted-foreground">Kelola bonus sponsor dari downline</p>
                 </div>
-                <Button @click="router.visit(sponsorCreate.url())">
+                <Button v-if="isSuperAdmin || isAdmin" @click="router.visit(sponsorCreate.url())">
                     <Plus class="h-4 w-4" />
                     Tambah Bonus
                 </Button>
@@ -507,7 +508,7 @@ watch([search, statusFilter], () => {
 
             <!-- Bulk Actions -->
             <div
-                v-if="selectedPendingBonuses.length > 0"
+                v-if="selectedPendingBonuses.length > 0 && (isSuperAdmin || isAdmin)"
                 class="flex items-center justify-between rounded-lg border bg-muted/50 p-4"
             >
                 <p class="text-sm font-medium">

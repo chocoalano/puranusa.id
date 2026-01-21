@@ -33,6 +33,7 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('users', 'email')->ignore($this->route('user')),
             ],
             'password' => ['nullable', 'confirmed', Password::defaults()],
+            'role' => ['required', 'in:admin,superadmin'], // Example roles
         ];
     }
 
@@ -50,6 +51,8 @@ class UpdateUserRequest extends FormRequest
             'email.email' => 'Email must be a valid email address.',
             'email.unique' => 'This email is already registered.',
             'password.confirmed' => 'Password confirmation does not match.',
+            'role.required' => 'Role is required.',
+            'role.in' => 'Selected role is invalid.',
         ];
     }
 }

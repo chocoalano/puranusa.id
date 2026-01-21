@@ -30,6 +30,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { usePermissions } from '@/composables/usePermissions';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { valueUpdater } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
@@ -108,7 +109,7 @@ interface Props {
         per_page: number;
     };
 }
-
+const { isSuperAdmin, isAdmin } = usePermissions()
 const props = defineProps<Props>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -300,7 +301,7 @@ watch([search, statusFilter], () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <template v-if="bonus.status === 0">
+                <template v-if="bonus.status === 0 && (isSuperAdmin || isAdmin)">
                     <DropdownMenuSeparator />
                     <DropdownMenuItem @click="onRelease">
                         <Wallet class="mr-2 h-4 w-4" />
@@ -308,7 +309,7 @@ watch([search, statusFilter], () => {
                     </DropdownMenuItem>
                 </template>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem class="text-destructive" @click="onDelete">
+                <DropdownMenuItem class="text-destructive" @click="onDelete" v-if="isSuperAdmin || isAdmin">
                     <Trash2 class="mr-2 h-4 w-4" />
                     Hapus
                 </DropdownMenuItem>
@@ -329,7 +330,7 @@ watch([search, statusFilter], () => {
                     </h1>
                     <p class="text-muted-foreground">Kelola bonus retail dari penjualan member</p>
                 </div>
-                <Button @click="router.visit('/bonus/retail/create')">
+                <Button @click="router.visit('/bonus/retail/create')" v-if="isSuperAdmin || isAdmin">
                     <Plus class="mr-2 h-4 w-4" />
                     Tambah Bonus
                 </Button>

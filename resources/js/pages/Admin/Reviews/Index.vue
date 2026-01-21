@@ -27,6 +27,9 @@ interface Props {
         current_page: number;
         last_page: number;
         total: number;
+        from: number;
+        to: number;
+        per_page: number;
         links: Array<{
             url: string | null;
             label: string;
@@ -35,6 +38,7 @@ interface Props {
     };
     filters: { search?: string; rating?: number; approved?: boolean };
 }
+
 
 const props = defineProps<Props>();
 

@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/card';
 import StarRating from '@/components/reviews/StarRating.vue';
 import { Check, X, Trash2, ShieldCheck } from 'lucide-vue-next';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Review {
     id: number;
@@ -26,6 +27,7 @@ interface Props {
     reviews: Review[];
 }
 
+const { isSuperAdmin, isAdmin } = usePermissions()
 defineProps<Props>();
 
 const emit = defineEmits<{
@@ -80,7 +82,7 @@ const formatDate = (date: string) => {
 
                 <div class="flex gap-2 pt-2 border-t">
                     <Button
-                        v-if="!review.is_approved"
+                        v-if="!review.is_approved && (isSuperAdmin || isAdmin)"
                         size="sm"
                         @click="emit('approve', review.id)"
                     >
@@ -88,7 +90,7 @@ const formatDate = (date: string) => {
                         Setujui
                     </Button>
                     <Button
-                        v-if="review.is_approved"
+                        v-if="review.is_approved && (isSuperAdmin || isAdmin)"
                         size="sm"
                         variant="outline"
                         @click="emit('reject', review.id)"
