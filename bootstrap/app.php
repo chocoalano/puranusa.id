@@ -98,6 +98,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // ==========================================================
 
             // Products (resource + image actions)
+            'admin/login',
             'admin/products',
             'admin/products/*', // store/update/destroy + image delete/primary/reorder etc.
             'admin/upload-image',
