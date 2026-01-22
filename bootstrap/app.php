@@ -30,6 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // Client Actions (E-Commerce)
             // ==========================================================
             'checkout/process',
+            'client/login',
+            'client/logout',
             'api/client/orders/*/check-payment-status',
             'client/wallet/topup',
             'client/wallet/withdrawal',
