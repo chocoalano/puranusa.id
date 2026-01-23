@@ -20,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             // ==========================================================
+            // Internal / Dev Tools
+            // ==========================================================
+            '_boost/browser-logs',
+
+            // ==========================================================
             // Guest & Public Callback / Webhook
             // ==========================================================
             'checkout/midtrans/notification',
@@ -27,16 +32,48 @@ return Application::configure(basePath: dirname(__DIR__))
             'newsletter/subscribe',
 
             // ==========================================================
+            // Public API (Shipping)
+            // ==========================================================
+            'api/shipping/calculate',
+
+            // ==========================================================
+            // Client API Orders (non-GET)
+            // ==========================================================
+            'api/client/orders/*/check-payment-status',
+            'api/client/orders/*/complete',
+            'api/client/orders/*/pay',
+            'api/client/orders/*/pay-wallet',
+            'api/client/orders/*/reviews',
+
+            // ==========================================================
             // Client Actions (E-Commerce)
             // ==========================================================
             'checkout/process',
+
+            'client/register',
             'client/login',
             'client/logout',
-            'api/client/orders/*/check-payment-status',
+            'client/forgot-password',
+            'client/reset-password',
+
+            // Profile root actions (PATCH, DELETE)
+            'client/profile',
+
+            // Profile sub actions (password/place-member/search-member/etc.)
+            // NOTE: ini hanya cover 1 segmen setelah "client/profile/"
+            'client/profile/*',
+
+            // Profile addresses (butuh coverage multi-segmen)
+            'client/profile/addresses',
+            'client/profile/addresses/*',
+            'client/profile/addresses/*/set-default',
+
+            // Wallet actions (non-GET)
+            'client/wallet/check-status',
             'client/wallet/topup',
             'client/wallet/withdrawal',
-            'client/profile',
-            'client/profile/*', // includes password & place-member
+
+            // Wishlist & Cart actions
             'wishlist/add',
             'wishlist/remove',
             'cart/add',
@@ -96,26 +133,53 @@ return Application::configure(basePath: dirname(__DIR__))
             'bonus/lifetime-cash-reward/mass-release',
 
             // ==========================================================
+            // Admin Auth / Fortify (non-GET)
+            // ==========================================================
+            'admin/login',
+            'admin/logout',
+            'admin/register',
+            'admin/forgot-password',
+            'admin/reset-password',
+            'admin/email/verification-notification',
+            'admin/two-factor-challenge',
+
+            // Confirm password
+            'admin/user/confirm-password',
+
+            // Two factor enable/disable & confirmations
+            'admin/user/two-factor-authentication', // POST enable + DELETE disable
+            'admin/user/confirmed-two-factor-authentication',
+            'admin/user/two-factor-recovery-codes', // POST regenerate recovery codes
+
+            // ==========================================================
             // Admin Management & Operations (ALL non-GET endpoints)
             // ==========================================================
-
-            // Products (resource + image actions)
-            'admin/login',
-            'admin/products',
-            'admin/products/*', // store/update/destroy + image delete/primary/reorder etc.
-            'admin/upload-image',
-
-            // Categories (resource)
-            'admin/categories',
-            'admin/categories/*',
 
             // Articles (resource)
             'admin/articles',
             'admin/articles/*',
 
-            // Promotions (resource)  <-- (ini yang sering kelupaan)
+            // Categories (resource)
+            'admin/categories',
+            'admin/categories/*',
+
+            // Pages (resource)
+            'admin/pages',
+            'admin/pages/*',
+
+            // Products (resource + image actions)
+            'admin/products',
+            'admin/products/*', // update/destroy (1 segment)
+            'admin/products/*/image', // DELETE admin/products/{media}/image
+            'admin/products/*/image/primary', // POST admin/products/{product}/image/primary
+            'admin/products/*/images/reorder', // POST admin/products/{product}/images/reorder
+
+            // Promotions (resource)
             'admin/promotions',
             'admin/promotions/*',
+
+            // Upload image
+            'admin/upload-image',
 
             // Carts (destroy)
             'admin/carts/*',
@@ -134,7 +198,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin/orders/*/ship',
             'admin/orders/*/deliver',
 
-            // Shipments update
+            // Shipments update (PUT)
             'admin/shipments/*',
 
             // Topups actions
@@ -150,11 +214,24 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin/returns/*/reject',
             'admin/refunds/*/process',
 
+            // Stockists (store/update/destroy)
+            'admin/stockists',
+            'admin/stockists/*',
+
             // ==========================================================
-            // Admin Settings & Rewards
+            // Admin Settings & Rewards (non-GET)
             // ==========================================================
+
+            // General settings update (POST admin/settings)
+            'admin/settings',
+
+            // Addresses
             'admin/settings/addresses/*',
+
+            // Payment methods (PUT)
             'admin/settings/payment-methods/*',
+
+            // Newsletters (DELETE)
             'admin/settings/newsletters/*',
 
             // Promotions Rewards (periode)
@@ -166,10 +243,29 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin/settings/lifetime-cash-rewards/*',
 
             // ==========================================================
-            // Impersonation
+            // Backoffice / Manage (Admin)
             // ==========================================================
+
+            // Manage Customers (non-GET)
+            'manage/customers',
+            'manage/customers/*',
+            'manage/customers/placement/validate',
             'manage/customers/stop-impersonating',
             'manage/customers/*/login-as',
+            'manage/customers/*/deduct',
+            'manage/customers/*/lifetime-rewards/*/claim',
+            'manage/customers/*/release-bonuses',
+            'manage/customers/*/top-up',
+
+            // Manage Users (non-GET)
+            'manage/users',
+            'manage/users/*',
+
+            // ==========================================================
+            // User Settings (non-GET)
+            // ==========================================================
+            'settings/password',
+            'settings/profile',
         ]);
 
         $middleware->web(append: [
