@@ -572,6 +572,7 @@ class CheckoutController extends Controller
 
             $order = $this->createMultiItemOrder($customer->id, $orderNo, $validated, $shippingAddressId);
             $this->createMultiOrderItems($order->id, $validated['items']);
+            DB::statement('CALL sp_accumulation_stockist_retail_amount_orders(?)', [$order->id]);
             if ($validated['payment_method'] === 'wallet') {
                 $result = $this->processMultiItemWalletPayment($customer, $order, $validated, $orderNo);
 
@@ -614,7 +615,6 @@ class CheckoutController extends Controller
                     'message' => 'Silakan selesaikan pembayaran',
                 ]);
             }
-            DB::statement('CALL sp_accumulation_stockist_retail_amount_orders(?)', [$order->id]);
         } catch (\Exception $e) {
             try {
                 DB::rollBack();
