@@ -75,7 +75,9 @@ import {
     FileEdit,
     Gift,
     Infinity,
-    UserCheck2Icon,
+    ChartBar,
+    BookCheck,
+    BookDashed,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -227,17 +229,12 @@ const mainNavItems: NavItem[] = [
                 icon: ShoppingCart,
             },
             {
-                title: 'Promotions Rewards',
-                href: promotionsRewardIndex.url(),
-                icon: Gift,
+                title: 'Promotions Progress',
+                href: promotionsProgressIndex.url(),
+                icon: TrendingUp,
             },
             {
-                title: 'Lifetime Cash Rewards',
-                href: lifetimeRewardIndex.url(),
-                icon: UserCheck2Icon,
-            },
-            {
-                title: 'Lifetime Cash Reward',
+                title: ' bonus Lifetime Cash Reward',
                 href: bonusLifetimeCashRewardIndex(),
                 icon: Infinity,
             },
@@ -281,9 +278,31 @@ const mainNavItems: NavItem[] = [
                 icon: Grid3x3,
             },
             {
-                title: 'Jaringan Matrix',
+                title: 'Jaringan Sponsor',
                 href: networkMatrixIndex(),
                 icon: FolderTree,
+            },
+        ],
+    },
+    {
+        title: 'Laporan',
+        href: '#',
+        icon: BookOpen,
+        items: [
+            {
+                title: 'Analytic',
+                href: networkBinaryIndex(),
+                icon: ChartBar,
+            },
+            {
+                title: 'Tax Daily Report',
+                href: networkMatrixIndex(),
+                icon: BookCheck,
+            },
+            {
+                title: 'Tax Summary Report',
+                href: networkMatrixIndex(),
+                icon: BookDashed,
             },
         ],
     },
@@ -318,9 +337,9 @@ const mainNavItems: NavItem[] = [
                 icon: FileText,
             },
             {
-                title: 'Promotions Progress',
-                href: promotionsProgressIndex.url(),
-                icon: TrendingUp,
+                title: 'Promotions Rewards',
+                href: promotionsRewardIndex.url(),
+                icon: Gift,
             },
             {
                 title: 'Lifetime Cash Rewards',

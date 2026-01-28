@@ -27,6 +27,7 @@ use Illuminate\Support\Str;
  * @property string $email
  * @property string|null $phone
  * @property string $password
+ * @property string $level
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string|null $ewallet_id
@@ -105,6 +106,7 @@ class Customer extends Authenticatable
         'omzet_group_left',
         'omzet_group_right',
         'status',
+        'level',
         'is_stockist',
         'stockist_kabupaten_id',
         'stockist_kabupaten_name',

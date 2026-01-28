@@ -28,6 +28,7 @@ interface Member {
   id: number
   name: string
   email: string
+  username: string
 }
 
 interface Network {
@@ -117,7 +118,7 @@ const columns: ColumnDef<Network>[] = [
       const member = row.original.member
       return h('div', { class: 'space-y-1' }, [
         h('div', { class: 'font-medium' }, member.name),
-        h('div', { class: 'text-xs text-muted-foreground' }, member.email),
+        h('div', { class: 'text-xs text-muted-foreground' }, member.username),
       ])
     },
   },
@@ -128,7 +129,7 @@ const columns: ColumnDef<Network>[] = [
       const sponsor = row.original.sponsor
       return h('div', { class: 'space-y-1' }, [
         h('div', { class: 'font-medium' }, sponsor.name),
-        h('div', { class: 'text-xs text-muted-foreground' }, sponsor.email),
+        h('div', { class: 'text-xs text-muted-foreground' }, sponsor.username),
       ])
     },
   },

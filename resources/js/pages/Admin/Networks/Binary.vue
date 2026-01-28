@@ -29,6 +29,7 @@ interface Member {
   id: number
   name: string
   email: string
+  username: string
 }
 
 interface Network {
@@ -121,7 +122,7 @@ const columns: ColumnDef<Network>[] = [
       const member = row.original.member
       return h('div', { class: 'space-y-1' }, [
         h('div', { class: 'font-medium' }, member.name),
-        h('div', { class: 'text-xs text-muted-foreground' }, member.email),
+        h('div', { class: 'text-xs text-muted-foreground' }, member.username),
       ])
     },
   },
@@ -132,7 +133,7 @@ const columns: ColumnDef<Network>[] = [
       const upline = row.original.upline
       return h('div', { class: 'space-y-1' }, [
         h('div', { class: 'font-medium' }, upline.name),
-        h('div', { class: 'text-xs text-muted-foreground' }, upline.email),
+        h('div', { class: 'text-xs text-muted-foreground' }, upline.username),
       ])
     },
   },
@@ -152,11 +153,11 @@ const columns: ColumnDef<Network>[] = [
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: 'Status Jaringan Aktif/Nonaktif',
     cell: ({ row }) => {
-      const status = row.getValue('status') as number
-      return h(Badge, { variant: status === 1 ? 'default' : 'secondary' }, () =>
-        status === 1 ? 'AKTIF' : 'TIDAK AKTIF',
+      const status = row.getValue('status') as boolean
+      return h(Badge, { variant: status ? 'default' : 'secondary' }, () =>
+        status ? 'Jaringan Aktif' : 'Jaringan Nonaktif',
       )
     },
   },

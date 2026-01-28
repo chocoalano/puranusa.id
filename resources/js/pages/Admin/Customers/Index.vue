@@ -342,27 +342,20 @@ const columns: ColumnDef<Customer>[] = [
         accessorKey: 'level',
         header: 'Peringkat',
         cell: ({ row }) => {
-            const levelRaw = row.getValue('level')
-            const level = Number(levelRaw)
+            const levelRaw = row.getValue('level') as string | null | undefined
 
-            const levelLabels: Record<number, string> = {
-                1: 'Associate',
-                2: 'Senior Associate',
-                3: 'Executive',
-                4: 'Director',
-            }
-
-            const label = levelLabels[level] ?? String(levelRaw ?? '-')
+            const level = (levelRaw ?? '-').toString()
 
             const variant =
-                level === 4 ? 'default' :
-                    level === 3 ? 'secondary' :
-                        level === 2 ? 'outline' :
-                            'outline'
+                level === 'Director' ? 'default'
+                    : level === 'Executive' ? 'secondary'
+                        : level === 'Senior Associate' ? 'outline'
+                            : 'outline' // Associate / fallback
 
-            return h(Badge, { variant }, () => label)
+            return h(Badge, { variant }, () => level)
         },
     },
+
     {
         accessorKey: 'phone',
         header: 'Telepon',

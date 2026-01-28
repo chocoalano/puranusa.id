@@ -86,7 +86,6 @@ class CustomerController extends Controller
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
-
         $customers = $query->paginate($request->integer('per_page', 10))
             ->through(function ($customer) {
                 return [
@@ -107,6 +106,7 @@ class CustomerController extends Controller
                     'upline_username' => $customer->upline?->username,
                     'position' => $customer->networkPosition?->position,
                     'status' => $customer->status,
+                    'level' => $customer->level,
                     'package_id' => $customer->package_id,
                     'package_name' => $customer->get_package_name(),
                 ];
