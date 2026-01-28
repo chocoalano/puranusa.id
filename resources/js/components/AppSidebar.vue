@@ -22,6 +22,9 @@ import { indexReturns } from '@/actions/App/Http/Controllers/Admin/ReturnRefundC
 import { index as topupIndex } from '@/actions/App/Http/Controllers/Admin/TopupManagementController';
 import { index as withdrawalIndex } from '@/actions/App/Http/Controllers/Admin/WithdrawalManagementController';
 import { index as networkBinaryIndex } from '@/actions/App/Http/Controllers/Admin/NetworkBinaryController';
+import { analytic } from '@/actions/App/Http/Controllers/Admin/ReportController';
+import { tax_daily_report } from '@/actions/App/Http/Controllers/Admin/ReportController';
+import { tax_summary_report } from '@/actions/App/Http/Controllers/Admin/ReportController';
 import { index as networkMatrixIndex } from '@/actions/App/Http/Controllers/Admin/NetworkMatrixController';
 import { index as addressIndex } from '@/actions/App/Http/Controllers/Admin/AddressManagementController';
 import { index as paymentMethodIndex } from '@/actions/App/Http/Controllers/Admin/PaymentMethodManagementController';
@@ -291,17 +294,17 @@ const mainNavItems: NavItem[] = [
         items: [
             {
                 title: 'Analytic',
-                href: networkBinaryIndex(),
+                href: analytic(),
                 icon: ChartBar,
             },
             {
                 title: 'Tax Daily Report',
-                href: networkMatrixIndex(),
+                href: tax_daily_report(),
                 icon: BookCheck,
             },
             {
                 title: 'Tax Summary Report',
-                href: networkMatrixIndex(),
+                href: tax_summary_report(),
                 icon: BookDashed,
             },
         ],

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CustomerPromotionsRewardController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MemberPackageController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StockistController;
 use App\Http\Controllers\Admin\UserController;
@@ -81,4 +82,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Documentation Route
     Route::get('documentation', [DocumentationController::class, 'index'])->name('documentation');
+
+    Route::prefix('admin/report')
+        ->name('admin.report.')
+        ->group(function () {
+            Route::get('/analytic', [ReportController::class, 'analytic'])->name('analytic');
+            Route::post('/analytic', [ReportController::class, 'analytic_export'])->name('analytic.export');
+            Route::get('/tax-daily', [ReportController::class, 'tax_daily_report'])->name('tax_daily_report');
+            Route::get('/tax-daily/export', [ReportController::class, 'tax_daily_report_export'])->name('tax_daily_report.export');
+            Route::get('/tax-summary', [ReportController::class, 'tax_summary_report'])->name('tax_summary_report');
+            Route::get('/tax-summary/export', [ReportController::class, 'tax_summary_report_export'])->name('tax_summary_report.export');
+        });
+
 });
