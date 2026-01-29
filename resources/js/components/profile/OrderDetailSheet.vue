@@ -76,7 +76,7 @@ const emit = defineEmits<{
     'update:open': [value: boolean];
 }>();
 
-const { formatCurrency, formatDate, getStatusLabel } = useFormatter();
+const { formatCurrency, formatDate, getStatusLabel, normalizeStatus } = useFormatter();
 
 const page = usePage();
 const userWalletBalance = computed(() => {
@@ -122,7 +122,7 @@ onUnmounted(() => {
 });
 
 const statusBadgeClass = computed(() => {
-    const status = orderDetail.value?.status?.toLowerCase();
+    const status = normalizeStatus(orderDetail.value?.status || '');
     return {
         'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-100': status === 'pending',
         'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-100': status === 'processing' || status === 'paid',

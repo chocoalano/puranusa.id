@@ -294,12 +294,13 @@ const stopImpersonating = async () => {
         });
 
         const data = await response.json();
-
+        const redirectUrl = data.redirect || '/manage/customers';
         if (response.ok && data.success) {
             toast.success('Kembali ke akun admin');
             setTimeout(() => {
-                window.location.reload();
-            }, 500);
+                window.location.href = redirectUrl
+            }, 500)
+
         } else {
             console.error('Response:', data);
             toast.error(data.message || 'Gagal kembali ke akun admin');
@@ -625,50 +626,32 @@ const searchSuggestions = computed(() => {
 <template>
     <div class="min-h-screen">
         <!-- Impersonation Banner -->
-        <div
-            v-if="page.props.impersonating"
-            class="bg-primary dark:bg-zinc-100 text-white dark:text-black py-2 px-4 text-center text-sm font-medium sticky top-0 z-[60] flex items-center justify-center gap-4"
-        >
+        <div v-if="page.props.impersonating"
+            class="bg-primary dark:bg-zinc-100 text-white dark:text-black py-2 px-4 text-center text-sm font-medium sticky top-0 z-[60] flex items-center justify-center gap-4">
             <span>
-                <LockIcon class="inline-block mr-1 h-4 w-4" /> Anda login sebagai <strong>{{ (page.props.impersonating as any)?.customer_name }}</strong>
+                <LockIcon class="inline-block mr-1 h-4 w-4" /> Anda login sebagai <strong>{{
+                (page.props.impersonating as any)?.customer_name
+                }}</strong>
                 (Admin: {{ (page.props.impersonating as any)?.admin_name }})
             </span>
-            <Button
-                size="sm"
-                variant="secondary"
-                @click="stopImpersonating"
-                class="h-7 text-xs"
-            >
+            <Button size="sm" variant="secondary" @click="stopImpersonating" class="h-7 text-xs">
                 Kembali ke Admin
             </Button>
         </div>
 
         <!-- Samsung-style Main Header -->
-        <header
-            class="sticky z-50 border-b bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950"
-            :class="page.props.impersonating ? 'top-10' : 'top-0'"
-        >
+        <header class="sticky z-50 border-b bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950"
+            :class="page.props.impersonating ? 'top-10' : 'top-0'">
             <div class="container mx-auto px-4 lg:px-6">
                 <div class="flex h-16 items-center justify-between gap-4">
                     <!-- Logo -->
-                    <Link
-                        href="/"
-                        class="flex min-w-0 flex-shrink-0 items-center gap-2"
-                    >
-                        <img
-                            v-if="siteLogo"
-                            :src="siteLogo"
-                            :alt="siteName"
-                            class="h-8 w-8 shrink-0 object-contain md:h-10 md:w-10"
-                        />
-                        <Package
-                            v-else
-                            class="h-6 w-6 shrink-0 text-primary md:h-7 md:w-7"
-                        />
+                    <Link href="/" class="flex min-w-0 flex-shrink-0 items-center gap-2">
+                        <img v-if="siteLogo" :src="siteLogo" :alt="siteName"
+                            class="h-8 w-8 shrink-0 object-contain md:h-10 md:w-10" />
+                        <Package v-else class="h-6 w-6 shrink-0 text-primary md:h-7 md:w-7" />
 
                         <span
-                            class="truncate bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-base font-bold tracking-tight whitespace-nowrap text-transparent sm:text-lg md:text-xl md:whitespace-normal lg:text-2xl xl:text-3xl"
-                        >
+                            class="truncate bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-base font-bold tracking-tight whitespace-nowrap text-transparent sm:text-lg md:text-xl md:whitespace-normal lg:text-2xl xl:text-3xl">
                             {{ siteName }}
                         </span>
                     </Link>
@@ -676,20 +659,11 @@ const searchSuggestions = computed(() => {
                     <!-- Center: Search Bar (Desktop) -->
                     <div class="mx-4 hidden max-w-2xl flex-1 lg:flex">
                         <div class="relative w-full">
-                            <Search
-                                class="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                            />
-                            <Input
-                                v-model="searchQuery"
-                                placeholder="Cari produk, kategori, atau brand..."
-                                class="h-11 w-full pr-24 pl-11"
-                                @keydown.enter="handleSearch"
-                            />
-                            <Button
-                                @click="handleSearch"
-                                size="sm"
-                                class="absolute top-1/2 right-1 h-9 -translate-y-1/2"
-                            >
+                            <Search class="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input v-model="searchQuery" placeholder="Cari produk, kategori, atau brand..."
+                                class="h-11 w-full pr-24 pl-11" @keydown.enter="handleSearch" />
+                            <Button @click="handleSearch" size="sm"
+                                class="absolute top-1/2 right-1 h-9 -translate-y-1/2">
                                 Cari
                             </Button>
                         </div>
@@ -698,40 +672,23 @@ const searchSuggestions = computed(() => {
                     <!-- Right Actions -->
                     <div class="flex flex-shrink-0 items-center gap-1">
                         <!-- Search Button (Mobile) -->
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            @click="searchOpen = !searchOpen"
-                            class="rounded-full lg:hidden"
-                            aria-label="Search"
-                        >
+                        <Button variant="ghost" size="icon" @click="searchOpen = !searchOpen"
+                            class="rounded-full lg:hidden" aria-label="Search">
                             <Search class="h-5 w-5" />
                         </Button>
                         <!-- Theme Toggle -->
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            @click="toggleTheme"
-                            class="hidden items-center justify-center rounded-full sm:flex"
-                            aria-label="Toggle theme"
-                        >
+                        <Button variant="ghost" size="icon" @click="toggleTheme"
+                            class="hidden items-center justify-center rounded-full sm:flex" aria-label="Toggle theme">
                             <Sun v-if="isDark" class="h-5 w-5" />
                             <Moon v-else class="h-5 w-5" />
                         </Button>
                         <!-- Wishlist Dropdown -->
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    class="relative rounded-full"
-                                    aria-label="Wishlist"
-                                >
+                                <Button variant="ghost" size="icon" class="relative rounded-full" aria-label="Wishlist">
                                     <Heart class="h-5 w-5" />
-                                    <Badge
-                                        v-if="wishlistItemCount > 0"
-                                        class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
-                                    >
+                                    <Badge v-if="wishlistItemCount > 0"
+                                        class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]">
                                         {{ wishlistItemCount }}
                                     </Badge>
                                 </Button>
@@ -743,38 +700,20 @@ const searchSuggestions = computed(() => {
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <div class="max-h-96 overflow-y-auto">
-                                    <div
-                                        v-if="wishlistItems.length > 0"
-                                        class="space-y-1"
-                                    >
-                                        <div
-                                            v-for="item in wishlistItems"
-                                            :key="item.id"
-                                            class="group rounded-md p-3 transition-colors hover:bg-accent"
-                                        >
-                                            <div
-                                                class="flex items-center gap-3"
-                                            >
-                                                <Link
-                                                    :href="`/produk/${item.slug}`"
-                                                    class="flex-shrink-0"
-                                                >
-                                                    <img
-                                                        :src="item.image"
-                                                        :alt="item.name"
-                                                        class="h-16 w-16 rounded object-cover"
-                                                    />
+                                    <div v-if="wishlistItems.length > 0" class="space-y-1">
+                                        <div v-for="item in wishlistItems" :key="item.id"
+                                            class="group rounded-md p-3 transition-colors hover:bg-accent">
+                                            <div class="flex items-center gap-3">
+                                                <Link :href="`/produk/${item.slug}`" class="flex-shrink-0">
+                                                    <img :src="item.image" :alt="item.name"
+                                                        class="h-16 w-16 rounded object-cover" />
                                                 </Link>
                                                 <div class="min-w-0 flex-1">
-                                                    <Link
-                                                        :href="`/produk/${item.slug}`"
-                                                        class="line-clamp-2 block text-sm font-medium hover:underline"
-                                                    >
+                                                    <Link :href="`/produk/${item.slug}`"
+                                                        class="line-clamp-2 block text-sm font-medium hover:underline">
                                                         {{ item.name }}
                                                     </Link>
-                                                    <p
-                                                        class="mt-1 text-sm font-bold text-primary"
-                                                    >
+                                                    <p class="mt-1 text-sm font-bold text-primary">
                                                         {{
                                                             formatCurrency(
                                                                 item.price,
@@ -782,60 +721,36 @@ const searchSuggestions = computed(() => {
                                                         }}
                                                     </p>
                                                 </div>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
+                                                <Button variant="ghost" size="icon"
                                                     class="flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
                                                     @click.stop="
                                                         removeFromWishlist(
                                                             item.id,
                                                             item.product_id,
                                                         )
-                                                    "
-                                                    aria-label="Remove from wishlist"
-                                                >
-                                                    <Trash2
-                                                        class="h-4 w-4 text-destructive"
-                                                    />
+                                                        " aria-label="Remove from wishlist">
+                                                    <Trash2 class="h-4 w-4 text-destructive" />
                                                 </Button>
-                                                <Button
-                                                    size="sm"
-                                                    @click.stop="
-                                                        addToCartFromWishlist(
-                                                            item,
-                                                        )
-                                                    "
-                                                >
+                                                <Button size="sm" @click.stop="
+                                                    addToCartFromWishlist(
+                                                        item,
+                                                    )
+                                                    ">
                                                     +
-                                                    <ShoppingCart
-                                                        class="h-3.5 w-3.5"
-                                                    />
+                                                    <ShoppingCart class="h-3.5 w-3.5" />
                                                 </Button>
                                             </div>
                                         </div>
                                     </div>
-                                    <div
-                                        v-else
-                                        class="p-8 text-center text-sm text-muted-foreground"
-                                    >
-                                        <Heart
-                                            class="mx-auto mb-2 h-12 w-12 opacity-20"
-                                        />
+                                    <div v-else class="p-8 text-center text-sm text-muted-foreground">
+                                        <Heart class="mx-auto mb-2 h-12 w-12 opacity-20" />
                                         <p>Wishlist masih kosong</p>
                                     </div>
                                 </div>
-                                <DropdownMenuSeparator
-                                    v-if="wishlistItems.length > 0"
-                                />
-                                <div
-                                    v-if="wishlistItems.length > 0"
-                                    class="p-2"
-                                >
+                                <DropdownMenuSeparator v-if="wishlistItems.length > 0" />
+                                <div v-if="wishlistItems.length > 0" class="p-2">
                                     <Link href="/wishlist">
-                                        <Button
-                                            class="w-full"
-                                            variant="outline"
-                                        >
+                                        <Button class="w-full" variant="outline">
                                             Lihat Semua Wishlist
                                         </Button>
                                     </Link>
@@ -846,92 +761,55 @@ const searchSuggestions = computed(() => {
                         <!-- Cart Dropdown -->
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    class="relative rounded-full"
-                                    aria-label="Cart"
-                                >
+                                <Button variant="ghost" size="icon" class="relative rounded-full" aria-label="Cart">
                                     <ShoppingCart class="h-5 w-5" />
-                                    <Badge
-                                        v-if="cartItemCount > 0"
-                                        class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
-                                    >
+                                    <Badge v-if="cartItemCount > 0"
+                                        class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]">
                                         {{ cartItemCount }}
                                     </Badge>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" class="w-96">
-                                <DropdownMenuLabel
-                                    class="flex items-center justify-between"
-                                >
+                                <DropdownMenuLabel class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
-                                        <Checkbox
-                                            v-if="cartItems.length > 0"
-                                            :model-value="isAllSelected"
+                                        <Checkbox v-if="cartItems.length > 0" :model-value="isAllSelected"
                                             @update:model-value="
                                                 (checked) =>
                                                     toggleSelectAll(
                                                         checked === true,
                                                     )
-                                            "
-                                        />
+                                            " />
                                         <span>Keranjang Belanja</span>
                                     </div>
-                                    <Badge variant="secondary"
-                                        >{{ cartItemCount }} item</Badge
-                                    >
+                                    <Badge variant="secondary">{{ cartItemCount }} item</Badge>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <div class="max-h-96 overflow-y-auto">
-                                    <div
-                                        v-if="cartItems.length > 0"
-                                        class="space-y-1"
-                                    >
-                                        <div
-                                            v-for="item in cartItems"
-                                            :key="item.id"
-                                            class="group rounded-md p-3 transition-colors hover:bg-accent"
-                                        >
-                                            <div
-                                                class="flex items-center gap-3"
-                                            >
-                                                <Checkbox
-                                                    :model-value="
-                                                        selectedCartItems.includes(
-                                                            item.id,
-                                                        )
-                                                    "
-                                                    @update:model-value="
+                                    <div v-if="cartItems.length > 0" class="space-y-1">
+                                        <div v-for="item in cartItems" :key="item.id"
+                                            class="group rounded-md p-3 transition-colors hover:bg-accent">
+                                            <div class="flex items-center gap-3">
+                                                <Checkbox :model-value="selectedCartItems.includes(
+                                                    item.id,
+                                                )
+                                                    " @update:model-value="
                                                         (checked) =>
                                                             toggleCartItemSelection(
                                                                 item.id,
                                                                 checked ===
-                                                                    true,
+                                                                true,
                                                             )
-                                                    "
-                                                    @click.stop
-                                                />
-                                                <Link
-                                                    :href="`/produk/${item.slug}`"
-                                                    class="flex-shrink-0"
-                                                >
-                                                    <img
-                                                        :src="item.image"
-                                                        :alt="item.name"
-                                                        class="h-16 w-16 rounded object-cover"
-                                                    />
+                                                    " @click.stop />
+                                                <Link :href="`/produk/${item.slug}`" class="flex-shrink-0">
+                                                    <img :src="item.image" :alt="item.name"
+                                                        class="h-16 w-16 rounded object-cover" />
                                                 </Link>
                                                 <div class="min-w-0 flex-1">
-                                                    <Link
-                                                        :href="`/produk/${item.slug}`"
-                                                        class="line-clamp-2 block text-sm font-medium hover:underline"
-                                                    >
+                                                    <Link :href="`/produk/${item.slug}`"
+                                                        class="line-clamp-2 block text-sm font-medium hover:underline">
                                                         {{ item.name }}
                                                     </Link>
-                                                    <p
-                                                        class="mt-1 text-sm font-bold text-primary"
-                                                    >
+                                                    <p class="mt-1 text-sm font-bold text-primary">
                                                         {{
                                                             formatCurrency(
                                                                 item.price,
@@ -939,114 +817,66 @@ const searchSuggestions = computed(() => {
                                                         }}
                                                     </p>
                                                 </div>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
+                                                <Button variant="ghost" size="icon"
                                                     class="flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
                                                     @click.stop="
                                                         removeFromCart(item.id)
-                                                    "
-                                                    aria-label="Remove from cart"
-                                                >
-                                                    <Trash2
-                                                        class="h-4 w-4 text-destructive"
-                                                    />
+                                                        " aria-label="Remove from cart">
+                                                    <Trash2 class="h-4 w-4 text-destructive" />
                                                 </Button>
                                             </div>
-                                            <div
-                                                class="mt-2 flex items-center justify-between"
-                                            >
-                                                <span
-                                                    class="text-xs text-muted-foreground"
-                                                    >Jumlah:</span
-                                                >
-                                                <div
-                                                    class="flex items-center gap-2"
-                                                >
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        class="h-7 w-7"
-                                                        @click.stop="
-                                                            updateCartQuantity(
-                                                                item.id,
-                                                                item.quantity -
-                                                                    1,
-                                                            )
-                                                        "
-                                                        :disabled="
-                                                            item.quantity <= 1
-                                                        "
-                                                    >
-                                                        <Minus
-                                                            class="h-3 w-3"
-                                                        />
+                                            <div class="mt-2 flex items-center justify-between">
+                                                <span class="text-xs text-muted-foreground">Jumlah:</span>
+                                                <div class="flex items-center gap-2">
+                                                    <Button variant="outline" size="icon" class="h-7 w-7" @click.stop="
+                                                        updateCartQuantity(
+                                                            item.id,
+                                                            item.quantity -
+                                                            1,
+                                                        )
+                                                        " :disabled="item.quantity <= 1
+                                                            ">
+                                                        <Minus class="h-3 w-3" />
                                                     </Button>
-                                                    <span
-                                                        class="w-8 text-center text-sm font-medium"
-                                                        >{{
-                                                            item.quantity
-                                                        }}</span
-                                                    >
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        class="h-7 w-7"
-                                                        @click.stop="
-                                                            updateCartQuantity(
-                                                                item.id,
-                                                                item.quantity +
-                                                                    1,
-                                                            )
-                                                        "
-                                                    >
+                                                    <span class="w-8 text-center text-sm font-medium">{{
+                                                        item.quantity
+                                                    }}</span>
+                                                    <Button variant="outline" size="icon" class="h-7 w-7" @click.stop="
+                                                        updateCartQuantity(
+                                                            item.id,
+                                                            item.quantity +
+                                                            1,
+                                                        )
+                                                        ">
                                                         <Plus class="h-3 w-3" />
                                                     </Button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div
-                                        v-else
-                                        class="p-8 text-center text-sm text-muted-foreground"
-                                    >
-                                        <ShoppingCart
-                                            class="mx-auto mb-2 h-12 w-12 opacity-20"
-                                        />
+                                    <div v-else class="p-8 text-center text-sm text-muted-foreground">
+                                        <ShoppingCart class="mx-auto mb-2 h-12 w-12 opacity-20" />
                                         <p>Keranjang masih kosong</p>
                                     </div>
                                 </div>
-                                <DropdownMenuSeparator
-                                    v-if="cartItems.length > 0"
-                                />
-                                <div
-                                    v-if="cartItems.length > 0"
-                                    class="space-y-3 p-3"
-                                >
+                                <DropdownMenuSeparator v-if="cartItems.length > 0" />
+                                <div v-if="cartItems.length > 0" class="space-y-3 p-3">
                                     <div class="space-y-2">
-                                        <div
-                                            class="flex items-center justify-between text-sm"
-                                        >
-                                            <span class="text-muted-foreground"
-                                                >Total ({{
-                                                    cartItemCount
-                                                }}
-                                                item):</span
-                                            >
+                                        <div class="flex items-center justify-between text-sm">
+                                            <span class="text-muted-foreground">Total ({{
+                                                cartItemCount
+                                            }}
+                                                item):</span>
                                             <span class="text-sm">{{
                                                 formatCurrency(cartTotal)
-                                            }}</span>
+                                                }}</span>
                                         </div>
-                                        <div
-                                            v-if="selectedItemsCount > 0"
-                                            class="flex items-center justify-between text-sm"
-                                        >
-                                            <span class="font-medium"
-                                                >Dipilih ({{
-                                                    selectedItemsCount
-                                                }}
-                                                item):</span
-                                            >
+                                        <div v-if="selectedItemsCount > 0"
+                                            class="flex items-center justify-between text-sm">
+                                            <span class="font-medium">Dipilih ({{
+                                                selectedItemsCount
+                                            }}
+                                                item):</span>
                                             <span class="text-lg font-bold">{{
                                                 formatCurrency(
                                                     selectedItemsTotal,
@@ -1055,12 +885,8 @@ const searchSuggestions = computed(() => {
                                         </div>
                                     </div>
                                     <div>
-                                        <Button
-                                            class="w-full"
-                                            size="sm"
-                                            :disabled="selectedItemsCount === 0"
-                                            @click.stop="handleCheckout"
-                                        >
+                                        <Button class="w-full" size="sm" :disabled="selectedItemsCount === 0"
+                                            @click.stop="handleCheckout">
                                             Checkout
                                         </Button>
                                     </div>
@@ -1071,12 +897,7 @@ const searchSuggestions = computed(() => {
                         <!-- User Account Dropdown -->
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    class="rounded-full"
-                                    aria-label="Account"
-                                >
+                                <Button variant="ghost" size="icon" class="rounded-full" aria-label="Account">
                                     <User class="h-5 w-5" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -1089,16 +910,12 @@ const searchSuggestions = computed(() => {
                                                 'Customer'
                                             }}
                                         </p>
-                                        <p
-                                            class="text-xs text-muted-foreground"
-                                        >
+                                        <p class="text-xs text-muted-foreground">
                                             {{ page.props.auth?.user?.username }}
                                         </p>
                                     </div>
                                 </DropdownMenuLabel>
-                                <DropdownMenuLabel v-else
-                                    >Akun Saya</DropdownMenuLabel
-                                >
+                                <DropdownMenuLabel v-else>Akun Saya</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <template v-if="isAuthenticated">
                                     <Link href="/client/profile">
@@ -1132,11 +949,7 @@ const searchSuggestions = computed(() => {
                                         </DropdownMenuItem>
                                     </Link>
                                     <DropdownMenuSeparator />
-                                    <button
-                                        type="button"
-                                        class="w-full"
-                                        @click="handleLogout"
-                                    >
+                                    <button type="button" class="w-full" @click="handleLogout">
                                         <DropdownMenuItem>
                                             <LogOut class="mr-2 h-4 w-4" />
                                             <span>Keluar</span>
@@ -1163,66 +976,36 @@ const searchSuggestions = computed(() => {
                         <!-- Mobile Menu Button -->
                         <Sheet v-model:open="mobileMenuOpen">
                             <SheetTrigger as-child>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    class="rounded-full lg:hidden"
-                                    aria-label="Menu"
-                                >
+                                <Button variant="ghost" size="icon" class="rounded-full lg:hidden" aria-label="Menu">
                                     <Menu class="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent
-                                side="left"
-                                class="w-full p-0 sm:w-96"
-                            >
+                            <SheetContent side="left" class="w-full p-0 sm:w-96">
                                 <SheetHeader class="border-b px-6 py-4">
-                                    <SheetTitle
-                                        class="flex items-center gap-2 text-xl font-bold"
-                                    >
-                                        <img
-                                            v-if="siteLogo"
-                                            :src="siteLogo"
-                                            :alt="siteName"
-                                            class="h-6 w-6 object-contain"
-                                        />
+                                    <SheetTitle class="flex items-center gap-2 text-xl font-bold">
+                                        <img v-if="siteLogo" :src="siteLogo" :alt="siteName"
+                                            class="h-6 w-6 object-contain" />
                                         <Package v-else class="h-6 w-6" />
                                         {{ siteName }}
                                     </SheetTitle>
                                 </SheetHeader>
                                 <div class="overflow-y-auto p-6">
                                     <nav class="space-y-6">
-                                        <div
-                                            v-for="category in productCategories"
-                                            :key="category.name"
-                                        >
-                                            <div
-                                                class="mb-3 flex items-center gap-2"
-                                            >
-                                                <component
-                                                    :is="category.icon"
-                                                    class="h-5 w-5"
-                                                />
+                                        <div v-for="category in productCategories" :key="category.name">
+                                            <div class="mb-3 flex items-center gap-2">
+                                                <component :is="category.icon" class="h-5 w-5" />
                                                 <h3 class="text-base font-bold">
                                                     {{ category.name }}
                                                 </h3>
                                             </div>
                                             <Separator class="my-3" />
-                                            <ul
-                                                v-if="category.items.length > 0"
-                                                class="ml-7 space-y-2"
-                                            >
-                                                <li
-                                                    v-for="item in category.items"
-                                                    :key="item.name"
-                                                >
-                                                    <Link
-                                                        :href="item.href"
+                                            <ul v-if="category.items.length > 0" class="ml-7 space-y-2">
+                                                <li v-for="item in category.items" :key="item.name">
+                                                    <Link :href="item.href"
                                                         class="block py-1 text-sm text-gray-600 transition-colors hover:text-black dark:text-gray-400 dark:hover:text-white"
                                                         @click="
                                                             mobileMenuOpen = false
-                                                        "
-                                                    >
+                                                            ">
                                                         {{ item.name }}
                                                     </Link>
                                                 </li>
@@ -1243,67 +1026,35 @@ const searchSuggestions = computed(() => {
                         <!-- Mega Menu Kategori -->
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <Button
-                                    variant="ghost"
-                                    class="h-auto px-3 py-2 text-sm font-medium"
-                                >
+                                <Button variant="ghost" class="h-auto px-3 py-2 text-sm font-medium">
                                     Semua Kategori
-                                    <svg
-                                        class="ml-1 h-4 w-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M19 9l-7 7-7-7"
-                                        />
+                                    <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                align="start"
-                                class="w-[800px] p-6"
-                            >
+                            <DropdownMenuContent align="start" class="w-[800px] p-6">
                                 <div class="grid grid-cols-4 gap-6">
-                                    <div
-                                        v-for="category in productCategories"
-                                        :key="category.name"
-                                        class="space-y-3"
-                                    >
-                                        <Link
-                                            :href="`/toko?category=${category.slug}`"
-                                            class="group"
-                                        >
+                                    <div v-for="category in productCategories" :key="category.name" class="space-y-3">
+                                        <Link :href="`/toko?category=${category.slug}`" class="group">
                                             <div
-                                                class="mb-3 flex items-center gap-2 text-sm font-semibold transition-colors hover:text-primary"
-                                            >
-                                                <component
-                                                    :is="category.icon"
-                                                    class="h-4 w-4 text-primary"
-                                                />
+                                                class="mb-3 flex items-center gap-2 text-sm font-semibold transition-colors hover:text-primary">
+                                                <component :is="category.icon" class="h-4 w-4 text-primary" />
                                                 <span>{{ category.name }}</span>
                                             </div>
                                         </Link>
                                         <div class="space-y-1.5">
-                                            <Link
-                                                v-for="item in category.items.slice(
-                                                    0,
-                                                    5,
-                                                )"
-                                                :key="item.name"
-                                                :href="item.href"
-                                                class="block py-1 text-xs text-muted-foreground transition-colors hover:text-primary hover:underline"
-                                            >
+                                            <Link v-for="item in category.items.slice(
+                                                0,
+                                                5,
+                                            )" :key="item.name" :href="item.href"
+                                                class="block py-1 text-xs text-muted-foreground transition-colors hover:text-primary hover:underline">
                                                 {{ item.name }}
                                             </Link>
-                                            <Link
-                                                v-if="category.items.length > 5"
+                                            <Link v-if="category.items.length > 5"
                                                 :href="`/toko?category=${category.slug}`"
-                                                class="block py-1 text-xs font-medium text-primary hover:underline"
-                                            >
+                                                class="block py-1 text-xs font-medium text-primary hover:underline">
                                                 Lihat Semua →
                                             </Link>
                                         </div>
@@ -1313,12 +1064,9 @@ const searchSuggestions = computed(() => {
                         </DropdownMenu>
 
                         <!-- Individual Categories -->
-                        <Link
-                            v-for="category in productCategories.slice(0, 5)"
-                            :key="category.name"
+                        <Link v-for="category in productCategories.slice(0, 5)" :key="category.name"
                             :href="`/toko?category=${category.slug}`"
-                            class="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-primary"
-                        >
+                            class="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-primary">
                             <component :is="category.icon" class="h-4 w-4" />
                             {{ category.name }}
                         </Link>
@@ -1327,22 +1075,11 @@ const searchSuggestions = computed(() => {
                         <div class="flex-1"></div>
 
                         <!-- Artikel Badge -->
-                        <Link
-                            href="/artikel"
-                            class="flex items-center gap-2 text-sm font-semibold text-primary hover:underline dark:text-primary"
-                        >
-                            <svg
-                                class="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
-                                />
+                        <Link href="/artikel"
+                            class="flex items-center gap-2 text-sm font-semibold text-primary hover:underline dark:text-primary">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                             </svg>
                             Artikel & Blog
                         </Link>
@@ -1351,38 +1088,21 @@ const searchSuggestions = computed(() => {
             </div>
 
             <!-- Search Overlay - Samsung Style -->
-            <transition
-                enter-active-class="transition-all duration-200 ease-out"
-                enter-from-class="opacity-0 -translate-y-2"
-                enter-to-class="opacity-100 translate-y-0"
-                leave-active-class="transition-all duration-150 ease-in"
-                leave-from-class="opacity-100 translate-y-0"
-                leave-to-class="opacity-0 -translate-y-2"
-            >
-                <div
-                    v-if="searchOpen"
-                    class="border-t bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950"
-                >
+            <transition enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition-all duration-150 ease-in" leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 -translate-y-2">
+                <div v-if="searchOpen" class="border-t bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950">
                     <div class="container mx-auto px-6 py-6">
                         <div class="mx-auto w-full">
                             <div class="relative">
                                 <Search
-                                    class="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-muted-foreground"
-                                />
-                                <Input
-                                    v-model="searchQuery"
-                                    placeholder="Cari produk, model, atau kata kunci..."
-                                    class="h-12 w-full pr-12 pl-12 text-base"
-                                    @keydown.escape="searchOpen = false"
-                                    @keydown.enter="handleSearch"
-                                    autofocus
-                                />
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    @click="searchOpen = false"
-                                    class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full"
-                                >
+                                    class="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                                <Input v-model="searchQuery" placeholder="Cari produk, model, atau kata kunci..."
+                                    class="h-12 w-full pr-12 pl-12 text-base" @keydown.escape="searchOpen = false"
+                                    @keydown.enter="handleSearch" autofocus />
+                                <Button variant="ghost" size="icon" @click="searchOpen = false"
+                                    class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full">
                                     ✕
                                 </Button>
                             </div>
@@ -1396,15 +1116,9 @@ const searchSuggestions = computed(() => {
                                     }}
                                 </p>
                                 <div class="flex flex-wrap gap-2">
-                                    <Link
-                                        v-for="suggestion in searchSuggestions"
-                                        :key="suggestion.query"
-                                        :href="`/toko?search=${encodeURIComponent(suggestion.query)}`"
-                                    >
-                                        <Badge
-                                            variant="secondary"
-                                            class="cursor-pointer hover:bg-accent"
-                                        >
+                                    <Link v-for="suggestion in searchSuggestions" :key="suggestion.query"
+                                        :href="`/toko?search=${encodeURIComponent(suggestion.query)}`">
+                                        <Badge variant="secondary" class="cursor-pointer hover:bg-accent">
                                             {{ suggestion.label }}
                                         </Badge>
                                     </Link>
@@ -1426,99 +1140,47 @@ const searchSuggestions = computed(() => {
                 <!-- Newsletter Section -->
                 <div class="border-b py-12">
                     <div class="mx-auto max-w-3xl text-center">
-                        <div
-                            class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
-                        >
-                            <svg
-                                class="h-8 w-8 text-primary"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                />
+                        <div class="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                            <svg class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                         </div>
                         <h3 class="mb-3 text-2xl font-bold md:text-3xl">
                             Dapatkan Penawaran Eksklusif
                         </h3>
-                        <p
-                            class="mb-6 text-sm text-muted-foreground md:text-base"
-                        >
+                        <p class="mb-6 text-sm text-muted-foreground md:text-base">
                             Berlangganan newsletter kami dan dapatkan diskon
                             hingga 20% untuk pembelian pertama Anda
                         </p>
 
-                        <div
-                            class="mx-auto flex max-w-md flex-col gap-3 sm:flex-row"
-                        >
+                        <div class="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
                             <div class="relative flex-1">
-                                <Input
-                                    v-model="newsletterEmail"
-                                    type="email"
-                                    placeholder="Masukkan email Anda"
-                                    class="h-12 pr-4"
-                                    :disabled="newsletterSubmitting"
-                                    @keydown.enter="subscribeNewsletter"
-                                />
+                                <Input v-model="newsletterEmail" type="email" placeholder="Masukkan email Anda"
+                                    class="h-12 pr-4" :disabled="newsletterSubmitting"
+                                    @keydown.enter="subscribeNewsletter" />
                             </div>
-                            <Button
-                                @click="subscribeNewsletter"
-                                class="h-12 px-8 font-semibold"
-                                :disabled="
-                                    newsletterSubmitting || !newsletterEmail
-                                "
-                            >
-                                <span
-                                    v-if="
-                                        !newsletterSubmitting &&
-                                        !newsletterSuccess
-                                    "
-                                    >Berlangganan</span
-                                >
-                                <span
-                                    v-else-if="newsletterSubmitting"
-                                    class="flex items-center gap-2"
-                                >
-                                    <svg
-                                        class="h-4 w-4 animate-spin"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <circle
-                                            class="opacity-25"
-                                            cx="12"
-                                            cy="12"
-                                            r="10"
-                                            stroke="currentColor"
-                                            stroke-width="4"
-                                        ></circle>
-                                        <path
-                                            class="opacity-75"
-                                            fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                        ></path>
+                            <Button @click="subscribeNewsletter" class="h-12 px-8 font-semibold" :disabled="newsletterSubmitting || !newsletterEmail
+                                ">
+                                <span v-if="
+                                    !newsletterSubmitting &&
+                                    !newsletterSuccess
+                                ">Berlangganan</span>
+                                <span v-else-if="newsletterSubmitting" class="flex items-center gap-2">
+                                    <svg class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
                                     </svg>
                                     Memproses...
                                 </span>
                                 <span v-else class="flex items-center gap-2">
-                                    <svg
-                                        class="h-4 w-4"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M5 13l4 4L19 7"
-                                        />
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
                                     </svg>
                                     Berhasil!
                                 </span>
@@ -1527,11 +1189,7 @@ const searchSuggestions = computed(() => {
 
                         <p class="mt-4 text-xs text-muted-foreground">
                             Dengan berlangganan, Anda menyetujui
-                            <Link
-                                href="/page/privacy"
-                                class="underline hover:text-foreground"
-                                >Kebijakan Privasi</Link
-                            >
+                            <Link href="/page/privacy" class="underline hover:text-foreground">Kebijakan Privasi</Link>
                             kami
                         </p>
                     </div>
@@ -1539,62 +1197,34 @@ const searchSuggestions = computed(() => {
 
                 <!-- Main Footer Content -->
                 <div class="py-12">
-                    <div
-                        class="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12"
-                    >
+                    <div class="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
                         <!-- Brand Section -->
                         <div class="lg:col-span-4">
                             <Link href="/" class="mb-4 flex items-center gap-2">
-                                <img
-                                    v-if="siteLogo"
-                                    :src="siteLogo"
-                                    :alt="siteName"
-                                    class="h-15 w-15 object-contain"
-                                />
+                                <img v-if="siteLogo" :src="siteLogo" :alt="siteName" class="h-15 w-15 object-contain" />
                                 <Package v-else class="h-8 w-8 text-primary" />
                                 <span class="text-2xl font-bold">{{
                                     siteName
-                                }}</span>
+                                    }}</span>
                             </Link>
-                            <p
-                                class="mb-6 text-sm leading-relaxed text-muted-foreground"
-                                v-html="siteDescription"
-                            >
+                            <p class="mb-6 text-sm leading-relaxed text-muted-foreground" v-html="siteDescription">
 
                             </p>
 
                             <!-- Social Links -->
                             <div class="flex items-center gap-3">
-                                <span class="text-sm font-semibold"
-                                    >Ikuti Kami:</span
-                                >
+                                <span class="text-sm font-semibold">Ikuti Kami:</span>
                                 <div class="flex gap-2">
-                                    <Button
-                                        v-for="social in socialLinks"
-                                        :key="social.icon"
-                                        variant="outline"
-                                        size="icon"
-                                        as-child
-                                        class="rounded-full transition-all hover:border-primary hover:bg-primary hover:text-primary-foreground"
-                                    >
-                                        <a
-                                            :href="social.href"
-                                            :aria-label="social.name"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            <svg
-                                                class="h-4 w-4"
-                                                fill="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    :d="
-                                                        socialIconPaths[
-                                                            social.icon
-                                                        ]
-                                                    "
-                                                />
+                                    <Button v-for="social in socialLinks" :key="social.icon" variant="outline"
+                                        size="icon" as-child
+                                        class="rounded-full transition-all hover:border-primary hover:bg-primary hover:text-primary-foreground">
+                                        <a :href="social.href" :aria-label="social.name" target="_blank"
+                                            rel="noopener noreferrer">
+                                            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path :d="socialIconPaths[
+                                                    social.icon
+                                                    ]
+                                                    " />
                                             </svg>
                                         </a>
                                     </Button>
@@ -1604,40 +1234,20 @@ const searchSuggestions = computed(() => {
 
                         <!-- Footer Links Grid -->
                         <div class="lg:col-span-8">
-                            <div
-                                class="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4"
-                            >
-                                <div
-                                    v-for="menu in footerMenus.slice(0, 4)"
-                                    :key="menu.title"
-                                >
-                                    <h4
-                                        class="mb-4 text-sm font-bold text-foreground"
-                                    >
+                            <div class="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4">
+                                <div v-for="menu in footerMenus.slice(0, 4)" :key="menu.title">
+                                    <h4 class="mb-4 text-sm font-bold text-foreground">
                                         {{ menu.title }}
                                     </h4>
                                     <ul class="space-y-3 text-sm">
-                                        <li
-                                            v-for="link in menu.links"
-                                            :key="link.href"
-                                        >
-                                            <Link
-                                                :href="link.href"
-                                                class="group inline-flex items-center text-muted-foreground transition-colors hover:text-primary"
-                                            >
+                                        <li v-for="link in menu.links" :key="link.href">
+                                            <Link :href="link.href"
+                                                class="group inline-flex items-center text-muted-foreground transition-colors hover:text-primary">
                                                 <span>{{ link.name }}</span>
-                                                <svg
-                                                    class="ml-1 h-3 w-3 -translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M9 5l7 7-7 7"
-                                                    />
+                                                <svg class="ml-1 h-3 w-3 -translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M9 5l7 7-7 7" />
                                                 </svg>
                                             </Link>
                                         </li>
@@ -1650,70 +1260,40 @@ const searchSuggestions = computed(() => {
 
                 <!-- Bottom Footer Bar -->
                 <div class="border-t py-6">
-                    <div
-                        class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
-                    >
+                    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <!-- Info & Links -->
-                        <div
-                            class="flex w-full flex-col gap-3 text-xs text-muted-foreground sm:text-sm"
-                        >
+                        <div class="flex w-full flex-col gap-3 text-xs text-muted-foreground sm:text-sm">
                             <p class="text-center md:text-left">
                                 © {{ new Date().getFullYear() }} Puranusa. All
                                 rights reserved.
                             </p>
 
-                            <div
-                                class="flex flex-wrap justify-center gap-x-4 gap-y-2 md:justify-start"
-                            >
-                                <Link
-                                    href="/page/privacy"
-                                    class="transition-colors hover:text-foreground"
-                                >
+                            <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 md:justify-start">
+                                <Link href="/page/privacy" class="transition-colors hover:text-foreground">
                                     Privasi
                                 </Link>
-                                <span
-                                    class="hidden text-muted-foreground/50 sm:inline"
-                                    >•</span
-                                >
+                                <span class="hidden text-muted-foreground/50 sm:inline">•</span>
 
-                                <Link
-                                    href="/page/terms"
-                                    class="transition-colors hover:text-foreground"
-                                >
+                                <Link href="/page/terms" class="transition-colors hover:text-foreground">
                                     Syarat &amp; Ketentuan
                                 </Link>
-                                <span
-                                    class="hidden text-muted-foreground/50 sm:inline"
-                                    >•</span
-                                >
+                                <span class="hidden text-muted-foreground/50 sm:inline">•</span>
 
-                                <Link
-                                    href="/page/about"
-                                    class="transition-colors hover:text-foreground"
-                                >
+                                <Link href="/page/about" class="transition-colors hover:text-foreground">
                                     Tentang Kami
                                 </Link>
                             </div>
                         </div>
 
                         <!-- Payment Methods -->
-                        <div
-                            class="flex w-full flex-col items-center gap-2 md:w-auto md:items-end"
-                        >
-                            <span
-                                class="text-center text-xs text-muted-foreground md:text-right"
-                            >
+                        <div class="flex w-full flex-col items-center gap-2 md:w-auto md:items-end">
+                            <span class="text-center text-xs text-muted-foreground md:text-right">
                                 Metode Pembayaran:
                             </span>
 
-                            <div
-                                class="flex flex-wrap justify-center gap-2 md:justify-end"
-                            >
-                                <div
-                                    v-for="method in paymentMethods"
-                                    :key="method"
-                                    class="rounded border bg-background px-3 py-1.5 text-xs font-medium whitespace-nowrap"
-                                >
+                            <div class="flex flex-wrap justify-center gap-2 md:justify-end">
+                                <div v-for="method in paymentMethods" :key="method"
+                                    class="rounded border bg-background px-3 py-1.5 text-xs font-medium whitespace-nowrap">
                                     {{ method }}
                                 </div>
                             </div>
@@ -1724,11 +1304,8 @@ const searchSuggestions = computed(() => {
         </footer>
 
         <!-- Checkout Sheet -->
-        <CheckoutSheet
-            v-if="checkoutItems.length > 0"
-            v-model:open="checkoutSheetOpen"
+        <CheckoutSheet v-if="checkoutItems.length > 0" v-model:open="checkoutSheetOpen"
             :item="checkoutItems.length === 1 ? checkoutItems[0] : undefined"
-            :items="checkoutItems.length > 1 ? checkoutItems : undefined"
-        />
+            :items="checkoutItems.length > 1 ? checkoutItems : undefined" />
     </div>
 </template>

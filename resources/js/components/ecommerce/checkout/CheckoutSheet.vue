@@ -405,6 +405,14 @@ const selectPickUp = () => {
     form.value.shipping_etd = '-';
 };
 
+const clearPickUpSelection = () => {
+    if (!isPickUpSelected.value) return;
+    form.value.shipping_courier = '';
+    form.value.shipping_service = '';
+    form.value.shipping_cost = 0;
+    form.value.shipping_etd = '';
+};
+
 // Check if Pick Up is selected
 const isPickUpSelected = computed(() => {
     return form.value.shipping_courier === 'pickup' && form.value.shipping_service === 'Pick Up';
@@ -879,6 +887,22 @@ watch(
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div
+                        v-if="isPickUpSelected"
+                        class="flex items-center justify-between text-xs text-muted-foreground"
+                    >
+                        <span>Ingin kirim ke alamat?</span>
+                        <Button
+                            type="button"
+                            variant="link"
+                            size="sm"
+                            class="h-auto p-0 text-xs"
+                            @click="clearPickUpSelection"
+                        >
+                            Pilih kurir lain
+                        </Button>
                     </div>
 
                     <div

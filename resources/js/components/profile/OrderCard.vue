@@ -6,7 +6,7 @@ import type { Order } from '@/types/profile';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 import { CheckCircle, Package, PackageCheck, RefreshCw, Star } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import OrderDetailSheet from './OrderDetailSheet.vue';
 import ProductReviewDialog from './ProductReviewDialog.vue';
@@ -15,7 +15,7 @@ const props = defineProps<{
     order: Order;
 }>();
 
-const { formatCurrency, formatDate, getStatusLabel } = useFormatter();
+const { formatCurrency, formatDate, getStatusLabel, normalizeStatus } = useFormatter();
 
 const sheetOpen = ref(false);
 const reviewDialogOpen = ref(false);
@@ -23,6 +23,7 @@ const checkingStatus = ref(false);
 const completingOrder = ref(false);
 const localStatus = ref(props.order.status);
 const localPaidAt = ref(props.order.paid_at);
+const normalizedStatus = computed(() => normalizeStatus(localStatus.value));
 
 const checkPaymentStatus = async () => {
     if (checkingStatus.value) return;
@@ -133,12 +134,8 @@ const openReviewDialog = () => {
                         <p class="text-sm font-semibold">
                             {{ order.order_no }}
                         </p>
-                        <p class="text-xs text-muted-foreground">
-                            {{
-                                order.placed_at
-                                    ? formatDate(order.placed_at)
-                                    : 'Belum ditempatkan'
-                            }}
+                        <p v-if="order.placed_at" class="text-xs text-muted-foreground">
+                            {{ formatDate(order.placed_at) }}
                         </p>
                         <p v-if="order.type" class="text-xs font-medium" :class="{
                             'text-blue-600 dark:text-blue-400': order.type === 'planA',
@@ -152,17 +149,17 @@ const openReviewDialog = () => {
                     <Badge
                         :class="{
                             'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-100':
-                                localStatus.toUpperCase() === 'PENDING',
+                                normalizedStatus === 'pending',
                             'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-100':
-                                localStatus.toUpperCase() === 'PROCESSING' ||
-                                localStatus.toUpperCase() === 'PAID',
+                                normalizedStatus === 'processing' ||
+                                normalizedStatus === 'paid',
                             'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900 dark:text-purple-100':
-                                localStatus.toUpperCase() === 'SHIPPED',
+                                normalizedStatus === 'shipped',
                             'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-100':
-                                localStatus.toUpperCase() === 'DELIVERED' ||
-                                localStatus.toUpperCase() === 'COMPLETED',
+                                normalizedStatus === 'delivered' ||
+                                normalizedStatus === 'completed',
                             'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-100':
-                                localStatus.toUpperCase() === 'CANCELLED',
+                                normalizedStatus === 'cancelled',
                         }"
                     >
                         {{ getStatusLabel(localStatus) }}
@@ -180,7 +177,7 @@ const openReviewDialog = () => {
                 <div class="flex flex-wrap gap-2">
                     <Button
                         v-if="
-                            localStatus.toUpperCase() === 'PENDING' &&
+                            normalizedStatus === 'pending' &&
                             !localPaidAt
                         "
                         variant="outline"
@@ -195,7 +192,7 @@ const openReviewDialog = () => {
                         Cek Status
                     </Button>
                     <Button
-                        v-if="localStatus.toUpperCase() === 'SHIPPED'"
+                        v-if="normalizedStatus === 'shipped'"
                         variant="default"
                         size="sm"
                         :disabled="completingOrder"
@@ -205,7 +202,7 @@ const openReviewDialog = () => {
                         Pesanan Diterima
                     </Button>
                     <Button
-                        v-if="localStatus.toUpperCase() === 'COMPLETED' && order.has_unreviewed_items"
+                        v-if="normalizedStatus === 'completed' && order.has_unreviewed_items"
                         variant="outline"
                         size="sm"
                         @click="openReviewDialog"

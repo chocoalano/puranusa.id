@@ -576,12 +576,13 @@ class CustomerController extends Controller
     /**
      * Login as customer without logging out from admin
      */
-    public function loginAsCustomer(Customer $customer)
+    public function loginAsCustomer(Request $request, Customer $customer)
     {
         try {
             // Store current admin session data
             $adminId = Auth::guard('web')->id();
             $adminName = Auth::guard('web')->user()->name;
+            $adminRedirect = $request->headers->get('referer') ?? route('dashboard');
 
             // Login to client guard without logging out from web guard
             Auth::guard('client')->login($customer);
@@ -590,6 +591,7 @@ class CustomerController extends Controller
             session()->put('impersonating', [
                 'admin_id' => $adminId,
                 'admin_name' => $adminName,
+                'admin_redirect' => $adminRedirect,
                 'customer_id' => $customer->id,
                 'customer_name' => $customer->name,
             ]);
@@ -626,6 +628,8 @@ class CustomerController extends Controller
                 ], 400);
             }
 
+            $redirectTo = $impersonating['admin_redirect'] ?? route('dashboard');
+
             // Logout from client guard
             Auth::guard('client')->logout();
 
@@ -635,6 +639,7 @@ class CustomerController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Kembali ke akun admin',
+                'redirect' => $redirectTo,
             ]);
         } catch (\Exception $e) {
             \Log::error('Stop impersonating failed', [

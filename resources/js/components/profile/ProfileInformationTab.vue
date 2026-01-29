@@ -84,6 +84,7 @@ const submitForm = () => {
                                 placeholder="username"
                                 class="pl-10"
                                 required
+                                readonly
                             />
                         </div>
                         <p v-if="form.errors.username" class="text-sm text-red-500">
@@ -106,6 +107,7 @@ const submitForm = () => {
                                 placeholder="Masukkan nama lengkap"
                                 class="pl-10"
                                 required
+                                readonly
                             />
                         </div>
                         <p v-if="form.errors.name" class="text-sm text-red-500">

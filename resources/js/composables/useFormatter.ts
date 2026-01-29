@@ -13,6 +13,12 @@ export function useFormatter() {
         }).format(new Date(date));
     };
 
+    const normalizeStatus = (status: string): string => {
+        const normalized = (status || '').toString().trim().toLowerCase();
+        if (normalized === 'canceled') return 'cancelled';
+        return normalized;
+    };
+
     const getStatusLabel = (status: string): string => {
         const labels: Record<string, string> = {
             pending: 'Menunggu',
@@ -21,7 +27,8 @@ export function useFormatter() {
             delivered: 'Selesai',
             cancelled: 'Dibatalkan',
         };
-        return labels[status] || status;
+        const normalized = normalizeStatus(status);
+        return labels[normalized] || status;
     };
 
     const getTransactionTypeLabel = (type: string): string => {
@@ -44,12 +51,14 @@ export function useFormatter() {
             failed: 'Gagal',
             cancelled: 'Dibatalkan',
         };
-        return labels[status] || status;
+        const normalized = normalizeStatus(status);
+        return labels[normalized] || status;
     };
 
     return {
         formatCurrency,
         formatDate,
+        normalizeStatus,
         getStatusLabel,
         getTransactionTypeLabel,
         getTransactionStatusLabel,
