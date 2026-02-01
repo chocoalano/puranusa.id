@@ -20,7 +20,7 @@ import {
 
 interface Shipment {
     id: number;
-    tracking_number: string | null;
+    tracking_no: string | null;
     status: string;
 }
 

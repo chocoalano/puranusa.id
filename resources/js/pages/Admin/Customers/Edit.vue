@@ -253,7 +253,7 @@ const submit = () => {
                                     required
                                 />
                                 <p class="text-xs text-muted-foreground">
-                                    Email aktif untuk menerima notifikasi dan verifikasi akun
+                                    Email aktif untuk notifikasi dan verifikasi. Satu email dapat digunakan maksimal 7 akun.
                                 </p>
                                 <p v-if="form.errors.email" class="text-sm text-destructive">
                                     {{ form.errors.email }}

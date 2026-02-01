@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import Pagination from '@/components/Pagination.vue';
+import InvoiceDialog from '@/components/orders/InvoiceDialog.vue';
 import {
     Select,
     SelectContent,
@@ -43,27 +44,31 @@ import {
 import {
     ArrowUpDown,
     ChevronDown,
-    CreditCard,
     DollarSign,
     Eye,
+    FileText,
     Package,
     Search,
-    ShoppingCart,
 } from 'lucide-vue-next';
 import { h, ref, watch } from 'vue';
 import { usePermissions } from '@/composables/usePermissions';
 
 interface Order {
     id: number;
-    order_number: string;
+    order_no: string;
     customer: {
         name: string;
         email: string;
     };
-    total_amount: number;
+    grand_total: number;
     status: string;
     payment_status: string;
     created_at: string;
+    payments?: Array<{
+        method?: {
+            name: string;
+        };
+    }>;
 }
 
 interface PaginatedOrders {
@@ -80,18 +85,24 @@ interface PaginatedOrders {
 }
 
 interface Statistics {
-    total_orders: number;
-    total_revenue: number;
-    total_pending: number;
-    total_completed: number;
+    total_paid: number;
+    total_amount: number;
+}
+
+interface PaymentMethod {
+    id: number;
+    name: string;
+    code: string;
 }
 
 interface Props {
     orders: PaginatedOrders;
     statistics: Statistics;
+    paymentMethods: PaymentMethod[];
     filters: {
         search?: string;
         status?: string;
+        payment_method?: string;
         sort_by: string;
         sort_order: 'asc' | 'desc';
     };
@@ -108,6 +119,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 const search = ref(props.filters.search || '');
 const statusFilter = ref(props.filters.status || 'all');
+const paymentMethodFilter = ref(props.filters.payment_method || 'all');
 const sorting = ref<SortingState>([
     {
         id: props.filters.sort_by,
@@ -116,6 +128,16 @@ const sorting = ref<SortingState>([
 ]);
 const columnFilters = ref<ColumnFiltersState>([]);
 const columnVisibility = ref<VisibilityState>({});
+
+// Invoice dialog state
+const invoiceDialog = ref({
+    open: false,
+    orderId: null as number | null,
+});
+
+const openInvoiceDialog = (orderId: number) => {
+    invoiceDialog.value = { open: true, orderId };
+};
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -136,15 +158,18 @@ const formatDate = (date: string) => {
 };
 
 const getStatusVariant = (status: string) => {
+    const normalizedStatus = status.toUpperCase();
     const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-        pending: 'secondary',
-        processing: 'outline',
-        shipped: 'default',
-        delivered: 'default',
-        cancelled: 'destructive',
-        completed: 'default',
+        PENDING: 'secondary',
+        PROCESSING: 'outline',
+        SHIPPED: 'default',
+        DELIVERED: 'default',
+        CANCELLED: 'destructive',
+        CANCELED: 'destructive', // Support US spelling
+        COMPLETED: 'default',
+        PAID: 'default',
     };
-    return variants[status] || 'secondary';
+    return variants[normalizedStatus] || 'secondary';
 };
 
 const columns: ColumnDef<Order>[] = [
@@ -158,7 +183,7 @@ const columns: ColumnDef<Order>[] = [
         },
     },
     {
-        accessorKey: 'order_number',
+        accessorKey: 'order_no',
         header: ({ column }) => {
             return h(
                 Button,
@@ -172,7 +197,7 @@ const columns: ColumnDef<Order>[] = [
         },
         cell: ({ row }) => {
             return h('div', [
-                h('div', { class: 'font-medium font-mono' }, row.original.order_number),
+                h('div', { class: 'font-medium font-mono' }, row.original.order_no),
                 h(
                     'div',
                     { class: 'text-xs text-muted-foreground' },
@@ -182,13 +207,13 @@ const columns: ColumnDef<Order>[] = [
         },
     },
     {
-        accessorKey: 'total_amount',
+        accessorKey: 'grand_total',
         header: () => h('div', { class: 'text-right' }, 'Total'),
         cell: ({ row }) => {
             return h(
                 'div',
                 { class: 'text-right font-medium' },
-                () => formatCurrency(row.getValue('total_amount'))
+                formatCurrency(row.getValue('grand_total'))
             );
         },
     },
@@ -199,8 +224,21 @@ const columns: ColumnDef<Order>[] = [
             const status = row.getValue('payment_status') as string;
             return h(
                 Badge,
-                { variant: status === 'paid' ? 'default' : 'secondary' },
+                { variant: status === 'PAID' ? 'default' : 'secondary' },
                 () => status
+            );
+        },
+    },
+    {
+        id: 'payment_method',
+        header: () => 'Metode',
+        cell: ({ row }) => {
+            const order = row.original;
+            const paymentMethod = order.payments?.[0]?.method?.name;
+            return h(
+                'div',
+                { class: 'text-sm' },
+                { default: () => paymentMethod || '-' }
             );
         },
     },
@@ -239,18 +277,34 @@ const columns: ColumnDef<Order>[] = [
         cell: ({ row }) => {
             const order = row.original;
             const actions = []
-            if (isSuperAdmin || isAdmin) {
 
-                actions.push(h(
-                    Link,
-                    { href: `/admin/orders/${order.id}` },
-                    () =>
-                        h(
-                            Button,
-                            { variant: 'outline', size: 'sm' },
-                            () => h(Eye, { class: 'h-4 w-4' })
-                        )
-                ),)
+            // Invoice button - available for all
+            actions.push(
+                h(
+                    Button,
+                    {
+                        variant: 'outline',
+                        size: 'sm',
+                        onClick: () => openInvoiceDialog(order.id),
+                    },
+                    () => h(FileText, { class: 'h-4 w-4' })
+                )
+            );
+
+            // View detail button - only for admin
+            if (isSuperAdmin || isAdmin) {
+                actions.push(
+                    h(
+                        Link,
+                        { href: `/admin/orders/${order.id}` },
+                        () =>
+                            h(
+                                Button,
+                                { variant: 'outline', size: 'sm' },
+                                () => h(Eye, { class: 'h-4 w-4' })
+                            )
+                    )
+                );
             }
             return h('div', { class: 'flex justify-end gap-2' }, actions);
         },
@@ -305,14 +359,15 @@ watch(
 );
 
 let searchTimeout: ReturnType<typeof setTimeout>;
-watch([search, statusFilter], () => {
+watch([search, statusFilter, paymentMethodFilter], () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
         router.get(
-            '/admin/orders',
+            '/admin/orders/paid',
             {
                 search: search.value || undefined,
                 status: statusFilter.value !== 'all' ? statusFilter.value : undefined,
+                payment_method: paymentMethodFilter.value !== 'all' ? paymentMethodFilter.value : undefined,
                 sort_by: sorting.value[0]?.id || 'created_at',
                 sort_order: sorting.value[0]?.desc ? 'desc' : 'asc',
             },
@@ -339,45 +394,25 @@ watch([search, statusFilter], () => {
             </div>
 
             <!-- Statistics -->
-            <div class="grid gap-4 md:grid-cols-4">
+            <div class="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Total Pesanan</CardTitle>
-                        <ShoppingCart class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">{{ statistics.total_orders }}</div>
-                        <p class="text-xs text-muted-foreground">Semua pesanan</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Total Pendapatan</CardTitle>
-                        <DollarSign class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">{{ formatCurrency(statistics.total_revenue) }}</div>
-                        <p class="text-xs text-muted-foreground">Revenue keseluruhan</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Pending</CardTitle>
+                        <CardTitle class="text-sm font-medium">Total Dibayar</CardTitle>
                         <Package class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ statistics.total_pending }}</div>
-                        <p class="text-xs text-muted-foreground">Menunggu pembayaran</p>
+                        <div class="text-2xl font-bold">{{ statistics.total_paid }}</div>
+                        <p class="text-xs text-muted-foreground">Pesanan sudah dibayar</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Selesai</CardTitle>
-                        <CreditCard class="h-4 w-4 text-muted-foreground" />
+                        <CardTitle class="text-sm font-medium">Total Amount</CardTitle>
+                        <DollarSign class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ statistics.total_completed }}</div>
-                        <p class="text-xs text-muted-foreground">Order selesai</p>
+                        <div class="text-2xl font-bold">{{ formatCurrency(statistics.total_amount) }}</div>
+                        <p class="text-xs text-muted-foreground">Total nilai terbayar</p>
                     </CardContent>
                 </Card>
             </div>
@@ -403,6 +438,21 @@ watch([search, statusFilter], () => {
                             <SelectItem value="delivered">Delivered</SelectItem>
                             <SelectItem value="completed">Completed</SelectItem>
                             <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select v-model="paymentMethodFilter">
+                        <SelectTrigger class="w-[200px]">
+                            <SelectValue placeholder="Metode Pembayaran" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua Metode</SelectItem>
+                            <SelectItem
+                                v-for="method in paymentMethods"
+                                :key="method.id"
+                                :value="method.id.toString()"
+                            >
+                                {{ method.name }}
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -487,10 +537,17 @@ watch([search, statusFilter], () => {
                 :filters="{
                     search: search || undefined,
                     status: statusFilter !== 'all' ? statusFilter : undefined,
+                    payment_method: paymentMethodFilter !== 'all' ? paymentMethodFilter : undefined,
                     sort_by: sorting[0]?.id || 'created_at',
                     sort_order: sorting[0]?.desc ? 'desc' : 'asc',
                 }"
             />
         </div>
+
+        <!-- Invoice Dialog -->
+        <InvoiceDialog
+            v-model:open="invoiceDialog.open"
+            :order-id="invoiceDialog.orderId"
+        />
     </AppLayout>
 </template>

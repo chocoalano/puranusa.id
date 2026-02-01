@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $paid_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read string $payment_status
  * @property-read Customer $customer
  * @property-read CustomerAddress|null $shippingAddress
  * @property-read CustomerAddress|null $billingAddress
@@ -39,6 +40,8 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     use HasFactory;
+
+    protected $appends = ['payment_status'];
 
     protected $fillable = [
         'order_no',
@@ -117,5 +120,21 @@ class Order extends Model
     public function refunds()
     {
         return $this->hasMany(Refund::class);
+    }
+
+    /**
+     * Get payment status attribute
+     */
+    public function getPaymentStatusAttribute(): string
+    {
+        if ($this->paid_at) {
+            return 'PAID';
+        }
+
+        if (in_array(strtoupper($this->status), ['CANCELLED', 'CANCELED'])) {
+            return 'CANCELLED';
+        }
+
+        return 'PENDING';
     }
 }

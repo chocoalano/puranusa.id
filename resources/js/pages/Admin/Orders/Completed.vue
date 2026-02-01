@@ -64,6 +64,11 @@ interface Order {
     status: string;
     payment_status: string;
     created_at: string;
+    payments?: Array<{
+        method?: {
+            name: string;
+        };
+    }>;
 }
 
 interface PaginatedOrders {
@@ -86,12 +91,20 @@ interface Statistics {
     total_completed: number;
 }
 
+interface PaymentMethod {
+    id: number;
+    name: string;
+    code: string;
+}
+
 interface Props {
     orders: PaginatedOrders;
     statistics: Statistics;
+    paymentMethods: PaymentMethod[];
     filters: {
         search?: string;
         status?: string;
+        payment_method?: string;
         sort_by: string;
         sort_order: 'asc' | 'desc';
     };
@@ -108,6 +121,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 const search = ref(props.filters.search || '');
 const statusFilter = ref(props.filters.status || 'all');
+const paymentMethodFilter = ref(props.filters.payment_method || 'all');
 const sorting = ref<SortingState>([
     {
         id: props.filters.sort_by,
@@ -201,6 +215,19 @@ const columns: ColumnDef<Order>[] = [
                 Badge,
                 { variant: status === 'paid' ? 'default' : 'secondary' },
                 () => status
+            );
+        },
+    },
+    {
+        id: 'payment_method',
+        header: () => 'Metode',
+        cell: ({ row }) => {
+            const order = row.original;
+            const paymentMethod = order.payments?.[0]?.method?.name;
+            return h(
+                'div',
+                { class: 'text-sm' },
+                { default: () => paymentMethod || '-' }
             );
         },
     },
@@ -305,14 +332,15 @@ watch(
 );
 
 let searchTimeout: ReturnType<typeof setTimeout>;
-watch([search, statusFilter], () => {
+watch([search, statusFilter, paymentMethodFilter], () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
         router.get(
-            '/admin/orders',
+            '/admin/orders/completed',
             {
                 search: search.value || undefined,
                 status: statusFilter.value !== 'all' ? statusFilter.value : undefined,
+                payment_method: paymentMethodFilter.value !== 'all' ? paymentMethodFilter.value : undefined,
                 sort_by: sorting.value[0]?.id || 'created_at',
                 sort_order: sorting.value[0]?.desc ? 'desc' : 'asc',
             },
@@ -405,6 +433,21 @@ watch([search, statusFilter], () => {
                             <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                     </Select>
+                    <Select v-model="paymentMethodFilter">
+                        <SelectTrigger class="w-[200px]">
+                            <SelectValue placeholder="Metode Pembayaran" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua Metode</SelectItem>
+                            <SelectItem
+                                v-for="method in paymentMethods"
+                                :key="method.id"
+                                :value="method.id.toString()"
+                            >
+                                {{ method.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
@@ -487,6 +530,7 @@ watch([search, statusFilter], () => {
                 :filters="{
                     search: search || undefined,
                     status: statusFilter !== 'all' ? statusFilter : undefined,
+                    payment_method: paymentMethodFilter !== 'all' ? paymentMethodFilter : undefined,
                     sort_by: sorting[0]?.id || 'created_at',
                     sort_order: sorting[0]?.desc ? 'desc' : 'asc',
                 }"

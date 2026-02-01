@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Manage;
 
+use App\Models\Manage\Customer;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -36,7 +37,12 @@ class StoreCustomerRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:customers,username', 'alpha_dash'],
-            'email' => ['required', 'email', 'max:255', 'unique:customers,email'],
+            'email' => ['required', 'email', 'max:255', function (string $attribute, mixed $value, \Closure $fail) {
+                $count = Customer::where('email', $value)->count();
+                if ($count >= 7) {
+                    $fail("Email ini sudah digunakan oleh {$count} akun. Maksimal 7 akun per email.");
+                }
+            }],
             'phone' => ['nullable', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'sponsor_id' => ['nullable', 'exists:customers,id'],
@@ -62,7 +68,7 @@ class StoreCustomerRequest extends FormRequest
             'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore',
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak valid',
-            'email.unique' => 'Email sudah terdaftar',
+            'email.max' => 'Email maksimal 255 karakter',
             'phone.max' => 'Nomor telepon maksimal 20 karakter',
             'password.required' => 'Password wajib diisi',
             'password.min' => 'Password minimal 8 karakter',

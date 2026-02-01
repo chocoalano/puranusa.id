@@ -62,6 +62,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('orders/paid', [OrderController::class, 'adminPaid'])->name('orders.paid');
     Route::get('orders/completed', [OrderController::class, 'adminCompleted'])->name('orders.completed');
     Route::get('orders/{order}', [OrderController::class, 'adminShow'])->name('orders.show');
+    Route::get('orders/{order}/invoice', [OrderController::class, 'adminInvoice'])->name('orders.invoice');
     Route::post('orders/{order}/cancel', [OrderController::class, 'adminCancel'])->name('orders.cancel');
     Route::post('orders/{order}/setup-shipment', [OrderController::class, 'adminSetupShipment'])->name('orders.setup-shipment');
     Route::post('orders/{order}/ship', [OrderController::class, 'adminShipOrder'])->name('orders.ship');

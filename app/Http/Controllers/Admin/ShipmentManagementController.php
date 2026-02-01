@@ -60,7 +60,7 @@ class ShipmentManagementController extends Controller
     {
         $validated = $request->validate([
             'tracking_no' => 'required|max:255',
-            'status' => 'required|in:pending,shipped,in_transit,delivered,failed',
+            'status' => 'required|in:pending,shipped,in_transit,delivered,cancelled,failed',
             'shipped_at' => 'nullable|date',
             'delivered_at' => 'nullable|date',
         ]);

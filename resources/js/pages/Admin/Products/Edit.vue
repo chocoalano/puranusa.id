@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ArrowLeft, CheckCircle2, XCircle, AlertCircle } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import ImageUploadZone from '@/components/admin/ImageUploadZone.vue';
+import TiptapEditor from '@/components/admin/TiptapEditor.vue';
 import { ref, computed, watch } from 'vue';
 
 interface ProductMedia {
@@ -382,7 +383,7 @@ const submit = () => {
                             </div>
                             <div class="space-y-2">
                                 <Label for="long_desc">Deskripsi Lengkap</Label>
-                                <Textarea id="long_desc" v-model="form.long_desc" rows="4" />
+                                <TiptapEditor v-model="form.long_desc" />
                             </div>
                         </CardContent>
                     </Card>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerWalletTransaction;
 use App\Services\MidtransService;
+use App\Services\QontakService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -113,6 +114,18 @@ class WithdrawalManagementController extends Controller
                 'payout_status' => $payoutStatus,
                 'new_balance' => $newBal,
             ]);
+
+            // Kirim notifikasi WhatsApp ke member
+            $withdrawal->load('customer');
+            $customer = $withdrawal->customer;
+
+            if ($customer && $customer->phone) {
+                app(QontakService::class)->sendWithdrawalApproved(
+                    $customer->name,
+                    $customer->phone,
+                    number_format((float) $withdrawal->amount, 0, ',', '.')
+                );
+            }
 
             return back()->with('success', $message);
         } catch (\Throwable $e) {

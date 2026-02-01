@@ -54,14 +54,16 @@ interface Shipment {
     id: number;
     order: {
         id: number;
-        order_number: string;
+        order_no: string;
         customer: {
             name: string;
             email: string;
         };
     };
-    tracking_number: string | null;
-    courier: string;
+    tracking_no: string | null;
+    courier: {
+        name: string;
+    } | null;
     status: string;
     shipped_at: string | null;
     delivered_at: string | null;
@@ -139,18 +141,26 @@ const formatDate = (date: string | null) => {
 };
 
 const getStatusVariant = (status: string) => {
+    const normalizedStatus = status.toUpperCase();
     const variants: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-        pending: 'secondary',
-        shipped: 'default',
-        delivered: 'outline',
-        cancelled: 'destructive',
+        PENDING: 'secondary',
+        IN_TRANSIT: 'default',
+        SHIPPED: 'default',
+        DELIVERED: 'outline',
+        CANCELLED: 'destructive',
+        CANCELED: 'destructive', // Support US spelling
     };
-    return variants[status] || 'secondary';
+    return variants[normalizedStatus] || 'secondary';
+};
+
+const normalizeStatus = (status: string) => {
+    // Normalize 'canceled' to 'cancelled'
+    return status.toLowerCase() === 'canceled' ? 'cancelled' : status;
 };
 
 const openUpdateDialog = (shipment: Shipment) => {
     updateDialog.value = { open: true, shipment };
-    trackingNumber.value = shipment.tracking_number || '';
+    trackingNumber.value = shipment.tracking_no || '';
     statusUpdate.value = shipment.status;
 };
 
@@ -181,15 +191,15 @@ const handleUpdate = () => {
 const columns: ColumnDef<Shipment>[] = [
     {
         id: 'index',
-        header: () => h('div', { class: 'w-12' }, 'No'),
+        header: () => h('div', { class: 'w-12' }, { default: () => 'No' }),
         cell: ({ row }) => {
             const index =
                 row.index + 1 + (props.shipments.current_page - 1) * props.shipments.per_page;
-            return h('div', { class: 'font-medium' }, index);
+            return h('div', { class: 'font-medium' }, { default: () => index.toString() });
         },
     },
     {
-        accessorKey: 'order.order_number',
+        accessorKey: 'order.order_no',
         header: ({ column }) => {
             return h(
                 Button,
@@ -207,7 +217,7 @@ const columns: ColumnDef<Shipment>[] = [
                 return h('div', { class: 'text-muted-foreground' }, 'N/A');
             }
             return h('div', [
-                h('div', { class: 'font-medium' }, order.order_number),
+                h('div', { class: 'font-medium font-mono' }, order.order_no),
                 h(
                     'div',
                     { class: 'text-xs text-muted-foreground' },
@@ -220,18 +230,19 @@ const columns: ColumnDef<Shipment>[] = [
         accessorKey: 'courier',
         header: () => 'Kurir',
         cell: ({ row }) => {
-            return h('div', { class: 'font-medium uppercase' }, row.getValue('courier'));
+            const courier = row.original.courier;
+            return h('div', { class: 'font-medium uppercase' }, { default: () => courier?.name || '-' });
         },
     },
     {
-        accessorKey: 'tracking_number',
+        accessorKey: 'tracking_no',
         header: () => 'Resi',
         cell: ({ row }) => {
-            const tracking = row.getValue('tracking_number');
+            const tracking = row.getValue('tracking_no');
             return h(
                 'div',
                 { class: 'font-mono text-sm' },
-                () => tracking || '-'
+                { default: () => tracking || '-' }
             );
         },
     },
@@ -240,10 +251,11 @@ const columns: ColumnDef<Shipment>[] = [
         header: () => 'Status',
         cell: ({ row }) => {
             const status = row.getValue('status') as string;
+            const displayStatus = normalizeStatus(status);
             return h(
                 Badge,
                 { variant: getStatusVariant(status) },
-                () => status
+                { default: () => displayStatus }
             );
         },
     },
@@ -251,25 +263,27 @@ const columns: ColumnDef<Shipment>[] = [
         accessorKey: 'shipped_at',
         header: () => 'Tanggal Kirim',
         cell: ({ row }) => {
-            return formatDate(row.getValue('shipped_at'));
+            return h('div', {}, { default: () => formatDate(row.getValue('shipped_at')) });
         },
     },
     {
         id: 'actions',
-        header: () => h('div', { class: 'text-right' }, 'Actions'),
+        header: () => h('div', { class: 'text-right' }, { default: () => 'Actions' }),
         cell: ({ row }) => {
             const shipment = row.original;
-            return h('div', { class: 'flex justify-end gap-2' }, [
-                h(
-                    Button,
-                    {
-                        variant: 'outline',
-                        size: 'sm',
-                        onClick: () => openUpdateDialog(shipment),
-                    },
-                    () => h(Edit, { class: 'h-4 w-4' })
-                ),
-            ]);
+            return h('div', { class: 'flex justify-end gap-2' }, {
+                default: () => [
+                    h(
+                        Button,
+                        {
+                            variant: 'outline',
+                            size: 'sm',
+                            onClick: () => openUpdateDialog(shipment),
+                        },
+                        { default: () => h(Edit, { class: 'h-4 w-4' }) }
+                    ),
+                ],
+            });
         },
     },
 ];

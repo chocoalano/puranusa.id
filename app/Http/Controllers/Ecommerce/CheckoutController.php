@@ -310,7 +310,7 @@ class CheckoutController extends Controller
 
 
         // Execute bonus engine stored procedure only if member is active
-        if ($customer->status == 3 && $order->status === 'PAID') {
+        if ($customer->status == 3 && strtoupper($order->status) === 'PAID') {
             $generate = DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
             Log::info('Executed bonus engine stored procedure for wallet payment', [
                 'customer_id' => $customer->id,
@@ -785,7 +785,7 @@ class CheckoutController extends Controller
         ]);
 
         // Execute bonus engine stored procedure only if member is active
-        if ($customer->status == 3 && $order->status === 'PAID') {
+        if ($customer->status == 3 && strtoupper($order->status) === 'PAID') {
             DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
         }
 
@@ -1065,7 +1065,7 @@ class CheckoutController extends Controller
             }
         }
 
-        $wasPaid = ($order->status === 'PAID');
+        $wasPaid = (strtoupper($order->status) === 'PAID');
 
         // 3) Simpan jejak notifikasi ke applied_promos (seperti punyamu)
         $appliedPromos = $order->applied_promos ?? [];
@@ -1119,7 +1119,7 @@ class CheckoutController extends Controller
             case 'deny':
             case 'cancel':
             case 'expire':
-                $newOrderStatus = 'CANCELED';
+                $newOrderStatus = 'CANCELLED';
                 $newPaymentStatus = 'failed';
                 break;
 
@@ -1237,7 +1237,7 @@ class CheckoutController extends Controller
         }
 
         // Update customer omzet and status if order is paid
-        if ($order->status === 'PAID') {
+        if (strtoupper($order->status) === 'PAID') {
             $customer = Customer::find($customerId);
 
             if ($customer) {
@@ -1385,7 +1385,7 @@ class CheckoutController extends Controller
         ]);
 
         // Execute bonus engine stored procedure only if member is active
-        if ($customer->status == 3 && $order->status === 'PAID') {
+        if ($customer->status == 3 && strtoupper($order->status) === 'PAID') {
             DB::statement('CALL sp_bonus_engine_run(?)', [$order->id]);
         }
 
@@ -1487,7 +1487,7 @@ class CheckoutController extends Controller
             $order->payments()->create([
                 'order_id' => $order->id,
                 'method_id' => 1,
-                'status' => 'pending',
+                'status' => 'PENDING',
                 'amount' => $validated['total'],
                 'currency' => 'IDR',
                 'provider_txn_id' => $transactionId,

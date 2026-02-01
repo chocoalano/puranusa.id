@@ -19,6 +19,8 @@ class Shipment extends Model
         'shipping_fee',
     ];
 
+    protected $appends = ['courier'];
+
     protected function casts(): array
     {
         return [
@@ -36,5 +38,29 @@ class Shipment extends Model
     public function items()
     {
         return $this->hasMany(ShipmentItem::class);
+    }
+
+    /**
+     * Get courier data from courier_id
+     */
+    public function getCourierAttribute()
+    {
+        if (! $this->courier_id) {
+            return null;
+        }
+
+        $couriers = [
+            'jne' => 'JNE',
+            'pos' => 'POS Indonesia',
+            'tiki' => 'TIKI',
+            'jnt' => 'J&T Express',
+            'sicepat' => 'SiCepat',
+            'anteraja' => 'AnterAja',
+        ];
+
+        return [
+            'code' => $this->courier_id,
+            'name' => $couriers[$this->courier_id] ?? strtoupper($this->courier_id),
+        ];
     }
 }

@@ -42,6 +42,12 @@ return [
         'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
     ],
 
+    'qontak' => [
+        'api_token' => env('QONTAK_API_TOKEN'),
+        'channel_integration_id' => env('QONTAK_CHANNEL_INTEGRATION_ID'),
+        'wd_approved_template_id' => env('QONTAK_WD_APPROVED_TEMPLATE_ID'),
+    ],
+
     'rajaongkir' => [
         'api_key_shipping' => env('RAJAONGKIR_API_KEY_SHIPPING'),
         'api_key_delivery' => env('RAJAONGKIR_API_KEY_DELIVERY'),

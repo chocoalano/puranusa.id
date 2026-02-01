@@ -21,10 +21,11 @@ class OrderController extends Controller
     {
         $search = $request->input('search');
         $status = $request->input('status');
+        $paymentMethod = $request->input('payment_method');
         $sortBy = $request->input('sort_by', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
 
-        $query = Order::with(['customer'])
+        $query = Order::with(['customer', 'payments.method'])
             ->when($search, function ($q) use ($search) {
                 $q->where('order_no', 'like', "%{$search}%")
                     ->orWhereHas('customer', function ($q) use ($search) {
@@ -34,6 +35,11 @@ class OrderController extends Controller
             })
             ->when($status, function ($q) use ($status) {
                 $q->where('status', $status);
+            })
+            ->when($paymentMethod, function ($q) use ($paymentMethod) {
+                $q->whereHas('payments', function ($q) use ($paymentMethod) {
+                    $q->where('method_id', $paymentMethod);
+                });
             })
             ->orderBy($sortBy, $sortOrder);
 
@@ -48,12 +54,19 @@ class OrderController extends Controller
             'total_completed' => Order::where('status', 'completed')->count(),
         ];
 
+        // Get all payment methods for filter
+        $paymentMethods = \App\Models\PaymentMethod::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
         return inertia('Admin/Orders/Index', [
             'orders' => $orders,
             'statistics' => $statistics,
+            'paymentMethods' => $paymentMethods,
             'filters' => [
                 'search' => $search,
                 'status' => $status,
+                'payment_method' => $paymentMethod,
                 'sort_by' => $sortBy,
                 'sort_order' => $sortOrder,
             ],
@@ -66,8 +79,9 @@ class OrderController extends Controller
     public function adminPending(Request $request)
     {
         $search = $request->input('search');
+        $paymentMethod = $request->input('payment_method');
 
-        $query = Order::with(['customer'])
+        $query = Order::with(['customer', 'payments.method'])
             ->where('status', 'pending')
             ->when($search, function ($q) use ($search) {
                 $q->where('order_no', 'like', "%{$search}%")
@@ -75,6 +89,11 @@ class OrderController extends Controller
                         $q->where('name', 'like', "%{$search}%")
                             ->orWhere('email', 'like', "%{$search}%");
                     });
+            })
+            ->when($paymentMethod, function ($q) use ($paymentMethod) {
+                $q->whereHas('payments', function ($q) use ($paymentMethod) {
+                    $q->where('method_id', $paymentMethod);
+                });
             })
             ->orderBy('created_at', 'desc');
 
@@ -85,10 +104,19 @@ class OrderController extends Controller
             'total_amount' => Order::where('status', 'pending')->sum('grand_total'),
         ];
 
+        // Get all payment methods for filter
+        $paymentMethods = \App\Models\PaymentMethod::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
         return inertia('Admin/Orders/Pending', [
             'orders' => $orders,
             'statistics' => $statistics,
-            'filters' => ['search' => $search],
+            'paymentMethods' => $paymentMethods,
+            'filters' => [
+                'search' => $search,
+                'payment_method' => $paymentMethod,
+            ],
         ]);
     }
 
@@ -98,8 +126,9 @@ class OrderController extends Controller
     public function adminPaid(Request $request)
     {
         $search = $request->input('search');
+        $paymentMethod = $request->input('payment_method');
 
-        $query = Order::with(['customer'])
+        $query = Order::with(['customer', 'payments.method'])
             ->where('status', 'paid')
             ->when($search, function ($q) use ($search) {
                 $q->where('order_no', 'like', "%{$search}%")
@@ -107,6 +136,11 @@ class OrderController extends Controller
                         $q->where('name', 'like', "%{$search}%")
                             ->orWhere('email', 'like', "%{$search}%");
                     });
+            })
+            ->when($paymentMethod, function ($q) use ($paymentMethod) {
+                $q->whereHas('payments', function ($q) use ($paymentMethod) {
+                    $q->where('method_id', $paymentMethod);
+                });
             })
             ->orderBy('paid_at', 'desc');
 
@@ -117,10 +151,19 @@ class OrderController extends Controller
             'total_amount' => Order::where('status', 'paid')->sum('grand_total'),
         ];
 
+        // Get all payment methods for filter
+        $paymentMethods = \App\Models\PaymentMethod::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
         return inertia('Admin/Orders/Paid', [
             'orders' => $orders,
             'statistics' => $statistics,
-            'filters' => ['search' => $search],
+            'paymentMethods' => $paymentMethods,
+            'filters' => [
+                'search' => $search,
+                'payment_method' => $paymentMethod,
+            ],
         ]);
     }
 
@@ -131,7 +174,7 @@ class OrderController extends Controller
     {
         $search = $request->input('search');
 
-        $query = Order::with(['customer'])
+        $query = Order::with(['customer', 'payments.method'])
             ->where('status', 'completed')
             ->when($search, function ($q) use ($search) {
                 $q->where('order_no', 'like', "%{$search}%")
@@ -183,18 +226,44 @@ class OrderController extends Controller
     }
 
     /**
+     * Get order invoice data for admin.
+     */
+    public function adminInvoice(Order $order): JsonResponse
+    {
+        $order->load([
+            'customer',
+            'items.product',
+            'shippingAddress',
+            'billingAddress',
+            'payments.method', // Load payment method relation
+        ]);
+
+        // Calculate total bonuses
+        $order->total_bonuses = (
+            (float) $order->sponsor_amount +
+            (float) $order->match_amount +
+            (float) $order->pairing_amount +
+            (float) $order->cashback_amount
+        );
+
+        return response()->json([
+            'data' => $order,
+        ]);
+    }
+
+    /**
      * Cancel order by admin.
      */
     public function adminCancel(Request $request, Order $order)
     {
-        if (! in_array(strtolower($order->status), ['pending', 'paid'])) {
+        if (! in_array(strtoupper($order->status), ['PENDING', 'PAID', 'PROCESSING'])) {
             return response()->json([
-                'message' => 'Order can only be cancelled when status is pending or paid',
+                'message' => 'Order can only be cancelled when status is pending, paid, or processing',
             ], 422);
         }
 
         $order->update([
-            'status' => 'cancelled',
+            'status' => 'CANCELLED',
         ]);
 
         return redirect()->back();
@@ -206,7 +275,7 @@ class OrderController extends Controller
     public function adminSetupShipment(Request $request, Order $order)
     {
         if (! in_array(strtoupper($order->status), ['PAID', 'PROCESSING'])) {
-            return back()->with('error', 'Order must be in PAID or PROCESSING status to setup shipment');
+            return back()->with('error', 'Order must be in paid or processing status to setup shipment');
         }
 
         $validated = $request->validate([
@@ -239,7 +308,7 @@ class OrderController extends Controller
                 ]);
             }
 
-            // Update order status to PROCESSING if it was PAID
+            // Update order status to processing if it was paid
             if (strtoupper($order->status) === 'PAID') {
                 $order->update(['status' => 'PROCESSING']);
             }
@@ -294,7 +363,7 @@ class OrderController extends Controller
                 'shipped_at' => now(),
             ]);
 
-            // Update order status to SHIPPED
+            // Update order status to shipped
             $order->update(['status' => 'SHIPPED']);
 
             DB::commit();
@@ -347,7 +416,7 @@ class OrderController extends Controller
                 'delivered_at' => now(),
             ]);
 
-            // Update order status to COMPLETED
+            // Update order status to completed
             $order->update(['status' => 'COMPLETED']);
 
             DB::commit();
@@ -459,7 +528,7 @@ class OrderController extends Controller
         }
 
         $order->update([
-            'status' => 'COMPLETED',
+            'status' => 'completed',
         ]);
 
         if (auth('client')->user()->status === 1) {
@@ -723,7 +792,7 @@ class OrderController extends Controller
         }
 
         // Only allow payment for pending orders
-        if ($order->status !== 'PENDING') {
+        if (strtoupper($order->status) !== 'PENDING') {
             return response()->json([
                 'success' => false,
                 'message' => 'Pesanan tidak dalam status menunggu pembayaran',
@@ -838,7 +907,7 @@ class OrderController extends Controller
         }
 
         // Only allow payment for pending orders
-        if ($order->status !== 'PENDING') {
+        if (strtoupper($order->status) !== 'PENDING') {
             return response()->json([
                 'success' => false,
                 'message' => 'Pesanan tidak dalam status menunggu pembayaran',
@@ -872,7 +941,7 @@ class OrderController extends Controller
 
             // Update order status
             $order->update([
-                'status' => 'PAID',
+                'status' => 'paid',
                 'paid_at' => now(),
                 'applied_promos' => array_merge($order->applied_promos ?? [], [
                     'payment' => [

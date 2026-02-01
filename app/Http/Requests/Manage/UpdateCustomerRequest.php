@@ -36,7 +36,14 @@ class UpdateCustomerRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:customers,username,'.$this->customer->id],
-            'email' => ['required', 'email', 'max:255', 'unique:customers,email,'.$this->customer->id],
+            'email' => ['required', 'email', 'max:255', function (string $attribute, mixed $value, \Closure $fail) {
+                $count = Customer::where('email', $value)
+                    ->where('id', '!=', $this->customer->id)
+                    ->count();
+                if ($count >= 7) {
+                    $fail("Email ini sudah digunakan oleh {$count} akun lain. Maksimal 7 akun per email.");
+                }
+            }],
             'phone' => ['nullable', 'string', 'max:20'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'description' => ['nullable', 'string'],
@@ -111,7 +118,7 @@ class UpdateCustomerRequest extends FormRequest
             'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, dash dan underscore',
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak valid',
-            'email.unique' => 'Email sudah terdaftar',
+            'email.max' => 'Email maksimal 255 karakter',
             'phone.max' => 'Nomor telepon maksimal 20 karakter',
             'password.min' => 'Password minimal 8 karakter',
             'password.confirmed' => 'Konfirmasi password tidak cocok',

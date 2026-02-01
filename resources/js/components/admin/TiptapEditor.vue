@@ -332,4 +332,19 @@ const setLink = () => {
     height: 0;
     pointer-events: none;
 }
+
+.tiptap ul {
+    list-style-type: disc;
+    padding-left: 1.5em;
+}
+
+.tiptap ol {
+    list-style-type: decimal;
+    padding-left: 1.5em;
+}
+
+.tiptap ul li,
+.tiptap ol li {
+    cursor: text;
+}
 </style>
