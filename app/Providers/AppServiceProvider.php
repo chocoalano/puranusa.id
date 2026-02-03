@@ -21,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $nodePath = '/opt/plesk/node/23/bin';
+        putenv("PATH=" . getenv('PATH') . ":$nodePath");
         // Share settings globally with Inertia
         Inertia::share([
             'appSettings' => function () {
