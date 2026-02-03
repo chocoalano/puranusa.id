@@ -310,6 +310,114 @@ const mainNavItems: NavItem[] = [
         ],
     },
     {
+        title: 'Zenner Club',
+        href: '#',
+        icon: Star,
+        items: [
+            {
+                title: 'Welcome Video',
+                href: '/admin/zenner/welcome-videos',
+                icon: BookOpen,
+            },
+            {
+                title: 'Join Medsos',
+                href: '/admin/zenner/join-medsos',
+                icon: Heart,
+            },
+            {
+                title: 'Marketing Kit',
+                href: '/admin/zenner/marketing-kits',
+                icon: Package,
+            },
+            {
+                title: 'Copywriting',
+                href: '/admin/zenner/copywritings',
+                icon: FileEdit,
+            },
+            {
+                title: 'Foto & Video',
+                href: '/admin/zenner/galleries',
+                icon: Grid3x3,
+            },
+            {
+                title: 'Procure Produk & Insentif',
+                href: '/admin/zenner/procure-products',
+                icon: ShoppingCart,
+            },
+            {
+                title: 'Testimoni Produk',
+                href: '/admin/zenner/testimonials',
+                icon: Star,
+            },
+            {
+                title: 'Academy (Courses)',
+                href: '/admin/zenner/courses',
+                icon: BookOpen,
+            },
+            {
+                title: 'Academy (Lessons)',
+                href: '/admin/zenner/lessons',
+                icon: BookCheck,
+            },
+            {
+                title: 'Skema Insentif',
+                href: '/admin/zenner/incentive-rules',
+                icon: Gift,
+            },
+            {
+                title: 'Produk Knowledge',
+                href: '/admin/zenner/product-knowledges',
+                icon: BookDashed,
+            },
+            {
+                title: 'Cara Jualan (Organik)',
+                href: '/admin/zenner/selling-guides',
+                icon: TrendingUp,
+            },
+            {
+                title: 'Cara Iklan (Ads)',
+                href: '/admin/zenner/ads-guides',
+                icon: BadgePercent,
+            },
+            {
+                title: 'Webinar & Training',
+                href: '/admin/zenner/webinars',
+                icon: FileText,
+            },
+            {
+                title: 'Leaderboard Config',
+                href: '/admin/zenner/leaderboard-configs',
+                icon: ChartBar,
+            },
+            {
+                title: 'Leaderboard Entries',
+                href: '/admin/zenner/leaderboard-entries',
+                icon: TrendingUp,
+            },
+            {
+                title: 'Sertifikat Program',
+                href: '/admin/zenner/certificates',
+                icon: FileText,
+            },
+            {
+                title: 'Monthly Challenge',
+                href: '/admin/zenner/monthly-challenges',
+                icon: Star,
+            },
+            {
+                title: 'Top Affiliate',
+                href: '/admin/zenner/top-affiliates',
+                icon: TrendingUp,
+            },
+            {
+                title: 'Hall of Fame',
+                href: '/admin/zenner/hall-of-fames',
+                icon: Infinity,
+            },
+        ],
+    },
+
+    {
         title: 'Pengaturan',
         href: '#',
         icon: Settings,

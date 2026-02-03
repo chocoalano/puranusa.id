@@ -16,3 +16,4 @@ require __DIR__.'/settings.php';
 require __DIR__.'/Admin/bonus.php';
 require __DIR__.'/Admin/manage.php';
 require __DIR__.'/Admin/ecommerce.php';
+require __DIR__.'/Admin/zenner.php';

@@ -526,62 +526,41 @@ class ProfileController extends Controller
      */
     private function getBonusStats(int $customerId): array
     {
-        try {
-            $released = DB::table('customer_bonuses')
-                ->where('member_id', $customerId)
-                ->where('status', 1)
-                ->sum('tax_netto');
+        // Query Builder dengan Union All + Filter Member ID
+        $stats = DB::query()->fromSub(function ($query) use ($customerId) {
+            $query->selectRaw('amount, status')
+                ->from('customer_bonus_sponsors')
+                ->where('member_id', $customerId) // Filter Tabel 1
 
-            $released += DB::table('customer_bonus_matchings')
-                ->where('member_id', $customerId)
-                ->where('status', 1)
-                ->sum('amount');
+                ->unionAll(
+                    DB::table('customer_bonus_pairings')
+                        ->selectRaw('amount, status')
+                        ->where('member_id', $customerId) // Filter Tabel 2
+                )
+                ->unionAll(
+                    DB::table('customer_bonus_matchings')
+                        ->selectRaw('amount, status')
+                        ->where('member_id', $customerId) // Filter Tabel 3
+                )
+                ->unionAll(
+                    DB::table('customer_bonus_retails')
+                        ->selectRaw('amount, status')
+                        ->where('member_id', $customerId) // Filter Tabel 4
+                )
+                ->unionAll(
+                    DB::table('customer_bonus_cashbacks')
+                        ->selectRaw('amount, status')
+                        ->where('member_id', $customerId) // Filter Tabel 5
+                );
+        }, 'combined_bonuses')
+        ->selectRaw('COALESCE(SUM(CASE WHEN status = 0 THEN amount ELSE 0 END), 0) as total_pending')
+        ->selectRaw('COALESCE(SUM(CASE WHEN status = 1 THEN amount ELSE 0 END), 0) as total_proses')
+        ->first();
 
-            $released += DB::table('customer_bonus_pairings')
-                ->where('member_id', $customerId)
-                ->where('status', 1)
-                ->sum('amount');
-
-            $released += DB::table('customer_bonus_sponsors')
-                ->where('member_id', $customerId)
-                ->where('status', 1)
-                ->sum('amount');
-
-            $pending = DB::table('customer_bonuses')
-                ->where('member_id', $customerId)
-                ->where('status', 0)
-                ->sum('tax_netto');
-
-            $pending += DB::table('customer_bonus_matchings')
-                ->where('member_id', $customerId)
-                ->where('status', 0)
-                ->sum('amount');
-
-            $pending += DB::table('customer_bonus_pairings')
-                ->where('member_id', $customerId)
-                ->where('status', 0)
-                ->sum('amount');
-
-            $pending += DB::table('customer_bonus_sponsors')
-                ->where('member_id', $customerId)
-                ->where('status', 0)
-                ->sum('amount');
-
-            return [
-                'total_released' => (float) $released,
-                'total_pending' => (float) $pending,
-            ];
-        } catch (\Exception $e) {
-            \Log::error('Failed to calculate bonus stats in profile', [
-                'customer_id' => $customerId,
-                'error' => $e->getMessage(),
-            ]);
-
-            return [
-                'total_released' => 0,
-                'total_pending' => 0,
-            ];
-        }
+        return [
+            'total_pending' => (float) $stats->total_pending,
+            'total_proses'  => (float) $stats->total_proses, // Sesuai request status 1 = proses
+        ];
     }
 
     /**

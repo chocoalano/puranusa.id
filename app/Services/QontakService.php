@@ -17,15 +17,27 @@ class QontakService
         $this->channelIntegrationId = config('services.qontak.channel_integration_id');
     }
 
-    public function sendWhatsApp(string $toName, string $toNumber, string $templateId, array $bodyParams = [], string $languageCode = 'id'): bool
+    public function sendWhatsApp(string $toName, string $toNumber, string $templateId, array $bodyParams = [], string $languageCode = 'id', ?string $headerImageUrl = null): bool
     {
+        $bodyLabels = ['customer_name', 'total_transfer', 'param_3', 'param_4', 'param_5'];
+
         $parameters = ['body' => []];
 
         foreach ($bodyParams as $index => $value) {
             $parameters['body'][] = [
                 'key' => (string) ($index + 1),
                 'value_text' => (string) $value,
-                'value' => (string) ($index + 1),
+                'value' => $bodyLabels[$index] ?? 'param_' . ($index + 1),
+            ];
+        }
+
+        if ($headerImageUrl) {
+            $parameters['header'] = [
+                'format' => 'IMAGE',
+                'params' => [
+                    ['key' => 'url', 'value' => $headerImageUrl],
+                    ['key' => 'filename', 'value' => 'logo.png'],
+                ],
             ];
         }
 
@@ -79,11 +91,15 @@ class QontakService
         // Format nomor: pastikan pakai 62
         $phoneNumber = $this->formatPhoneNumber($phoneNumber);
 
+        $headerImageUrl = config('services.qontak.wd_approved_header_image_url', 'https://puranusa.id/logo.png');
+
         return $this->sendWhatsApp(
             $customerName,
             $phoneNumber,
             $templateId,
-            [$customerName, $amount]
+            [$customerName, $amount],
+            'id',
+            $headerImageUrl
         );
     }
 

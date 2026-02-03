@@ -275,11 +275,20 @@ const cancelPasswordDialog = () => {
                     <p class="text-sm text-amber-700 dark:text-amber-300">
                         <strong>Catatan:</strong>
                     </p>
-                    <ul class="text-sm text-amber-700 dark:text-amber-300 list-disc list-inside space-y-1">
-                        <li>Setiap penarikan dikenakan <strong>biaya administrasi Rp 6.500</strong></li>
-                        <li>Penarikan akan diproses dalam 1-3 hari kerja</li>
-                        <li>Pastikan data rekening sudah benar</li>
-                    </ul>
+                    <ol class="text-sm text-amber-700 dark:text-amber-300 list-decimal list-inside space-y-2">
+                        <li>
+                            1. Setiap penarikan dikenakan <strong>biaya administrasi Rp 6.500</strong>.
+                        </li>
+                        <li>
+                            2. Periode transfer penarikan dana:
+                            <ul class="mt-1 list-disc list-inside space-y-1">
+                                <li>Pengajuan pukul 00.01-12.00 WIB diproses pukul 14.00 WIB.</li>
+                                <li>Pengajuan pukul 12.01-16.00 WIB diproses pukul 17.00 WIB.</li>
+                                <li>Pengajuan pukul 16.01-00.00 WIB diproses keesokan hari pukul 14.00 WIB.</li>
+                            </ul>
+                        </li>
+                        <li>3. Pastikan data rekening sudah benar.</li>
+                    </ol>
                 </div>
 
                 <div class="flex items-center justify-end gap-3">

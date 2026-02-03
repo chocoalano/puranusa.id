@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CustomerWalletTransaction;
 use App\Services\MidtransService;
-use App\Services\QontakService;
+use App\Jobs\SendWithdrawalApprovedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -120,7 +120,7 @@ class WithdrawalManagementController extends Controller
             $customer = $withdrawal->customer;
 
             if ($customer && $customer->phone) {
-                app(QontakService::class)->sendWithdrawalApproved(
+                SendWithdrawalApprovedNotification::dispatch(
                     $customer->name,
                     $customer->phone,
                     number_format((float) $withdrawal->amount, 0, ',', '.')

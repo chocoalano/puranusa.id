@@ -25,25 +25,36 @@ class OrderController extends Controller
         $sortBy = $request->input('sort_by', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
 
+        // Get all payment methods for filter
+        $paymentMethods = \App\Models\PaymentMethod::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+        [$ewalletMethodIds, $ewalletName] = $this->resolveEwalletData($paymentMethods);
+
         $query = Order::with(['customer', 'payments.method'])
-            ->when($search, function ($q) use ($search) {
-                $q->where('order_no', 'like', "%{$search}%")
-                    ->orWhereHas('customer', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%");
-                    });
-            })
-            ->when($status, function ($q) use ($status) {
-                $q->where('status', $status);
-            })
-            ->when($paymentMethod, function ($q) use ($paymentMethod) {
-                $q->whereHas('payments', function ($q) use ($paymentMethod) {
-                    $q->where('method_id', $paymentMethod);
+        ->when($search, function ($q) use ($search) {
+            $q->where(function ($qq) use ($search) {
+                $qq->where('order_no', 'like', "%{$search}%")
+                ->orWhereHas('customer', function ($qc) use ($search) {
+                    $qc->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
                 });
-            })
-            ->orderBy($sortBy, $sortOrder);
+            });
+        })
+        ->when($status, fn ($q) => $q->where('status', $status))
+        ->when($paymentMethod, function ($q) use ($paymentMethod, $ewalletMethodIds) {
+            if ($this->isEwalletFilter($paymentMethod, $ewalletMethodIds)) {
+                return $q->doesntHave('payments');
+            }
+
+            return $q->whereHas('payments', function ($qp) use ($paymentMethod) {
+                $qp->where('method_id', $paymentMethod);
+            });
+        })
+        ->orderBy($sortBy, $sortOrder);
 
         $orders = $query->paginate(15);
+        $this->attachEwalletPayments($orders, $ewalletName);
 
         $statistics = [
             'total_orders' => Order::count(),
@@ -53,11 +64,6 @@ class OrderController extends Controller
             'total_pending' => Order::where('status', 'pending')->count(),
             'total_completed' => Order::where('status', 'completed')->count(),
         ];
-
-        // Get all payment methods for filter
-        $paymentMethods = \App\Models\PaymentMethod::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'code']);
 
         return inertia('Admin/Orders/Index', [
             'orders' => $orders,
@@ -81,6 +87,12 @@ class OrderController extends Controller
         $search = $request->input('search');
         $paymentMethod = $request->input('payment_method');
 
+        // Get all payment methods for filter
+        $paymentMethods = \App\Models\PaymentMethod::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+        [$ewalletMethodIds, $ewalletName] = $this->resolveEwalletData($paymentMethods);
+
         $query = Order::with(['customer', 'payments.method'])
             ->where('status', 'pending')
             ->when($search, function ($q) use ($search) {
@@ -90,24 +102,24 @@ class OrderController extends Controller
                             ->orWhere('email', 'like', "%{$search}%");
                     });
             })
-            ->when($paymentMethod, function ($q) use ($paymentMethod) {
-                $q->whereHas('payments', function ($q) use ($paymentMethod) {
-                    $q->where('method_id', $paymentMethod);
+            ->when($paymentMethod, function ($q) use ($paymentMethod, $ewalletMethodIds) {
+                if ($this->isEwalletFilter($paymentMethod, $ewalletMethodIds)) {
+                    return $q->doesntHave('payments');
+                }
+
+                return $q->whereHas('payments', function ($qp) use ($paymentMethod) {
+                    $qp->where('method_id', $paymentMethod);
                 });
             })
             ->orderBy('created_at', 'desc');
 
         $orders = $query->paginate(15);
+        $this->attachEwalletPayments($orders, $ewalletName);
 
         $statistics = [
             'total_pending' => Order::where('status', 'pending')->count(),
             'total_amount' => Order::where('status', 'pending')->sum('grand_total'),
         ];
-
-        // Get all payment methods for filter
-        $paymentMethods = \App\Models\PaymentMethod::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'code']);
 
         return inertia('Admin/Orders/Pending', [
             'orders' => $orders,
@@ -128,6 +140,12 @@ class OrderController extends Controller
         $search = $request->input('search');
         $paymentMethod = $request->input('payment_method');
 
+        // Get all payment methods for filter
+        $paymentMethods = \App\Models\PaymentMethod::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+        [$ewalletMethodIds, $ewalletName] = $this->resolveEwalletData($paymentMethods);
+
         $query = Order::with(['customer', 'payments.method'])
             ->where('status', 'paid')
             ->when($search, function ($q) use ($search) {
@@ -137,24 +155,24 @@ class OrderController extends Controller
                             ->orWhere('email', 'like', "%{$search}%");
                     });
             })
-            ->when($paymentMethod, function ($q) use ($paymentMethod) {
-                $q->whereHas('payments', function ($q) use ($paymentMethod) {
-                    $q->where('method_id', $paymentMethod);
+            ->when($paymentMethod, function ($q) use ($paymentMethod, $ewalletMethodIds) {
+                if ($this->isEwalletFilter($paymentMethod, $ewalletMethodIds)) {
+                    return $q->doesntHave('payments');
+                }
+
+                return $q->whereHas('payments', function ($qp) use ($paymentMethod) {
+                    $qp->where('method_id', $paymentMethod);
                 });
             })
             ->orderBy('paid_at', 'desc');
 
         $orders = $query->paginate(15);
+        $this->attachEwalletPayments($orders, $ewalletName);
 
         $statistics = [
             'total_paid' => Order::where('status', 'paid')->count(),
             'total_amount' => Order::where('status', 'paid')->sum('grand_total'),
         ];
-
-        // Get all payment methods for filter
-        $paymentMethods = \App\Models\PaymentMethod::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'code']);
 
         return inertia('Admin/Orders/Paid', [
             'orders' => $orders,
@@ -507,6 +525,67 @@ class OrderController extends Controller
     public function update(Request $request, string $id)
     {
         //
+    }
+
+    /**
+     * Resolve ewallet identifiers and display name from payment methods list.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\PaymentMethod>  $paymentMethods
+     * @return array{0: array<int, string>, 1: string}
+     */
+    protected function resolveEwalletData($paymentMethods): array
+    {
+        $ewalletMethods = $paymentMethods->whereIn('code', ['wallet', 'ewallet']);
+        $ewalletMethodIds = $ewalletMethods
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->all();
+
+        $ewalletName = $ewalletMethods->first()?->name ?? 'E-Wallet';
+
+        return [$ewalletMethodIds, $ewalletName];
+    }
+
+    /**
+     * Determine if the payment method filter represents ewallet.
+     *
+     * @param  string|null  $paymentMethod
+     * @param  array<int, string>  $ewalletMethodIds
+     */
+    protected function isEwalletFilter(?string $paymentMethod, array $ewalletMethodIds): bool
+    {
+        if (! $paymentMethod) {
+            return false;
+        }
+
+        $normalized = strtolower((string) $paymentMethod);
+        if (in_array($normalized, ['wallet', 'ewallet'], true)) {
+            return true;
+        }
+
+        return in_array((string) $paymentMethod, $ewalletMethodIds, true);
+    }
+
+    /**
+     * Attach a display-only ewallet payment method for orders without payments.
+     *
+     * @param  \Illuminate\Pagination\LengthAwarePaginator  $orders
+     */
+    protected function attachEwalletPayments($orders, string $ewalletName): void
+    {
+        $orders->getCollection()->transform(function ($order) use ($ewalletName) {
+            if (! $order->relationLoaded('payments') || $order->payments->isNotEmpty()) {
+                return $order;
+            }
+
+            $order->setRelation('payments', collect([[
+                'method' => [
+                    'name' => $ewalletName,
+                ],
+            ]]));
+
+            return $order;
+        });
     }
 
     /**
