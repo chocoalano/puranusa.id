@@ -2270,12 +2270,12 @@ const _sfc_main$n = /* @__PURE__ */ defineComponent({
             _push2(ssrRenderComponent(unref(_sfc_main$r), { class: "space-y-3" }, {
               default: withCtx((_2, _push3, _parent3, _scopeId2) => {
                 if (_push3) {
-                  _push3(`<div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg"${_scopeId2}><p class="text-xs text-emerald-700 dark:text-emerald-400 mb-1"${_scopeId2}>Total Dirilis</p><p class="text-xl font-bold text-emerald-700 dark:text-emerald-400"${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(__props.customer.bonus_stats.total_released))}</p></div><div class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg"${_scopeId2}><p class="text-xs text-amber-700 dark:text-amber-400 mb-1"${_scopeId2}>Total Pending</p><p class="text-xl font-bold text-amber-700 dark:text-amber-400"${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(__props.customer.bonus_stats.total_pending))}</p></div>`);
+                  _push3(`<div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg"${_scopeId2}><p class="text-xs text-emerald-700 dark:text-emerald-400 mb-1"${_scopeId2}>Total Diproses</p><p class="text-xl font-bold text-emerald-700 dark:text-emerald-400"${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(__props.customer.bonus_stats.total_proses))}</p></div><div class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg"${_scopeId2}><p class="text-xs text-amber-700 dark:text-amber-400 mb-1"${_scopeId2}>Total Pending</p><p class="text-xl font-bold text-amber-700 dark:text-amber-400"${_scopeId2}>${ssrInterpolate(unref(formatCurrency2)(__props.customer.bonus_stats.total_pending))}</p></div>`);
                 } else {
                   return [
                     createVNode("div", { class: "p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg" }, [
-                      createVNode("p", { class: "text-xs text-emerald-700 dark:text-emerald-400 mb-1" }, "Total Dirilis"),
-                      createVNode("p", { class: "text-xl font-bold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency2)(__props.customer.bonus_stats.total_released)), 1)
+                      createVNode("p", { class: "text-xs text-emerald-700 dark:text-emerald-400 mb-1" }, "Total Diproses"),
+                      createVNode("p", { class: "text-xl font-bold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency2)(__props.customer.bonus_stats.total_proses)), 1)
                     ]),
                     createVNode("div", { class: "p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg" }, [
                       createVNode("p", { class: "text-xs text-amber-700 dark:text-amber-400 mb-1" }, "Total Pending"),
@@ -2303,8 +2303,8 @@ const _sfc_main$n = /* @__PURE__ */ defineComponent({
               createVNode(unref(_sfc_main$r), { class: "space-y-3" }, {
                 default: withCtx(() => [
                   createVNode("div", { class: "p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg" }, [
-                    createVNode("p", { class: "text-xs text-emerald-700 dark:text-emerald-400 mb-1" }, "Total Dirilis"),
-                    createVNode("p", { class: "text-xl font-bold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency2)(__props.customer.bonus_stats.total_released)), 1)
+                    createVNode("p", { class: "text-xs text-emerald-700 dark:text-emerald-400 mb-1" }, "Total Diproses"),
+                    createVNode("p", { class: "text-xl font-bold text-emerald-700 dark:text-emerald-400" }, toDisplayString(unref(formatCurrency2)(__props.customer.bonus_stats.total_proses)), 1)
                   ]),
                   createVNode("div", { class: "p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg" }, [
                     createVNode("p", { class: "text-xs text-amber-700 dark:text-amber-400 mb-1" }, "Total Pending"),

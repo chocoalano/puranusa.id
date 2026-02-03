@@ -71,6 +71,7 @@ export interface Customer {
         omzet_group: number;
     };
     bonus_stats: {
+        total_proses: number;
         total_released: number;
         total_pending: number;
     };
