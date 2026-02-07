@@ -110,7 +110,7 @@ class LogRegController extends Controller
 
             // kolom baru (nullable di DB)
             'nik' => ['nullable', 'string', 'max:32', 'regex:/^\d{8,32}$/'], // longgar tapi tetap angka
-            'gender' => ['nullable', Rule::in(['laki-laki', 'perempuan'])],
+            'gender' => ['nullable', Rule::in(['L', 'P', 'male', 'female', 'laki-laki', 'perempuan'])],
             'alamat' => ['nullable', 'string'],
 
             'password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -149,6 +149,14 @@ class LogRegController extends Controller
         $validated['phone'] = trim($validated['phone']);
         if (! empty($validated['nik'])) {
             $validated['nik'] = preg_replace('/\D+/', '', $validated['nik']); // buang selain angka
+        }
+        if (! empty($validated['gender'])) {
+            $genderValue = strtolower(trim($validated['gender']));
+            $validated['gender'] = match ($genderValue) {
+                'laki-laki', 'male', 'l' => 'L',
+                'perempuan', 'female', 'p' => 'P',
+                default => $validated['gender'],
+            };
         }
 
         // Validasi batas maksimal akun per email (7 akun)

@@ -16,11 +16,19 @@ const props = defineProps<{
     customer: Customer;
 }>();
 
+const normalizeGender = (value?: string | null) => {
+    if (!value) return '';
+    const normalized = value.toLowerCase();
+    if (['laki-laki', 'male', 'l'].includes(normalized)) return 'L';
+    if (['perempuan', 'female', 'p'].includes(normalized)) return 'P';
+    return '';
+};
+
 const form = useForm({
     name: props.customer.name,
     username: props.customer.username || '',
     nik: props.customer.nik || '',
-    gender: props.customer.gender || '',
+    gender: normalizeGender(props.customer.gender),
     alamat: props.customer.alamat || '',
     email: props.customer.email,
     phone: props.customer.phone,
@@ -141,11 +149,11 @@ const submitForm = () => {
                             <SelectTrigger>
                                 <SelectValue placeholder="Pilih jenis kelamin" />
                             </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="laki-laki">Laki-laki</SelectItem>
-                                <SelectItem value="perempuan">Perempuan</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <SelectContent>
+                        <SelectItem value="L">Laki-laki</SelectItem>
+                        <SelectItem value="P">Perempuan</SelectItem>
+                    </SelectContent>
+                </Select>
                         <p v-if="form.errors.gender" class="text-sm text-red-500">
                             {{ form.errors.gender }}
                         </p>

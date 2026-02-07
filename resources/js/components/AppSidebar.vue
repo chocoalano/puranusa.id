@@ -35,6 +35,7 @@ import { promotions as promotionsRewardIndex, lifetime as lifetimeRewardIndex, p
 
 import { index as documentationIndex } from '@/actions/App/Http/Controllers/DocumentationController';
 
+import { computed } from 'vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -48,8 +49,8 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { type AppPageProps, type NavItem } from '@/types';
+import { Link, usePage } from '@inertiajs/vue3';
 import {
     BookOpen,
     LayoutGrid,
@@ -84,7 +85,52 @@ import {
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
+interface ZennerClubCategory {
+    id: number;
+    name: string;
+    slug?: string | null;
+    parent_id?: number | null;
+}
+
+const page = usePage<AppPageProps>();
+const zennerClubCategories = computed<ZennerClubCategory[]>(() => page.props.zennerClubCategories ?? []);
+const zennerCategoryMap = computed(() => new Map(zennerClubCategories.value.map((item) => [item.id, item])));
+
+const buildZennerCategoryLabel = (category: ZennerClubCategory) => {
+    const parent = category.parent_id ? zennerCategoryMap.value.get(category.parent_id) : null;
+    return parent ? `${parent.name} / ${category.name}` : category.name;
+};
+
+const welcomeVideoBaseUrl = '/admin/zenner/welcome-videos';
+const zennerClubMenuItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Kelola Konten',
+            href: '/admin/zenner-club/contents',
+            icon: FileText,
+        },
+        {
+            title: 'Kelola Kategori',
+            href: '/admin/zenner-club/categories',
+            icon: FolderTree,
+        },
+    ];
+
+    if (!zennerClubCategories.value.length) {
+        return items;
+    }
+
+    return [
+        ...items,
+        ...zennerClubCategories.value.map((category) => ({
+        title: buildZennerCategoryLabel(category),
+        href: `${welcomeVideoBaseUrl}?category=${encodeURIComponent(category.slug ?? String(category.id))}`,
+        icon: BookOpen,
+        })),
+    ];
+});
+
+const mainNavItems = computed<NavItem[]>(() => [
     {
         title: 'Dashboard',
         href: dashboard(),
@@ -313,110 +359,8 @@ const mainNavItems: NavItem[] = [
         title: 'Zenner Club',
         href: '#',
         icon: Star,
-        items: [
-            {
-                title: 'Welcome Video',
-                href: '/admin/zenner/welcome-videos',
-                icon: BookOpen,
-            },
-            {
-                title: 'Join Medsos',
-                href: '/admin/zenner/join-medsos',
-                icon: Heart,
-            },
-            {
-                title: 'Marketing Kit',
-                href: '/admin/zenner/marketing-kits',
-                icon: Package,
-            },
-            {
-                title: 'Copywriting',
-                href: '/admin/zenner/copywritings',
-                icon: FileEdit,
-            },
-            {
-                title: 'Foto & Video',
-                href: '/admin/zenner/galleries',
-                icon: Grid3x3,
-            },
-            {
-                title: 'Procure Produk & Insentif',
-                href: '/admin/zenner/procure-products',
-                icon: ShoppingCart,
-            },
-            {
-                title: 'Testimoni Produk',
-                href: '/admin/zenner/testimonials',
-                icon: Star,
-            },
-            {
-                title: 'Academy (Courses)',
-                href: '/admin/zenner/courses',
-                icon: BookOpen,
-            },
-            {
-                title: 'Academy (Lessons)',
-                href: '/admin/zenner/lessons',
-                icon: BookCheck,
-            },
-            {
-                title: 'Skema Insentif',
-                href: '/admin/zenner/incentive-rules',
-                icon: Gift,
-            },
-            {
-                title: 'Produk Knowledge',
-                href: '/admin/zenner/product-knowledges',
-                icon: BookDashed,
-            },
-            {
-                title: 'Cara Jualan (Organik)',
-                href: '/admin/zenner/selling-guides',
-                icon: TrendingUp,
-            },
-            {
-                title: 'Cara Iklan (Ads)',
-                href: '/admin/zenner/ads-guides',
-                icon: BadgePercent,
-            },
-            {
-                title: 'Webinar & Training',
-                href: '/admin/zenner/webinars',
-                icon: FileText,
-            },
-            {
-                title: 'Leaderboard Config',
-                href: '/admin/zenner/leaderboard-configs',
-                icon: ChartBar,
-            },
-            {
-                title: 'Leaderboard Entries',
-                href: '/admin/zenner/leaderboard-entries',
-                icon: TrendingUp,
-            },
-            {
-                title: 'Sertifikat Program',
-                href: '/admin/zenner/certificates',
-                icon: FileText,
-            },
-            {
-                title: 'Monthly Challenge',
-                href: '/admin/zenner/monthly-challenges',
-                icon: Star,
-            },
-            {
-                title: 'Top Affiliate',
-                href: '/admin/zenner/top-affiliates',
-                icon: TrendingUp,
-            },
-            {
-                title: 'Hall of Fame',
-                href: '/admin/zenner/hall-of-fames',
-                icon: Infinity,
-            },
-        ],
+        items: zennerClubMenuItems.value,
     },
-
     {
         title: 'Pengaturan',
         href: '#',
@@ -464,7 +408,7 @@ const mainNavItems: NavItem[] = [
             },
         ],
     },
-];
+]);
 
 const footerNavItems: NavItem[] = [
     {

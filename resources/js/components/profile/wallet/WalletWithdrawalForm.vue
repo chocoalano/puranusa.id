@@ -58,6 +58,8 @@ const form = useForm({
 
 // Biaya administrasi penarikan
 const ADMIN_FEE = 6500;
+const MIN_WITHDRAWAL = 10000;
+const MIN_WALLET_BALANCE = 16500;
 
 // Computed untuk menampilkan ringkasan penarikan
 const withdrawalSummary = computed(() => {
@@ -82,8 +84,12 @@ const handleSubmit = () => {
     }
 
     // Validate form first
-    if (!form.amount || parseFloat(form.amount) < 50000) {
-        toast.error('Jumlah penarikan minimal Rp 50.000');
+    if (props.maxAmount < MIN_WALLET_BALANCE) {
+        toast.error('Saldo wallet minimal Rp 16.500 untuk melakukan penarikan');
+        return;
+    }
+    if (!form.amount || parseFloat(form.amount) < MIN_WITHDRAWAL) {
+        toast.error('Jumlah penarikan minimal Rp 10.000');
         return;
     }
     if (parseFloat(form.amount) > props.maxAmount) {
@@ -196,16 +202,16 @@ const cancelPasswordDialog = () => {
                             id="withdrawal_amount"
                             v-model="form.amount"
                             type="number"
-                            placeholder="Minimal Rp 50.000"
+                            placeholder="Minimal Rp 10.000"
                             class="pl-10"
-                            min="50000"
+                            min="10000"
                             :max="maxAmount"
                             :disabled="hasPendingWithdrawal || !isProfileComplete"
                             required
                         />
                     </div>
                     <p class="text-xs text-muted-foreground">
-                        Minimum Rp 50.000 - Maksimal Rp {{ maxAmount.toLocaleString('id-ID') }}
+                        Minimum Rp 10.000 - Maksimal Rp {{ maxAmount.toLocaleString('id-ID') }}
                     </p>
                     <p v-if="form.errors.amount" class="text-sm text-red-500">
                         {{ form.errors.amount }}
@@ -254,7 +260,7 @@ const cancelPasswordDialog = () => {
                 </div>
 
                 <!-- Info Biaya Admin -->
-                <div v-if="form.amount && parseFloat(form.amount) >= 50000" class="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2">
+                <div v-if="form.amount && parseFloat(form.amount) >= 10000" class="p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2">
                     <h4 class="font-semibold text-sm">Rincian Penarikan</h4>
                     <div class="flex justify-between text-sm">
                         <span class="text-muted-foreground">Jumlah Penarikan:</span>
@@ -277,17 +283,20 @@ const cancelPasswordDialog = () => {
                     </p>
                     <ol class="text-sm text-amber-700 dark:text-amber-300 list-decimal list-inside space-y-2">
                         <li>
-                            1. Setiap penarikan dikenakan <strong>biaya administrasi Rp 6.500</strong>.
+                            Minimal penarikan Rp 10.000 dengan minimal saldo wallet Anda sebesar Rp 16.500
                         </li>
                         <li>
-                            2. Periode transfer penarikan dana:
+                            Setiap penarikan dikenakan biaya administrasi Rp 6.500
+                        </li>
+                        <li>
+                            Periode Pentransferan dari Penarikan Dana
                             <ul class="mt-1 list-disc list-inside space-y-1">
-                                <li>Pengajuan pukul 00.01-12.00 WIB diproses pukul 14.00 WIB.</li>
-                                <li>Pengajuan pukul 12.01-16.00 WIB diproses pukul 17.00 WIB.</li>
-                                <li>Pengajuan pukul 16.01-00.00 WIB diproses keesokan hari pukul 14.00 WIB.</li>
+                                <li>Proses Transfer dari Penarikan Dana yang dilakukan di hari yang sama Pkl. 00.01 WIB sd Pkl. 12.00 WIB akan di TRANSFER pada Pkl 14.00 WIB</li>
+                                <li>Proses Transfer dari Penarikan Dana ynag dilakukan di hari yang sama Pkl. 12.01 sd Pkl. 16.00 WIB akan di TRANSFER pada Pkl. 17.00 WIB</li>
+                                <li>Sedangan Penarikan dana Pkl. 16.01 WIB sd Pkl. 00.00 akan di transfer ke esokan harinya di Pkl. 14.00 WIB</li>
                             </ul>
                         </li>
-                        <li>3. Pastikan data rekening sudah benar.</li>
+                        <li>Pastikan data rekening sudah benar.</li>
                     </ol>
                 </div>
 

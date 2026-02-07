@@ -14,6 +14,7 @@ use App\Http\Controllers\Ecommerce\NewsletterController;
 use App\Http\Controllers\Ecommerce\PageController;
 use App\Http\Controllers\Ecommerce\ProdukController;
 use App\Http\Controllers\Ecommerce\TokoController;
+use App\Http\Controllers\Ecommerce\ZennerClubController;
 
 Route::get('/beranda', [BerandaController::class, 'index'])->name('ecommerce.beranda');
 Route::get('/toko', [TokoController::class, 'index'])->name('ecommerce.toko');
@@ -53,6 +54,9 @@ Route::middleware(['client.auth'])->group(function () {
     Route::get('/client/profile/member-tree/{memberId}', [ProfileController::class, 'getMemberTree'])->name('client.profile.member-tree');
     Route::get('/client/profile/search-member', [ProfileController::class, 'searchMemberInTree'])->name('client.profile.search-member');
     Route::post('/client/profile/claim-lifetime-reward', [ProfileController::class, 'claimLifetimeReward'])->name('client.profile.claim-lifetime-reward');
+
+    Route::get('/client/zenner-club/contents/{content}', [ZennerClubController::class, 'show'])
+        ->name('client.zenner-club.contents.show');
 
     // Address Management Routes
     Route::post('/client/profile/addresses', [ProfileController::class, 'storeAddress'])->name('client.profile.addresses.store');

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StockistController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ZennerClubController;
 use App\Http\Controllers\DocumentationController;
 
 // Impersonating routes - accessible without full auth middleware (protected by session)
@@ -93,5 +94,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/tax-summary', [ReportController::class, 'tax_summary_report'])->name('tax_summary_report');
             Route::get('/tax-summary/export', [ReportController::class, 'tax_summary_report_export'])->name('tax_summary_report.export');
         });
+
+    Route::prefix('admin/zenner-club')->group(function () {
+        // Contents
+        Route::get('contents', [ZennerClubController::class, 'index']);
+        Route::get('contents/create', [ZennerClubController::class, 'create']);
+        Route::post('contents', [ZennerClubController::class, 'store']);
+        Route::get('contents/{id}', [ZennerClubController::class, 'show']);
+        Route::get('contents/{id}/edit', [ZennerClubController::class, 'edit']);
+        Route::put('contents/{id}', [ZennerClubController::class, 'update']);
+        Route::delete('contents/{id}', [ZennerClubController::class, 'destroy']);
+
+        // Categories
+        Route::get('categories', [ZennerClubController::class, 'categoriesIndex']);
+        Route::get('categories/create', [ZennerClubController::class, 'categoriesCreate']);
+        Route::post('categories', [ZennerClubController::class, 'categoriesStore']);
+        Route::get('categories/{id}', [ZennerClubController::class, 'categoriesShow']);
+        Route::get('categories/{id}/edit', [ZennerClubController::class, 'categoriesEdit']);
+        Route::put('categories/{id}', [ZennerClubController::class, 'categoriesUpdate']);
+        Route::delete('categories/{id}', [ZennerClubController::class, 'categoriesDestroy']);
+    });
+
+    Route::get('admin/zenner/welcome-videos', [ZennerClubController::class, 'categoryView'])
+        ->name('admin.zenner.welcome-videos');
 
 });

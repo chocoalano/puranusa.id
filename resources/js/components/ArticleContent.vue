@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 interface Block {
     id: string;
     type: 'heading' | 'paragraph' | 'image' | 'list' | 'quote' | 'code' | 'video' | 'divider';
@@ -11,9 +12,19 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const parsedBlocks = typeof props.blocks === 'string'
-    ? JSON.parse(props.blocks)
-    : props.blocks;
+const parsedBlocks = computed(() => {
+    if (typeof props.blocks !== 'string') {
+        return props.blocks;
+    }
+
+    try {
+        return JSON.parse(props.blocks);
+    } catch {
+        return null;
+    }
+});
+
+const isHtmlContent = computed(() => typeof props.blocks === 'string' && parsedBlocks.value === null);
 
 const extractVideoId = (url: string) => {
     const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
@@ -22,8 +33,15 @@ const extractVideoId = (url: string) => {
 </script>
 
 <template>
-    <article class="prose prose-lg max-w-none dark:prose-invert">
-        <template v-for="block in parsedBlocks" :key="block.id">
+    <article class="max-w-none text-foreground">
+        <div
+            v-if="isHtmlContent"
+            class="prose prose-lg max-w-none dark:prose-invert prose-headings:scroll-mt-24 prose-a:text-primary prose-img:rounded-lg prose-img:border prose-hr:my-6 [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_th]:border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_td]:border [&_td]:px-3 [&_td]:py-2"
+            v-html="props.blocks"
+        />
+
+        <div v-else class="space-y-6">
+            <template v-for="block in parsedBlocks" :key="block.id">
             <!-- Heading -->
             <component
                 :is="`h${block.content.level || 2}`"
@@ -34,14 +52,14 @@ const extractVideoId = (url: string) => {
             </component>
 
             <!-- Paragraph -->
-            <div v-else-if="block.type === 'paragraph'" class="leading-relaxed" v-html="block.content.text"></div>
+            <div v-else-if="block.type === 'paragraph'" class="leading-relaxed text-base" v-html="block.content.text"></div>
 
             <!-- Image -->
-            <figure v-else-if="block.type === 'image'" class="my-8">
+            <figure v-else-if="block.type === 'image'" class="space-y-2">
                 <img
                     :src="block.content.url"
                     :alt="block.content.alt"
-                    class="rounded-lg w-full object-cover shadow-lg"
+                    class="rounded-lg w-full object-cover border"
                 />
                 <figcaption v-if="block.content.caption" class="mt-2 text-center text-sm text-muted-foreground">
                     {{ block.content.caption }}
@@ -58,7 +76,7 @@ const extractVideoId = (url: string) => {
             </ol>
 
             <!-- Quote -->
-            <blockquote v-else-if="block.type === 'quote'" class="border-l-4 border-primary pl-6 py-2 italic bg-muted/30 rounded-r-lg my-6">
+            <blockquote v-else-if="block.type === 'quote'" class="rounded-lg border-l-4 border-primary bg-muted/30 px-5 py-3 italic">
                 <p class="text-lg">{{ block.content.text }}</p>
                 <footer v-if="block.content.author" class="mt-2 text-sm font-semibold not-italic">
                     — {{ block.content.author }}
@@ -66,15 +84,15 @@ const extractVideoId = (url: string) => {
             </blockquote>
 
             <!-- Code -->
-            <div v-else-if="block.type === 'code'" class="my-6">
-                <div class="bg-muted px-4 py-2 rounded-t-lg border-b border-border">
+            <div v-else-if="block.type === 'code'" class="rounded-lg border overflow-hidden">
+                <div class="bg-muted px-4 py-2 border-b border-border">
                     <span class="text-xs font-mono text-muted-foreground uppercase">{{ block.content.language }}</span>
                 </div>
-                <pre class="!mt-0 rounded-t-none"><code class="language-{{ block.content.language }}">{{ block.content.code }}</code></pre>
+                <pre class="!mt-0"><code class="language-{{ block.content.language }}">{{ block.content.code }}</code></pre>
             </div>
 
             <!-- Video -->
-            <div v-else-if="block.type === 'video'" class="my-8 aspect-video rounded-lg overflow-hidden shadow-lg">
+            <div v-else-if="block.type === 'video'" class="aspect-video rounded-lg overflow-hidden border">
                 <iframe
                     v-if="extractVideoId(block.content.url)"
                     :src="`https://www.youtube.com/embed/${extractVideoId(block.content.url)}`"
@@ -86,7 +104,8 @@ const extractVideoId = (url: string) => {
             </div>
 
             <!-- Divider -->
-            <hr v-else-if="block.type === 'divider'" class="my-8 border-border" />
-        </template>
+            <hr v-else-if="block.type === 'divider'" class="border-border" />
+            </template>
+        </div>
     </article>
 </template>

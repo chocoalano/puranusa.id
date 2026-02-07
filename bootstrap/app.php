@@ -272,77 +272,15 @@ return Application::configure(basePath: dirname(__DIR__))
             // ==========================================================
 
             // Welcome Video
-            'admin/zenner/welcome-videos',
-            'admin/zenner/welcome-videos/*',
-
-            // Join Medsos
-            'admin/zenner/join-medsos',
-            'admin/zenner/join-medsos/*',
-
-            // Marketing Kit
-            'admin/zenner/marketing-kits',
-            'admin/zenner/marketing-kits/*',
-
-            // Copywriting
-            'admin/zenner/copywritings',
-            'admin/zenner/copywritings/*',
-
-            // Gallery (Foto & Video)
-            'admin/zenner/galleries',
-            'admin/zenner/galleries/*',
-
-            // Procure Produk & Insentif
-            'admin/zenner/procure-products',
-            'admin/zenner/procure-products/*',
-
-            // Testimoni Produk
-            'admin/zenner/testimonials',
-            'admin/zenner/testimonials/*',
-
-            // Zenner Academy - Courses
-            'admin/zenner/courses',
-            'admin/zenner/courses/*',
-
-            // Zenner Academy - Lessons
-            'admin/zenner/lessons',
-            'admin/zenner/lessons/*',
-
-            // Skema Insentif (Rules)
-            'admin/zenner/incentive-rules',
-            'admin/zenner/incentive-rules/*',
-
-            // Produk Knowledge
-            'admin/zenner/product-knowledges',
-            'admin/zenner/product-knowledges/*',
-
-            // Cara Jualan (Organik)
-            'admin/zenner/selling-guides',
-            'admin/zenner/selling-guides/*',
-
-            // Cara Iklan (Ads)
-            'admin/zenner/ads-guides',
-            'admin/zenner/ads-guides/*',
-
-            // Webinar & Online Training
-            'admin/zenner/webinars',
-            'admin/zenner/webinars/*',
-
-            // Leaderboard Config
-            'admin/zenner/leaderboard-configs',
-            'admin/zenner/leaderboard-configs/*',
-
-            // Sertifikat Program
-            'admin/zenner/certificates',
-            'admin/zenner/certificates/*',
-
-            // Monthly Challenge
-            'admin/zenner/monthly-challenges',
-            'admin/zenner/monthly-challenges/*',
-
-            // Hall of Fame
-            'admin/zenner/hall-of-fames',
-            'admin/zenner/hall-of-fames/*',
-
+            'admin/zenner-club/welcome-videos',
+            'admin/zenner-club/contents',
+            'admin/zenner-club/contents/create',
+            'admin/zenner-club/contents/*',
+            'admin/zenner-club/contents/*/edit',
+            'admin/zenner-club/categories',
+            'admin/zenner-club/categories/create',
+            'admin/zenner-club/categories/*',
+            'admin/zenner-club/categories/*/edit',
         ]);
 
         $middleware->web(append: [

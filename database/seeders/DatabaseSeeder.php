@@ -45,39 +45,42 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('Seeding users...');
-        $this->call(UserSeeder::class);
+        // $this->command->info('Seeding users...');
+        // $this->call(UserSeeder::class);
 
-        $this->command->info('Seeding categories...');
-        $this->seedCategories();
+        // $this->command->info('Seeding categories...');
+        // $this->seedCategories();
 
-        $this->command->info('Seeding products...');
-        $this->seedProducts();
+        // $this->command->info('Seeding products...');
+        // $this->seedProducts();
 
-        $this->command->info('Seeding payment methods...');
-        $this->seedPaymentMethods();
+        // $this->command->info('Seeding payment methods...');
+        // $this->seedPaymentMethods();
 
-        $this->command->info('Seeding settings...');
-        $this->seedSettings();
+        // $this->command->info('Seeding settings...');
+        // $this->seedSettings();
 
-        $this->command->info('Seeding customers...');
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Customer> $customers */
-        $customers = $this->seedCustomers();
+        // $this->command->info('Seeding customers...');
+        // /** @var \Illuminate\Database\Eloquent\Collection<int, Customer> $customers */
+        // $customers = $this->seedCustomers();
 
-        $this->command->info('Seeding customer addresses...');
-        $this->seedCustomerAddresses($customers);
+        // $this->command->info('Seeding customer addresses...');
+        // $this->seedCustomerAddresses($customers);
 
-        $this->command->info('Seeding customer network...');
-        $this->seedCustomerNetwork($customers);
+        // $this->command->info('Seeding customer network...');
+        // $this->seedCustomerNetwork($customers);
 
-        $this->command->info('Seeding customer bonuses...');
-        $this->seedCustomerBonuses($customers);
+        // $this->command->info('Seeding customer bonuses...');
+        // $this->seedCustomerBonuses($customers);
 
-        $this->command->info('Seeding e-commerce data...');
-        $this->seedEcommerceData($customers);
+        // $this->command->info('Seeding e-commerce data...');
+        // $this->seedEcommerceData($customers);
 
-        $this->command->info('Seeding additional data...');
-        $this->seedAdditionalData();
+        // $this->command->info('Seeding additional data...');
+        // $this->seedAdditionalData();
+
+        $this->command->info('Seeding Zenner Club contents...');
+        $this->call(ZennerClubSeeder::class);
 
         $this->command->info('Database seeding completed!');
     }

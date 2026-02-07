@@ -6,7 +6,6 @@ import ArticleContent from '@/components/ArticleContent.vue';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Calendar, Clock, Tag, ArrowLeft, Share2 } from 'lucide-vue-next';
 
 interface Block {
@@ -108,27 +107,30 @@ const getFeaturedImage = () => {
             </div>
 
             <article class="container mx-auto px-4 py-8 md:py-12">
-                <div class="max-w-4xl mx-auto">
+                <div class="max-w-4xl mx-auto space-y-10">
                     <!-- Article Header -->
-                    <header class="mb-8">
-                        <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
-                            {{ article.title }}
-                        </h1>
-
-                        <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
-                            <div class="flex items-center gap-2">
-                                <Calendar class="h-4 w-4" />
-                                <time>{{ article.published_at }}</time>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <Clock class="h-4 w-4" />
-                                <span>{{ article.reading_time }} menit baca</span>
+                    <header class="rounded-2xl border bg-white dark:bg-gray-900 p-6 md:p-8 shadow-sm space-y-6">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div class="space-y-3">
+                                <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+                                    {{ article.title }}
+                                </h1>
+                                <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                    <div class="flex items-center gap-2">
+                                        <Calendar class="h-4 w-4" />
+                                        <time>{{ article.published_at }}</time>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <Clock class="h-4 w-4" />
+                                        <span>{{ article.reading_time }} menit baca</span>
+                                    </div>
+                                </div>
                             </div>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 @click="shareArticle"
-                                class="ml-auto gap-2"
+                                class="gap-2"
                             >
                                 <Share2 class="h-4 w-4" />
                                 Bagikan
@@ -136,7 +138,7 @@ const getFeaturedImage = () => {
                         </div>
 
                         <!-- Tags -->
-                        <div v-if="article.tags.length > 0" class="flex flex-wrap gap-2 mb-6">
+                        <div v-if="article.tags.length > 0" class="flex flex-wrap items-center gap-2">
                             <Tag class="h-4 w-4 text-muted-foreground" />
                             <Badge
                                 v-for="tag in article.tags"
@@ -148,28 +150,22 @@ const getFeaturedImage = () => {
                                 {{ tag }}
                             </Badge>
                         </div>
-
-                        <Separator />
                     </header>
 
                     <!-- Article Content -->
-                    <div class="prose prose-lg max-w-none dark:prose-invert mb-12">
+                    <div class="rounded-2xl border bg-white dark:bg-gray-900 p-6 md:p-8 shadow-sm">
                         <ArticleContent v-if="article.blocks && article.blocks.length > 0" :blocks="article.blocks" />
                         <p v-else class="text-muted-foreground">Konten artikel tidak tersedia.</p>
                     </div>
 
-                    <Separator class="my-12" />
-
                     <!-- Article Footer -->
-                    <footer class="mb-12">
-                        <div class="flex items-center justify-between">
-                            <div class="flex flex-wrap gap-2">
-                                <span class="text-sm text-muted-foreground">Bagikan:</span>
-                                <Button variant="outline" size="sm" @click="shareArticle">
-                                    <Share2 class="h-4 w-4 mr-2" />
-                                    Bagikan Artikel
-                                </Button>
-                            </div>
+                    <footer class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="text-sm text-muted-foreground">Bagikan:</span>
+                            <Button variant="outline" size="sm" @click="shareArticle">
+                                <Share2 class="h-4 w-4 mr-2" />
+                                Bagikan Artikel
+                            </Button>
                         </div>
                     </footer>
 

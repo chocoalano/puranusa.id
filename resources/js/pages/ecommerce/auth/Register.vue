@@ -25,6 +25,18 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const page = usePage()
+
+const referralFromQuery = computed(() => {
+  try {
+    const url = new URL(page.url, 'http://localhost')
+    return (url.searchParams.get('ref') || url.searchParams.get('ref_code') || '').trim()
+  } catch {
+    return ''
+  }
+})
+
+const initialRefCode = (props.ref_code || referralFromQuery.value || '').trim()
+const isReferralLocked = computed(() => !!initialRefCode)
 const flashSuccess = computed(() => (page.props as any).flash?.success)
 
 const form = useForm({
@@ -33,22 +45,31 @@ const form = useForm({
   email: '',
   phone: '',
   nik: '',
-  gender: '' as '' | 'laki-laki' | 'perempuan',
+  gender: '' as '' | 'L' | 'P',
   alamat: '',
   password: '',
   password_confirmation: '',
-  ref_code: props.ref_code ?? '',
+  ref_code: initialRefCode,
 })
 
 const showPassword = ref(false)
 const showPasswordConfirmation = ref(false)
 
 const submit = () => {
+  form.transform((data) => ({
+    ...data,
+    ref_code: isReferralLocked.value ? (data.ref_code || '').trim() : ((data.ref_code || '').trim() || null),
+  }))
+
   form.post('/client/register', {
     onSuccess: () => {
       toast.success('Pendaftaran berhasil! Selamat datang!')
     },
     onError: (errors) => {
+      if (errors.ref_code && isReferralLocked.value) {
+        toast.error('Kode referral pada link tidak valid. Silakan gunakan link referral yang benar atau daftar tanpa referral.')
+        return
+      }
       const firstError = Object.values(errors)[0]
       const errorMessage =
         typeof firstError === 'string'
@@ -286,8 +307,8 @@ const submit = () => {
                     <SelectValue placeholder="Pilih jenis kelamin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="laki-laki">Laki-laki</SelectItem>
-                    <SelectItem value="perempuan">Perempuan</SelectItem>
+                    <SelectItem value="L">Laki-laki</SelectItem>
+                    <SelectItem value="P">Perempuan</SelectItem>
                   </SelectContent>
                 </Select>
                 <p v-if="form.errors.gender" class="text-sm text-destructive">
@@ -335,14 +356,27 @@ const submit = () => {
                     class="pl-10"
                     :class="{ 'border-destructive': form.errors.ref_code }"
                     autocomplete="off"
+                    :disabled="isReferralLocked"
+                    :readonly="isReferralLocked"
                   />
                 </div>
                 <p v-if="form.errors.ref_code" class="text-sm text-destructive">
                   {{ form.errors.ref_code }}
                 </p>
+                <p v-else-if="isReferralLocked" class="text-xs text-muted-foreground">
+                  Kode referral diisi otomatis dari link dan tidak dapat diubah.
+                  Jika salah, silakan daftar tanpa referral.
+                </p>
                 <p v-else class="text-xs text-muted-foreground">
                   Masukkan kode referral dari sponsor yang mengajak Anda (jika ada)
                 </p>
+                <Link
+                  v-if="isReferralLocked"
+                  href="/client/register"
+                  class="inline-flex text-xs font-medium text-primary hover:underline"
+                >
+                  Daftar tanpa referral
+                </Link>
               </div>
 
               <!-- Password -->

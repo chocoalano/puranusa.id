@@ -20,6 +20,7 @@ import BonusTab from '@/components/profile/BonusTab.vue';
 import NetworkStatsCard from '@/components/profile/NetworkStatsCard.vue';
 import PromotionsRewardsTab from '@/components/profile/PromotionsRewardsTab.vue';
 import LifetimeCashRewardsTab from '@/components/profile/LifetimeCashRewardsTab.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface NetworkMember {
     id: number;
@@ -160,6 +161,29 @@ interface LifetimeReward {
     accumulated_right: number;
 }
 
+interface ZennerClubChild {
+    id: number;
+    name: string;
+    slug: string;
+    contents: ZennerClubContent[];
+}
+
+interface ZennerClubCategory {
+    id: number;
+    name: string;
+    slug: string;
+    contents: ZennerClubContent[];
+    children: ZennerClubChild[];
+}
+
+interface ZennerClubContent {
+    id: number;
+    title: string;
+    slug: string;
+    file: string | null;
+    vlink: string | null;
+}
+
 const props = defineProps<{
     customer: Customer;
     orders: Order[];
@@ -185,6 +209,7 @@ const props = defineProps<{
     claimedPromotionRewards: ClaimedReward[];
     lifetimeRewards: LifetimeReward[];
     claimedLifetimeRewards: ClaimedReward[];
+    zennerClubCategories: ZennerClubCategory[];
 }>();
 
 const page = usePage();
@@ -209,6 +234,41 @@ const activeTab = computed(() => {
         return 'profile';
     }
 });
+
+const highlightNames = new Set([
+    'start here',
+    'marketing kit',
+    'zenner academy',
+    'leaderboard',
+    'rules & faq',
+]);
+
+const normalizeName = (name: string) => name.toLowerCase().replace(/\s+/g, ' ').trim();
+
+const zennerClubHighlights = computed(() => {
+    const categories = props.zennerClubCategories ?? [];
+    if (!categories.length) return [];
+
+    const filtered = categories.filter((category) => highlightNames.has(normalizeName(category.name)));
+    const selected = filtered.length ? filtered : categories;
+
+    return selected.map((category) => ({
+        id: category.id,
+        title: category.name,
+        slug: category.slug,
+        contents: category.contents ?? [],
+        children: category.children ?? [],
+        stats: {
+            contents: category.contents?.length ?? 0,
+            children: category.children?.length ?? 0,
+            childContents: (category.children ?? []).reduce((sum, child) => sum + (child.contents?.length ?? 0), 0),
+        },
+    }));
+});
+
+const getZennerContentLink = (content: ZennerClubContent) => {
+    return `/client/zenner-club/contents/${content.id}`;
+};
 </script>
 
 <template>
@@ -318,6 +378,14 @@ const activeTab = computed(() => {
                                             <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Lifetime</span>
                                         </TabsTrigger>
                                         <TabsTrigger
+                                            v-if="isActiveMember"
+                                            value="zenner-club"
+                                            class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+                                        >
+                                            <Trophy class="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+                                            <span class="text-[8px] sm:text-[9px] md:text-[10px] font-medium text-center leading-tight">Zenner</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger
                                             value="wallet"
                                             class="flex-shrink-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 sm:py-1.5 sm:px-2 w-[38px] sm:w-[55px] md:w-[70px] data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
                                         >
@@ -404,6 +472,81 @@ const activeTab = computed(() => {
                                     />
                                 </TabsContent>
 
+                                <TabsContent v-if="isActiveMember" value="zenner-club" class="mt-0">
+                                    <div class="space-y-5">
+                                        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                                            <div>
+                                                <h3 class="text-lg font-semibold">Zenner Club</h3>
+                                                <p class="text-sm text-muted-foreground">
+                                                    Ringkasan materi penting untuk mendukung perjalanan Anda di Zenner Club.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div v-if="!zennerClubHighlights.length" class="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+                                            Belum ada konten Zenner Club yang bisa ditampilkan.
+                                        </div>
+
+                                        <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                            <Card v-for="item in zennerClubHighlights" :key="item.id" class="flex h-full flex-col">
+                                                <CardHeader class="space-y-2">
+                                                    <div class="flex items-start justify-between gap-3">
+                                                        <CardTitle class="text-base leading-tight">{{ item.title }}</CardTitle>
+                                                        <span class="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                                                            {{ item.stats.contents + item.stats.childContents }} konten
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                                        <span>{{ item.stats.contents }} konten utama</span>
+                                                        <span class="text-muted-foreground/60">•</span>
+                                                        <span>{{ item.stats.children }} subkategori</span>
+                                                        <span class="text-muted-foreground/60">•</span>
+                                                        <span>{{ item.stats.childContents }} konten sub</span>
+                                                    </div>
+                                                </CardHeader>
+                                                <CardContent class="flex flex-1 flex-col gap-4">
+                                                    <div v-if="item.contents.length" class="space-y-2">
+                                                        <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Konten Utama</p>
+                                                        <ul class="space-y-1 text-sm text-foreground">
+                                                            <li v-for="content in item.contents" :key="content.id">
+                                                                <a :href="getZennerContentLink(content)" class="text-primary hover:underline">
+                                                                    {{ content.title }}
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+
+                                                    <div v-if="item.children.length" class="space-y-2">
+                                                        <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sub Kategori</p>
+                                                        <div class="space-y-2">
+                                                            <div v-for="child in item.children" :key="child.id" class="rounded-md border bg-muted/20 p-3">
+                                                                <div class="flex items-center justify-between gap-2">
+                                                                    <p class="text-sm font-semibold text-foreground">{{ child.name }}</p>
+                                                                    <span class="text-[11px] text-muted-foreground">
+                                                                        {{ child.contents.length }} konten
+                                                                    </span>
+                                                                </div>
+                                                                <ul v-if="child.contents.length" class="mt-2 space-y-1 text-sm text-foreground">
+                                                                    <li v-for="content in child.contents" :key="content.id">
+                                                                        <a :href="getZennerContentLink(content)" class="text-primary hover:underline">
+                                                                            {{ content.title }}
+                                                                        </a>
+                                                                    </li>
+                                                                </ul>
+                                                                <p v-else class="mt-2 text-xs text-muted-foreground">Belum ada konten.</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <p v-if="!item.contents.length && !item.children.length" class="text-sm text-muted-foreground">
+                                                        Konten lengkap tersedia di menu Zenner Club.
+                                                    </p>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
                                 <TabsContent value="wallet" class="mt-0">
                                     <WalletTab
                                         :customer="customer"
@@ -427,4 +570,3 @@ const activeTab = computed(() => {
         </div>
     </EcommerceLayout>
 </template>
-

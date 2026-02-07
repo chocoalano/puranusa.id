@@ -25,6 +25,12 @@ export type AppPageProps<
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    zennerClubCategories?: Array<{
+        id: number;
+        name: string;
+        slug?: string | null;
+        parent_id?: number | null;
+    }>;
 };
 
 export interface User {

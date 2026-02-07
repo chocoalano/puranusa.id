@@ -27,8 +27,8 @@ class UpdateProfileRequest extends FormRequest
         return [
             'username' => ['required', 'string', 'max:100', Rule::unique('customers')->ignore($customer->id)],
             'name' => ['required', 'string', 'max:255'],
-            'nik' => ['nullable', 'string', 'max:32'],
-            'gender' => ['nullable', 'string', 'in:laki-laki,perempuan'],
+            'nik' => ['nullable', 'string', 'max:32', 'regex:/^\d{8,32}$/'],
+            'gender' => ['nullable', 'string', 'in:L,P,male,female,laki-laki,perempuan'],
             'alamat' => ['nullable', 'string', 'max:1000'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
@@ -52,6 +52,7 @@ class UpdateProfileRequest extends FormRequest
             'name.required' => 'Nama wajib diisi.',
             'name.max' => 'Nama maksimal 255 karakter.',
             'nik.max' => 'NIK maksimal 32 karakter.',
+            'nik.regex' => 'NIK harus berupa 8-32 digit angka.',
             'gender.in' => 'Jenis kelamin tidak valid.',
             'alamat.max' => 'Alamat maksimal 1000 karakter.',
             'email.required' => 'Email wajib diisi.',
@@ -62,5 +63,25 @@ class UpdateProfileRequest extends FormRequest
             'bank_account.max' => 'Nomor rekening maksimal 50 karakter.',
             'description.max' => 'Deskripsi maksimal 1000 karakter.',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $gender = $this->input('gender');
+        $genderValue = is_string($gender) ? strtolower(trim($gender)) : '';
+
+        $mappedGender = match ($genderValue) {
+            'laki-laki', 'male', 'l' => 'L',
+            'perempuan', 'female', 'p' => 'P',
+            default => $gender,
+        };
+
+        $nik = $this->input('nik');
+        $this->merge([
+            'gender' => $mappedGender,
+            'nik' => is_string($nik) && $nik !== '' ? preg_replace('/\D+/', '', $nik) : null,
+            'bank_name' => $this->input('bank_name') ? trim((string) $this->input('bank_name')) : null,
+            'bank_account' => $this->input('bank_account') ? trim((string) $this->input('bank_account')) : null,
+        ]);
     }
 }

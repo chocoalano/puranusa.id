@@ -16,7 +16,7 @@ class StoreCertificateRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'template_image' => 'nullable|string|max:500',
+            'template_image' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif,svg|max:2048',
             'type' => 'required|string|in:completion,achievement,participation',
             'is_active' => 'boolean',
         ];

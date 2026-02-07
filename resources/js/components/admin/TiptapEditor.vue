@@ -32,6 +32,7 @@ const emit = defineEmits<{
 }>();
 
 const isClient = ref(false);
+let isDestroyed = false;
 const editor = shallowRef<any>(null);
 const EditorContentComponent = shallowRef<any>(null);
 
@@ -47,6 +48,10 @@ onMounted(async () => {
         import('@tiptap/extension-text-align'),
         import('@tiptap/extension-underline'),
     ]);
+
+    if (isDestroyed) {
+        return;
+    }
 
     EditorContentComponent.value = tiptapVue3.EditorContent;
 
@@ -77,14 +82,20 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+    isDestroyed = true;
     if (editor.value) {
         editor.value.destroy();
+        editor.value = null;
     }
+    EditorContentComponent.value = null;
 });
 
 watch(() => props.modelValue, (value) => {
-    const isSame = editor.value?.getHTML() === value;
-    if (!isSame && editor.value) {
+    if (!editor.value || isDestroyed) {
+        return;
+    }
+    const isSame = editor.value.getHTML() === value;
+    if (!isSame) {
         editor.value.commands.setContent(value || '', { emitUpdate: false });
     }
 });

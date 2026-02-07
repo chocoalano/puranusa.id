@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Ecommerce\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ecommerce\UpdatePasswordRequest;
 use App\Http\Requests\Ecommerce\UpdateProfileRequest;
+use App\Models\ContentsCategory;
 use App\Models\Manage\Customer;
 use App\Models\Order;
 use App\Models\Reward;
@@ -96,6 +97,50 @@ class ProfileController extends Controller
         // Load lifetime cash rewards data
         $lifetimeRewardsData = $this->getLifetimeCashRewardsData($customer);
 
+        $zennerClubCategories = ContentsCategory::query()
+            ->with([
+                'contents' => fn ($query) => $query->where('status', 'published')->orderByDesc('created_at'),
+                'children' => fn ($query) => $query
+                    ->orderBy('name')
+                    ->with(['contents' => fn ($subQuery) => $subQuery->where('status', 'published')->orderByDesc('created_at')]),
+            ])
+            ->whereNull('parent_id')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'contents' => $category->contents->map(function ($content) {
+                        return [
+                            'id' => $content->id,
+                            'title' => $content->title,
+                            'slug' => $content->slug,
+                            'file' => $content->file,
+                            'vlink' => $content->vlink,
+                        ];
+                    })->values(),
+                    'children' => $category->children->map(function ($child) {
+                        return [
+                            'id' => $child->id,
+                            'name' => $child->name,
+                            'slug' => $child->slug,
+                            'contents' => $child->contents->map(function ($content) {
+                                return [
+                                    'id' => $content->id,
+                                    'title' => $content->title,
+                                    'slug' => $content->slug,
+                                    'file' => $content->file,
+                                    'vlink' => $content->vlink,
+                                ];
+                            })->values(),
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
+
         return Inertia::render('ecommerce/profile/Index', [
             'customer' => [
                 'id' => $customer->id,
@@ -152,6 +197,7 @@ class ProfileController extends Controller
             'claimedPromotionRewards' => $promotionsRewardsData['claimed'],
             'lifetimeRewards' => $lifetimeRewardsData['rewards'],
             'claimedLifetimeRewards' => $lifetimeRewardsData['claimed'],
+            'zennerClubCategories' => $zennerClubCategories,
         ]);
     }
 

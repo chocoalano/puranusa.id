@@ -16,7 +16,7 @@ class UpdateProductKnowledgeRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'image' => 'nullable|string|max:500',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png,webp,gif,svg|max:2048',
             'category' => 'nullable|string|max:100',
             'is_active' => 'boolean',
             'sort_order' => 'integer|min:0',

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Cart;
 use App\Models\Category;
+use App\Models\ContentsCategory;
 use App\Models\Page;
 use App\Models\Setting;
 use App\Models\Wishlist;
@@ -52,6 +53,7 @@ class HandleInertiaRequests extends Middleware
         $footerMenus = $this->buildFooterMenus($categories, $pages);
         $settings = Setting::getAllSettings();
         $socialLinks = $this->buildSocialLinks($settings);
+        $zennerClubCategories = $this->getZennerClubCategories($request);
 
         return [
             ...parent::share($request),
@@ -61,6 +63,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $this->getAuthUser($request),
             ],
+            'zennerClubCategories' => $zennerClubCategories,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'ecommerce' => [
                 'cart' => $cartData,
@@ -203,6 +206,35 @@ class HandleInertiaRequests extends Middleware
                     'title' => $page->title,
                     'slug' => $page->slug,
                     'href' => "/page/{$page->slug}",
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
+     * Get Zenner Club categories for admin sidebar.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function getZennerClubCategories(Request $request): array
+    {
+        $isAdminArea = $request->is('admin/*')
+            || $request->is('manage/*')
+            || $request->is('dashboard');
+
+        if (! $isAdminArea) {
+            return [];
+        }
+
+        return ContentsCategory::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'parent_id'])
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'parent_id' => $category->parent_id,
                 ];
             })
             ->toArray();
