@@ -29,7 +29,7 @@ class WalletController extends Controller
         $sortOrder = $request->input('sort_order', 'desc');
         $perPage = $request->integer('per_page', 10);
 
-        if (! in_array($perPage, [10, 25, 50, 100])) {
+        if (!in_array($perPage, [10, 25, 50, 100])) {
             $perPage = 10;
         }
 
@@ -68,7 +68,7 @@ class WalletController extends Controller
         $sortOrder = $request->input('sort_order', 'desc');
         $perPage = $request->integer('per_page', 10);
 
-        if (! in_array($perPage, [10, 25, 50, 100])) {
+        if (!in_array($perPage, [10, 25, 50, 100])) {
             $perPage = 10;
         }
 
@@ -79,8 +79,8 @@ class WalletController extends Controller
                         ->orWhere('email', 'like', "%{$search}%");
                 })->orWhere('transaction_ref', 'like', "%{$search}%");
             })
-            ->when($type, fn ($q) => $q->where('type', $type))
-            ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($type, fn($q) => $q->where('type', $type))
+            ->when($status, fn($q) => $q->where('status', $status))
             ->orderBy($sortBy, $sortOrder);
 
         $transactions = $query->paginate($perPage)->withQueryString();
@@ -126,11 +126,11 @@ class WalletController extends Controller
 
             Log::info('Midtrans Configuration', [
                 'is_production' => Config::$isProduction,
-                'server_key_prefix' => substr(Config::$serverKey, 0, 15).'...',
+                'server_key_prefix' => substr(Config::$serverKey, 0, 15) . '...',
             ]);
 
             // Generate unique transaction reference with microseconds for uniqueness
-            $transactionRef = 'TOPUP-'.date('YmdHis').'-'.uniqid().'-'.strtoupper(Str::random(4));
+            $transactionRef = 'TOPUP-' . date('YmdHis') . '-' . uniqid() . '-' . strtoupper(Str::random(4));
 
             $forcePayment = $request->input('force_payment');
 
@@ -140,8 +140,8 @@ class WalletController extends Controller
             $lastName = count($splitName) > 1 ? implode(' ', array_slice($splitName, 1)) : '';
 
             // Randomize test data slightly to avoid repetitive sandbox denial heuristics
-            $randomAddress = 'Jl. Sandbox No '.random_int(10, 999);
-            $randomPhone = $customer->phone ?? '0812'.random_int(1000000, 9999999);
+            $randomAddress = 'Jl. Sandbox No ' . random_int(10, 999);
+            $randomPhone = $customer->phone ?? '0812' . random_int(1000000, 9999999);
 
             // Enforce higher minimum for forced VA / Mandiri Bill to reduce sandbox denial frequency
             if ($forcePayment && (str_contains($forcePayment, '_va') || $forcePayment === 'echannel')) {
@@ -267,7 +267,7 @@ class WalletController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             // dd($e->getMessage());
-            Log::error('Midtrans Top-up Error: '.$e->getMessage(), [
+            Log::error('Midtrans Top-up Error: ' . $e->getMessage(), [
                 'customer_id' => $customer->id,
                 'amount' => $request->amount,
                 'trace' => $e->getTraceAsString(),
@@ -275,7 +275,7 @@ class WalletController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat membuat transaksi: '.$e->getMessage(),
+                'message' => 'Terjadi kesalahan saat membuat transaksi: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -286,14 +286,14 @@ class WalletController extends Controller
     public function withdrawal(Request $request): RedirectResponse
     {
         $request->validate([
-            'amount' => ['required', 'numeric', 'min:50000'],
+            'amount' => ['required', 'numeric', 'min:10000'],
             'password' => ['required', 'string'],
         ]);
 
         $customer = Auth::guard('client')->user();
 
         // Validate password (tetap di app layer)
-        if (! \Hash::check($request->password, $customer->password)) {
+        if (!\Hash::check($request->password, $customer->password)) {
             throw ValidationException::withMessages([
                 'password' => 'Password yang Anda masukkan salah.',
             ]);
@@ -336,10 +336,10 @@ class WalletController extends Controller
                 @bal_before AS balance_before
             ")->fetch(\PDO::FETCH_ASSOC);
 
-            $success = (int)($out['success'] ?? 0) === 1;
-            $message = (string)($out['message'] ?? 'Gagal membuat permintaan penarikan');
+            $success = (int) ($out['success'] ?? 0) === 1;
+            $message = (string) ($out['message'] ?? 'Gagal membuat permintaan penarikan');
 
-            if (! $success) {
+            if (!$success) {
                 // supaya Inertia useForm().onError dapet stringnya:
                 throw ValidationException::withMessages([
                     // pakai key yang kamu suka di frontend
@@ -367,8 +367,8 @@ class WalletController extends Controller
         $customer = Auth::guard('client')->user();
 
         $transactions = CustomerWalletTransaction::where('customer_id', $customer->id)
-            ->when($request->type, fn ($q) => $q->where('type', $request->type))
-            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->type, fn($q) => $q->where('type', $request->type))
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->latest()
             ->paginate(20);
 
@@ -394,7 +394,7 @@ class WalletController extends Controller
         if ($transaction->status !== 'pending') {
             return response()->json([
                 'success' => false,
-                'message' => 'Transaksi sudah diproses dengan status: '.$transaction->status,
+                'message' => 'Transaksi sudah diproses dengan status: ' . $transaction->status,
                 'status' => $transaction->status,
             ]);
         }
@@ -420,7 +420,7 @@ class WalletController extends Controller
                 'full_response' => $statusData,
             ]);
 
-            if (! $transactionStatus) {
+            if (!$transactionStatus) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Status transaksi tidak ditemukan di Midtrans',
@@ -483,18 +483,18 @@ class WalletController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Status tidak dikenali: '.$transactionStatus,
+                'message' => 'Status tidak dikenali: ' . $transactionStatus,
                 'status' => $transactionStatus,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Check Status Error: '.$e->getMessage(), [
+            Log::error('Check Status Error: ' . $e->getMessage(), [
                 'transaction_ref' => $request->transaction_ref,
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memeriksa status: '.$e->getMessage(),
+                'message' => 'Gagal memeriksa status: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -577,7 +577,7 @@ class WalletController extends Controller
             return response()->json(['status' => 'success']);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Midtrans Callback Error: '.$e->getMessage());
+            Log::error('Midtrans Callback Error: ' . $e->getMessage());
 
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
