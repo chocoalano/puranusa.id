@@ -129,12 +129,10 @@ const submitWithPassword = () => {
         onError: (errors) => {
             if (errors.password) {
                 passwordError.value = errors.password;
-            } else if (errors.pending) {
+            } else {
                 showPasswordDialog.value = false;
-                toast.error(errors.pending);
-            } else if (errors.profile) {
-                showPasswordDialog.value = false;
-                toast.error(errors.profile);
+                const message = errors.withdrawal || errors.pending || errors.profile || errors.amount || 'Terjadi kesalahan. Silakan coba lagi.';
+                toast.error(message);
             }
         },
     });
