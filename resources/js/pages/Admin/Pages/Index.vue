@@ -31,6 +31,7 @@ import {
 import { Eye, FileText, MoreVertical, Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { usePermissions } from '@/composables/usePermissions';
+import { toast } from 'vue-sonner';
 
 interface Page {
     id: number;
@@ -81,10 +82,33 @@ const clearFilters = () => {
     router.get('/admin/pages');
 };
 
+const extractErrorMessage = (errors: Record<string, string | string[]>) => {
+    const firstError = Object.values(errors)[0];
+    if (typeof firstError === 'string') {
+        return firstError;
+    }
+    if (Array.isArray(firstError) && typeof firstError[0] === 'string') {
+        return firstError[0];
+    }
+    return 'Gagal menghapus halaman. Silakan coba lagi.';
+};
+
 const deletePage = (id: number) => {
     if (confirm('Apakah Anda yakin ingin menghapus halaman ini?')) {
         router.delete(`/admin/pages/${id}`, {
             preserveScroll: true,
+            onSuccess: (page) => {
+                const flash = (page.props as any).flash;
+                if (flash?.error) {
+                    toast.error(flash.error);
+                    return;
+                }
+
+                toast.success(flash?.success || 'Halaman berhasil dihapus.');
+            },
+            onError: (submitErrors) => {
+                toast.error(extractErrorMessage(submitErrors as Record<string, string | string[]>));
+            },
         });
     }
 };

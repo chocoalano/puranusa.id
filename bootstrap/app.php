@@ -167,6 +167,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin/pages',
             'admin/pages/*',
 
+            // WhatsApp Broadcasts (resource + send action)
+            'admin/whatsapp-broadcasts',
+            'admin/whatsapp-broadcasts/*',
+
             // Products (resource + image actions)
             'admin/products',
             'admin/products/*', // update/destroy (1 segment)

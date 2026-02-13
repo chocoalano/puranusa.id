@@ -16,6 +16,7 @@ import {
 import PageBuilder from '@/components/admin/PageBuilder.vue';
 import { ArrowLeft, Save } from 'lucide-vue-next';
 import { ref, watch, computed } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface Page {
     id: number;
@@ -33,9 +34,31 @@ interface Props {
     page: Page;
 }
 
+interface PageFormState {
+    title: string;
+    slug: string;
+    blocks: any[];
+    seo_title: string;
+    seo_description: string;
+    is_published: boolean;
+    template: string;
+    order: number;
+}
+
+interface PageFormErrors {
+    title?: string;
+    slug?: string;
+    blocks?: string;
+    seo_title?: string;
+    seo_description?: string;
+    is_published?: string;
+    template?: string;
+    order?: string;
+}
+
 const props = defineProps<Props>();
 
-const form = ref({
+const form = ref<PageFormState>({
     title: props.page.title,
     slug: props.page.slug,
     blocks: props.page.blocks || [],
@@ -48,7 +71,18 @@ const form = ref({
 
 const submitForm = useForm({});
 const processing = computed(() => submitForm.processing);
-const errors = computed(() => submitForm.errors);
+const errors = computed(() => submitForm.errors as PageFormErrors);
+
+const extractErrorMessage = (errors: Record<string, string | string[]>) => {
+    const firstError = Object.values(errors)[0];
+    if (typeof firstError === 'string') {
+        return firstError;
+    }
+    if (Array.isArray(firstError) && typeof firstError[0] === 'string') {
+        return firstError[0];
+    }
+    return 'Terjadi kesalahan. Periksa kembali data yang diisi.';
+};
 
 // Watch for changes in props.page.blocks and reload
 watch(() => props.page.blocks, (newBlocks) => {
@@ -61,6 +95,8 @@ const handleSubmit = () => {
     const data = {
         ...form.value,
         blocks: JSON.stringify(form.value.blocks),
+        is_published: Boolean(form.value.is_published),
+        order: Number(form.value.order) || 0,
         _method: 'PUT',
     };
 
@@ -68,8 +104,21 @@ const handleSubmit = () => {
         .transform(() => data)
         .post(`/admin/pages/${props.page.id}`, {
             preserveScroll: true,
+            onSuccess: (page) => {
+                const flash = (page.props as any).flash;
+                if (flash?.error) {
+                    toast.error(flash.error);
+                    return;
+                }
+
+                toast.success(flash?.success || 'Halaman berhasil diperbarui.');
+            },
+            onError: (submitErrors) => {
+                toast.error(extractErrorMessage(submitErrors as Record<string, string | string[]>));
+            },
         });
 };
+
 </script>
 
 <template>
@@ -198,7 +247,7 @@ const handleSubmit = () => {
                             </div>
                             <Switch
                                 id="is_published"
-                                v-model:checked="form.is_published"
+                                v-model="form.is_published"
                             />
                         </div>
                     </CardContent>

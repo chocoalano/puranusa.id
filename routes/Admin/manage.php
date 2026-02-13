@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StockistController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WhatsAppBroadcastController;
 use App\Http\Controllers\Admin\ZennerClubController;
 use App\Http\Controllers\DocumentationController;
 
@@ -73,6 +74,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'update' => 'admin.pages.update',
         'destroy' => 'admin.pages.destroy',
     ]);
+
+    // WhatsApp Broadcast Routes
+    Route::post('admin/whatsapp-broadcasts/{whatsappBroadcast}/send', [WhatsAppBroadcastController::class, 'send'])
+        ->name('admin.whatsapp-broadcasts.send');
+    Route::post('admin/whatsapp-broadcasts/{whatsappBroadcast}/test-send', [WhatsAppBroadcastController::class, 'testSend'])
+        ->name('admin.whatsapp-broadcasts.test-send');
+    Route::post('admin/whatsapp-broadcasts/{whatsappBroadcast}/test-send-multiple', [WhatsAppBroadcastController::class, 'testSendMultiple'])
+        ->name('admin.whatsapp-broadcasts.test-send-multiple');
+    Route::resource('admin/whatsapp-broadcasts', WhatsAppBroadcastController::class)
+        ->except(['show'])
+        ->names([
+            'index' => 'admin.whatsapp-broadcasts.index',
+            'create' => 'admin.whatsapp-broadcasts.create',
+            'store' => 'admin.whatsapp-broadcasts.store',
+            'edit' => 'admin.whatsapp-broadcasts.edit',
+            'update' => 'admin.whatsapp-broadcasts.update',
+            'destroy' => 'admin.whatsapp-broadcasts.destroy',
+        ])
+        ->parameters([
+            'whatsapp-broadcasts' => 'whatsappBroadcast',
+        ]);
 
     // Settings Management Routes
     Route::get('admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');

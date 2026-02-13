@@ -19,6 +19,28 @@ class QontakService
 
     public function sendWhatsApp(string $toName, string $toNumber, string $templateId, array $bodyParams = [], string $languageCode = 'id', ?string $headerImageUrl = null): bool
     {
+        $result = $this->sendWhatsAppWithResultFromParams(
+            $toName,
+            $toNumber,
+            $templateId,
+            $bodyParams,
+            $languageCode,
+            $headerImageUrl
+        );
+
+        return (bool) ($result['success'] ?? false);
+    }
+
+    /**
+     * @return array{
+     *   success: bool,
+     *   status: int|null,
+     *   error: string|null,
+     *   body: array<mixed>|null
+     * }
+     */
+    public function sendWhatsAppWithResultFromParams(string $toName, string $toNumber, string $templateId, array $bodyParams = [], string $languageCode = 'id', ?string $headerImageUrl = null): array
+    {
         $bodyLabels = ['customer_name', 'total_transfer', 'param_3', 'param_4', 'param_5'];
 
         $parameters = ['body' => []];
@@ -52,31 +74,111 @@ class QontakService
             'parameters' => $parameters,
         ];
 
+        return $this->sendWhatsAppWithResult($payload, $toNumber, $templateId);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @return array{
+     *   success: bool,
+     *   status: int|null,
+     *   error: string|null,
+     *   body: array<mixed>|null
+     * }
+     */
+    protected function sendWhatsAppWithResult(array $payload, string $toNumber, string $templateId): array
+    {
         try {
             $response = Http::withToken($this->token)
                 ->post("{$this->baseUrl}/broadcasts/whatsapp/direct", $payload);
+
+            $body = $response->json();
 
             if ($response->successful()) {
                 Log::info('Qontak WhatsApp sent', [
                     'to' => $toNumber,
                     'template' => $templateId,
+                    'status' => $response->status(),
+                    'body' => $body,
                 ]);
-                return true;
+
+                return [
+                    'success' => true,
+                    'status' => $response->status(),
+                    'error' => null,
+                    'body' => is_array($body) ? $body : null,
+                ];
             }
+
+            $errorMessage = $this->extractQontakErrorMessage($body)
+                ?? "Qontak request failed with status {$response->status()}";
 
             Log::warning('Qontak WhatsApp failed', [
                 'to' => $toNumber,
                 'status' => $response->status(),
-                'body' => $response->json(),
+                'error' => $errorMessage,
+                'body' => $body,
             ]);
-            return false;
+
+            return [
+                'success' => false,
+                'status' => $response->status(),
+                'error' => $errorMessage,
+                'body' => is_array($body) ? $body : null,
+            ];
         } catch (\Throwable $e) {
             Log::error('Qontak WhatsApp error', [
                 'to' => $toNumber,
                 'error' => $e->getMessage(),
             ]);
-            return false;
+
+            return [
+                'success' => false,
+                'status' => null,
+                'error' => $e->getMessage(),
+                'body' => null,
+            ];
         }
+    }
+
+    protected function extractQontakErrorMessage(mixed $body): ?string
+    {
+        if (! is_array($body)) {
+            return null;
+        }
+
+        if (isset($body['message']) && is_string($body['message'])) {
+            return $body['message'];
+        }
+
+        if (isset($body['error']) && is_string($body['error'])) {
+            return $body['error'];
+        }
+
+        if (isset($body['error']) && is_array($body['error'])) {
+            if (isset($body['error']['message']) && is_string($body['error']['message'])) {
+                return $body['error']['message'];
+            }
+
+            if (isset($body['error']['messages']) && is_array($body['error']['messages'])) {
+                $firstError = $body['error']['messages'][0] ?? null;
+                if (is_string($firstError)) {
+                    return $firstError;
+                }
+            }
+        }
+
+        if (isset($body['errors']) && is_array($body['errors'])) {
+            $first = $body['errors'][0] ?? null;
+            if (is_string($first)) {
+                return $first;
+            }
+            if (is_array($first) && isset($first['message']) && is_string($first['message'])) {
+                return $first['message'];
+            }
+        }
+
+        return null;
     }
 
     public function sendWithdrawalApproved(string $customerName, string $phoneNumber, string $amount): bool
@@ -89,7 +191,16 @@ class QontakService
         }
 
         // Format nomor: pastikan pakai 62
-        $phoneNumber = $this->formatPhoneNumber($phoneNumber);
+        $originalPhone = $phoneNumber;
+        $phoneNumber = $this->normalizePhoneNumber($phoneNumber);
+        if ($phoneNumber === '') {
+            Log::warning('Qontak phone number invalid, skipping WhatsApp notification', [
+                'customer' => $customerName,
+                'phone' => $originalPhone,
+            ]);
+
+            return false;
+        }
 
         $headerImageUrl = config('services.qontak.wd_approved_header_image_url', 'https://puranusa.id/logo.png');
 
@@ -103,18 +214,26 @@ class QontakService
         );
     }
 
+    public function normalizePhoneNumber(string $phone): string
+    {
+        $normalizedPhone = preg_replace('/[^0-9]/', '', $phone) ?? '';
+        if ($normalizedPhone === '') {
+            return '';
+        }
+
+        if (str_starts_with($normalizedPhone, '0')) {
+            $normalizedPhone = '62' . substr($normalizedPhone, 1);
+        }
+
+        if (! str_starts_with($normalizedPhone, '62')) {
+            $normalizedPhone = '62' . $normalizedPhone;
+        }
+
+        return strlen($normalizedPhone) >= 10 ? $normalizedPhone : '';
+    }
+
     protected function formatPhoneNumber(string $phone): string
     {
-        $phone = preg_replace('/[^0-9]/', '', $phone);
-
-        if (str_starts_with($phone, '0')) {
-            $phone = '62' . substr($phone, 1);
-        }
-
-        if (! str_starts_with($phone, '62')) {
-            $phone = '62' . $phone;
-        }
-
-        return $phone;
+        return $this->normalizePhoneNumber($phone);
     }
 }

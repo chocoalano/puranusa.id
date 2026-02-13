@@ -47,6 +47,8 @@ return [
         'channel_integration_id' => env('QONTAK_CHANNEL_INTEGRATION_ID'),
         'wd_approved_template_id' => env('QONTAK_WD_APPROVED_TEMPLATE_ID'),
         'wd_approved_header_image_url' => env('QONTAK_WD_APPROVED_HEADER_IMAGE_URL'),
+        'broadcast_template_id' => env('QONTAK_BROADCAST_TEMPLATE_ID'),
+        'broadcast_header_image_url' => env('QONTAK_BROADCAST_HEADER_IMAGE_URL'),
     ],
 
     'rajaongkir' => [

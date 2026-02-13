@@ -17,8 +17,31 @@ import {
 import PageBuilder from '@/components/admin/PageBuilder.vue';
 import { ArrowLeft, Save } from 'lucide-vue-next';
 import { ref, watch, computed } from 'vue';
+import { toast } from 'vue-sonner';
 
-const form = ref({
+interface PageFormState {
+    title: string;
+    slug: string;
+    blocks: any[];
+    seo_title: string;
+    seo_description: string;
+    is_published: boolean;
+    template: string;
+    order: number;
+}
+
+interface PageFormErrors {
+    title?: string;
+    slug?: string;
+    blocks?: string;
+    seo_title?: string;
+    seo_description?: string;
+    is_published?: string;
+    template?: string;
+    order?: string;
+}
+
+const form = ref<PageFormState>({
     title: '',
     slug: '',
     blocks: [] as any[],
@@ -31,7 +54,18 @@ const form = ref({
 
 const submitForm = useForm({});
 const processing = computed(() => submitForm.processing);
-const errors = computed(() => submitForm.errors);
+const errors = computed(() => submitForm.errors as PageFormErrors);
+
+const extractErrorMessage = (errors: Record<string, string | string[]>) => {
+    const firstError = Object.values(errors)[0];
+    if (typeof firstError === 'string') {
+        return firstError;
+    }
+    if (Array.isArray(firstError) && typeof firstError[0] === 'string') {
+        return firstError[0];
+    }
+    return 'Gagal membuat halaman. Periksa kembali data yang diisi.';
+};
 
 // Auto-generate slug from title
 watch(() => form.value.title, (newTitle) => {
@@ -47,12 +81,26 @@ const handleSubmit = () => {
     const data = {
         ...form.value,
         blocks: JSON.stringify(form.value.blocks),
+        is_published: Boolean(form.value.is_published),
+        order: Number(form.value.order) || 0,
     };
 
     submitForm
         .transform(() => data)
         .post('/admin/pages', {
             preserveScroll: true,
+            onSuccess: (page) => {
+                const flash = (page.props as any).flash;
+                if (flash?.error) {
+                    toast.error(flash.error);
+                    return;
+                }
+
+                toast.success(flash?.success || 'Halaman berhasil dibuat.');
+            },
+            onError: (submitErrors) => {
+                toast.error(extractErrorMessage(submitErrors as Record<string, string | string[]>));
+            },
         });
 };
 </script>
@@ -183,7 +231,7 @@ const handleSubmit = () => {
                             </div>
                             <Switch
                                 id="is_published"
-                                v-model:checked="form.is_published"
+                                v-model="form.is_published"
                             />
                         </div>
                     </CardContent>

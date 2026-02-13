@@ -63,10 +63,22 @@ class StorePageRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Optional tapi bagus: rapikan slug sebelum validasi
+        $normalized = [];
+
         if ($this->has('slug')) {
-            $this->merge([
-                'slug' => strtolower(trim((string) $this->input('slug'))),
-            ]);
+            $normalized['slug'] = strtolower(trim((string) $this->input('slug')));
+        }
+
+        if ($this->has('is_published')) {
+            $normalized['is_published'] = filter_var(
+                $this->input('is_published'),
+                FILTER_VALIDATE_BOOLEAN,
+                FILTER_NULL_ON_FAILURE
+            );
+        }
+
+        if (! empty($normalized)) {
+            $this->merge($normalized);
         }
     }
 }

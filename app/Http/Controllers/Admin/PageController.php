@@ -79,16 +79,13 @@ class PageController extends Controller
             $data['blocks'] = json_decode($data['blocks'], true);
         }
 
-        // If this is a protected page, only update title, content, and blocks
-        if (in_array($page->slug, $protectedSlugs)) {
-            $page->update([
-                'title' => $data['title'],
-                'content' => $data['content'] ?? null,
-                'blocks' => $data['blocks'] ?? null,
-            ]);
-        } else {
-            $page->update($data);
+        // Protected pages can still be updated, but slug must stay immutable.
+        // Validation in UpdatePageRequest already enforces this; this is a safety guard.
+        if (in_array($page->slug, $protectedSlugs, true)) {
+            $data['slug'] = $page->slug;
         }
+
+        $page->update($data);
 
         return redirect()->route('admin.pages.edit', $page)
             ->with('success', 'Halaman berhasil diperbarui.');

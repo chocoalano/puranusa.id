@@ -31,6 +31,7 @@ import { index as paymentMethodIndex } from '@/actions/App/Http/Controllers/Admi
 import { index as courierIndex } from '@/actions/App/Http/Controllers/Admin/CourierManagementController';
 import { index as settingIndex } from '@/actions/App/Http/Controllers/Admin/SettingController';
 import { index as memberPackageIndex } from '@/actions/App/Http/Controllers/Admin/MemberPackageController';
+import { index as whatsAppBroadcastIndex, create as whatsAppBroadcastCreate } from '@/actions/App/Http/Controllers/Admin/WhatsAppBroadcastController';
 import { promotions as promotionsRewardIndex, lifetime as lifetimeRewardIndex, promotionsProgress as promotionsProgressIndex } from '@/actions/App/Http/Controllers/Admin/RewardController';
 
 import { index as documentationIndex } from '@/actions/App/Http/Controllers/DocumentationController';
@@ -82,6 +83,8 @@ import {
     ChartBar,
     BookCheck,
     BookDashed,
+    MessageSquare,
+    SendHorizontal,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -352,6 +355,23 @@ const mainNavItems = computed<NavItem[]>(() => [
                 title: 'Tax Summary Report',
                 href: tax_summary_report(),
                 icon: BookDashed,
+            },
+        ],
+    },
+    {
+        title: 'Broadcast WhatsApp',
+        href: '#',
+        icon: MessageSquare,
+        items: [
+            {
+                title: 'Riwayat Broadcast',
+                href: whatsAppBroadcastIndex(),
+                icon: MessageSquare,
+            },
+            {
+                title: 'Buat Broadcast',
+                href: whatsAppBroadcastCreate(),
+                icon: SendHorizontal,
             },
         ],
     },

@@ -499,6 +499,33 @@ const handleCheckout = () => {
 const footerMenus = computed(() => ecommerceData.value.footerMenus || []);
 const socialLinks = computed(() => ecommerceData.value.socialLinks || []);
 
+const normalizeFooterTitle = (title: string) => title.trim().toLowerCase();
+
+const infoFooterMenu = computed(() =>
+    footerMenus.value.find(
+        (menu) => normalizeFooterTitle(menu.title) === 'informasi',
+    ),
+);
+
+const secondaryFooterMenus = computed(() =>
+    footerMenus.value.filter(
+        (menu) => normalizeFooterTitle(menu.title) !== 'informasi',
+    ),
+);
+
+const publishedPageLinks = computed(() => {
+    const links = infoFooterMenu.value?.links || [];
+    const uniqueLinks = new Map<string, FooterLink>();
+
+    links.forEach((link) => {
+        if (link?.href && !uniqueLinks.has(link.href)) {
+            uniqueLinks.set(link.href, link);
+        }
+    });
+
+    return Array.from(uniqueLinks.values());
+});
+
 // Social icon SVG paths
 const socialIconPaths: Record<string, string> = {
     facebook:
@@ -1234,8 +1261,8 @@ const searchSuggestions = computed(() => {
 
                         <!-- Footer Links Grid -->
                         <div class="lg:col-span-8">
-                            <div class="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4">
-                                <div v-for="menu in footerMenus.slice(0, 4)" :key="menu.title">
+                            <div class="grid grid-cols-2 gap-8 md:grid-cols-3">
+                                <div v-for="menu in secondaryFooterMenus" :key="menu.title">
                                     <h4 class="mb-4 text-sm font-bold text-foreground">
                                         {{ menu.title }}
                                     </h4>
@@ -1252,6 +1279,35 @@ const searchSuggestions = computed(() => {
                                             </Link>
                                         </li>
                                     </ul>
+                                </div>
+                            </div>
+
+                            <div v-if="publishedPageLinks.length > 0" class="mt-10">
+                                <h4 class="mb-4 text-sm font-bold text-foreground">
+                                    Informasi
+                                </h4>
+                                <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+                                    <Link
+                                        v-for="link in publishedPageLinks"
+                                        :key="`info-${link.href}`"
+                                        :href="link.href"
+                                        class="group inline-flex items-center text-muted-foreground transition-colors hover:text-primary"
+                                    >
+                                        <span>{{ link.name }}</span>
+                                        <svg
+                                            class="ml-1 h-3 w-3 -translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 5l7 7-7 7"
+                                            />
+                                        </svg>
+                                    </Link>
                                 </div>
                             </div>
                         </div>

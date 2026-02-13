@@ -250,7 +250,25 @@ class HandleInertiaRequests extends Middleware
     protected function buildFooterMenus(array $categories, array $pages): array
     {
         $supportPages = $this->filterPagesByKeywords($pages, ['support', 'contact', 'warranty', 'faq', 'bantuan']);
-        $infoPages = $this->filterPagesByKeywords($pages, ['privacy', 'terms', 'legal', 'about', 'tentang']);
+        $infoPages = $this->filterPagesByKeywords($pages, ['privacy', 'terms', 'legal', 'about', 'tentang', 'info']);
+
+        // Keep info-priority pages first, then append other published pages
+        // that are not already shown in support/info sections.
+        $supportHrefs = array_column($supportPages, 'href');
+        $infoHrefs = array_column($infoPages, 'href');
+
+        $remainingInfoPages = array_values(array_filter($pages, function ($page) use ($supportHrefs, $infoHrefs) {
+            return ! in_array($page['href'], $supportHrefs, true)
+                && ! in_array($page['href'], $infoHrefs, true);
+        }));
+
+        $infoPages = array_merge(
+            $infoPages,
+            array_map(fn ($page) => [
+                'name' => $page['title'],
+                'href' => $page['href'],
+            ], $remainingInfoPages)
+        );
 
         return [
             [
@@ -289,7 +307,7 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * Filter pages by keywords in slug.
+     * Filter pages by keywords in slug or title.
      *
      * @param  array<int, array<string, mixed>>  $pages
      * @param  array<int, string>  $keywords
@@ -298,9 +316,10 @@ class HandleInertiaRequests extends Middleware
     protected function filterPagesByKeywords(array $pages, array $keywords): array
     {
         $filtered = array_filter($pages, function ($page) use ($keywords) {
-            $slug = strtolower($page['slug']);
+            $slug = strtolower((string) ($page['slug'] ?? ''));
+            $title = strtolower((string) ($page['title'] ?? ''));
             foreach ($keywords as $keyword) {
-                if (str_contains($slug, $keyword)) {
+                if (str_contains($slug, $keyword) || str_contains($title, $keyword)) {
                     return true;
                 }
             }

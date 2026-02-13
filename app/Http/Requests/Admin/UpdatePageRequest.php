@@ -30,25 +30,24 @@ class UpdatePageRequest extends FormRequest
             ? $routePage
             : Page::query()->findOrFail($routePage); // kalau route param masih id
 
-        // Jika halaman protected, slug tidak boleh berubah
+        $slugRules = [
+            'required',
+            'string',
+            'max:255',
+            Rule::unique('pages', 'slug')->ignore($page->id),
+        ];
+
+        // Halaman protected boleh diupdate, tapi slug tidak boleh diubah
         if (in_array($page->slug, $protectedSlugs, true)) {
-            return [
-                'title'   => ['required', 'string', 'max:255'],
-                'content' => ['nullable', 'string'],
-                'blocks'  => ['nullable', 'json'],
-                'slug'    => ['required', 'string', Rule::in([$page->slug])],
-            ];
+            $slugRules[] = Rule::in([$page->slug]);
+        } else {
+            // Halaman non-protected tidak boleh memakai slug sistem
+            $slugRules[] = Rule::notIn($protectedSlugs);
         }
 
         return [
             'title' => ['required', 'string', 'max:255'],
-            'slug' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('pages', 'slug')->ignore($page->id),
-                Rule::notIn($protectedSlugs), // non-protected tidak boleh pakai slug sistem
-            ],
+            'slug' => $slugRules,
             'content' => ['nullable', 'string'],
             'blocks' => ['nullable', 'json'],
             'seo_title' => ['nullable', 'string', 'max:255'],
@@ -73,10 +72,22 @@ class UpdatePageRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $normalized = [];
+
         if ($this->has('slug')) {
-            $this->merge([
-                'slug' => strtolower(trim((string) $this->input('slug'))),
-            ]);
+            $normalized['slug'] = strtolower(trim((string) $this->input('slug')));
+        }
+
+        if ($this->has('is_published')) {
+            $normalized['is_published'] = filter_var(
+                $this->input('is_published'),
+                FILTER_VALIDATE_BOOLEAN,
+                FILTER_NULL_ON_FAILURE
+            );
+        }
+
+        if (! empty($normalized)) {
+            $this->merge($normalized);
         }
     }
 }
