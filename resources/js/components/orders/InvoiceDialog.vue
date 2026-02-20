@@ -84,12 +84,6 @@ const companyLogoUrl = '/storage/logos/jKNIuJViG3uBVnl5x7kWFPahJGXBhx8yLeri4qb0.
 const order = ref<Order | null>(null);
 const loading = ref(false);
 
-const PICKUP_OFFICE_ADDRESS_LINES = [
-    '18 Office Park Building, 21TH Floor Unit C',
-    'Jl. TB Simatupang No.18, Jakarta Selatan',
-    'DKI Jakarta',
-];
-
 const isMeaningfulAddressValue = (value?: string | null) => {
     if (!value) return false;
     const trimmedValue = value.trim();
@@ -99,14 +93,17 @@ const isMeaningfulAddressValue = (value?: string | null) => {
 
 const buildAddressLines = (address?: OrderAddress | null) => {
     if (!address) return [];
-
     const line1 = (address.address_line1 ?? address.address ?? '').trim();
     const line2 = address.address_line2?.trim() ?? '';
+    const normalizedLine1 = line1.toUpperCase();
+    const normalizedLine2 = line2.toUpperCase();
     const isPickupAddress =
-        line1.toUpperCase().includes('PICKUP') || line2.toUpperCase().includes('PICKUP');
+        normalizedLine1 === 'PICKUP' ||
+        normalizedLine1.startsWith('PICKUP -') ||
+        normalizedLine2 === 'PICKUP';
 
     if (isPickupAddress) {
-        return PICKUP_OFFICE_ADDRESS_LINES;
+        return [line1, line2].filter((value) => isMeaningfulAddressValue(value));
     }
 
     const lines: string[] = [];

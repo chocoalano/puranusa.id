@@ -64,11 +64,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const emit = __emit;
     const order = ref(null);
     const loading = ref(false);
-    const PICKUP_OFFICE_ADDRESS_LINES = [
-      "18 Office Park Building, 21TH Floor Unit C",
-      "Jl. TB Simatupang No.18, Jakarta Selatan",
-      "DKI Jakarta"
-    ];
     const isMeaningfulAddressValue = (value) => {
       if (!value) return false;
       const trimmedValue = value.trim();
@@ -78,9 +73,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       if (!address) return [];
       const line1 = (address.address_line1 ?? address.address ?? "").trim();
       const line2 = address.address_line2?.trim() ?? "";
-      const isPickupAddress = line1.toUpperCase().includes("PICKUP") || line2.toUpperCase().includes("PICKUP");
+      const normalizedLine1 = line1.toUpperCase();
+      const normalizedLine2 = line2.toUpperCase();
+      const isPickupAddress = normalizedLine1 === "PICKUP" || normalizedLine1.startsWith("PICKUP -") || normalizedLine2 === "PICKUP";
       if (isPickupAddress) {
-        return PICKUP_OFFICE_ADDRESS_LINES;
+        return [line1, line2].filter((value) => isMeaningfulAddressValue(value));
       }
       const lines = [];
       if (isMeaningfulAddressValue(line1)) {
@@ -227,9 +224,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     _: 1
                   }, _parent3, _scopeId2));
                   if (loading.value) {
-                    _push3(`<div class="flex items-center justify-center py-12" data-v-c96ce62d${_scopeId2}><div class="text-center" data-v-c96ce62d${_scopeId2}><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" data-v-c96ce62d${_scopeId2}></div><p class="mt-4 text-muted-foreground" data-v-c96ce62d${_scopeId2}>Memuat invoice...</p></div></div>`);
+                    _push3(`<div class="flex items-center justify-center py-12" data-v-bc845ec1${_scopeId2}><div class="text-center" data-v-bc845ec1${_scopeId2}><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" data-v-bc845ec1${_scopeId2}></div><p class="mt-4 text-muted-foreground" data-v-bc845ec1${_scopeId2}>Memuat invoice...</p></div></div>`);
                   } else if (order.value) {
-                    _push3(`<div class="invoice-content" data-v-c96ce62d${_scopeId2}><div class="flex justify-end gap-2 mb-6 print:hidden" data-v-c96ce62d${_scopeId2}>`);
+                    _push3(`<div class="invoice-content" data-v-bc845ec1${_scopeId2}><div class="flex justify-end gap-2 mb-6 print:hidden" data-v-bc845ec1${_scopeId2}>`);
                     _push3(ssrRenderComponent(unref(_sfc_main$7), {
                       variant: "outline",
                       size: "sm",
@@ -266,58 +263,58 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       }),
                       _: 1
                     }, _parent3, _scopeId2));
-                    _push3(`</div><div class="mb-8" data-v-c96ce62d${_scopeId2}><div class="flex items-start justify-between" data-v-c96ce62d${_scopeId2}><div data-v-c96ce62d${_scopeId2}><div class="flex items-center gap-3 mb-2" data-v-c96ce62d${_scopeId2}><img${ssrRenderAttr("src", companyLogoUrl)} alt="Puranusa Logo" class="w-16 h-16 object-contain" data-v-c96ce62d${_scopeId2}><div data-v-c96ce62d${_scopeId2}><h1 class="text-2xl font-bold" data-v-c96ce62d${_scopeId2}>PURANUSA</h1><p class="text-sm text-muted-foreground" data-v-c96ce62d${_scopeId2}>Natural Health &amp; Wellness</p></div></div><div class="text-sm text-muted-foreground mt-3" data-v-c96ce62d${_scopeId2}><p data-v-c96ce62d${_scopeId2}>18 Office Park Building, 21TH Floor Unit C</p><p data-v-c96ce62d${_scopeId2}>Jl. TB Simatupang No.18, Jakarta Selatan, DKI Jakarta</p></div></div><div class="text-right" data-v-c96ce62d${_scopeId2}><h2 class="text-3xl font-bold mb-2" data-v-c96ce62d${_scopeId2}>INVOICE</h2><div class="space-y-1" data-v-c96ce62d${_scopeId2}><p class="text-sm" data-v-c96ce62d${_scopeId2}><span class="font-semibold" data-v-c96ce62d${_scopeId2}>Invoice No:</span><span class="ml-2 font-mono" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(order.value.order_no)}</span></p><p class="text-sm" data-v-c96ce62d${_scopeId2}><span class="font-semibold" data-v-c96ce62d${_scopeId2}>Tanggal:</span><span class="ml-2" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(formatDate(order.value.created_at))}</span></p><p class="text-sm" data-v-c96ce62d${_scopeId2}><span class="font-semibold" data-v-c96ce62d${_scopeId2}>Status:</span><span class="${ssrRenderClass([{
+                    _push3(`</div><div class="mb-8" data-v-bc845ec1${_scopeId2}><div class="flex items-start justify-between" data-v-bc845ec1${_scopeId2}><div data-v-bc845ec1${_scopeId2}><div class="flex items-center gap-3 mb-2" data-v-bc845ec1${_scopeId2}><img${ssrRenderAttr("src", companyLogoUrl)} alt="Puranusa Logo" class="w-16 h-16 object-contain" data-v-bc845ec1${_scopeId2}><div data-v-bc845ec1${_scopeId2}><h1 class="text-2xl font-bold" data-v-bc845ec1${_scopeId2}>PURANUSA</h1><p class="text-sm text-muted-foreground" data-v-bc845ec1${_scopeId2}>Natural Health &amp; Wellness</p></div></div><div class="text-sm text-muted-foreground mt-3" data-v-bc845ec1${_scopeId2}><p data-v-bc845ec1${_scopeId2}>18 Office Park Building, 21TH Floor Unit C</p><p data-v-bc845ec1${_scopeId2}>Jl. TB Simatupang No.18, Jakarta Selatan, DKI Jakarta</p></div></div><div class="text-right" data-v-bc845ec1${_scopeId2}><h2 class="text-3xl font-bold mb-2" data-v-bc845ec1${_scopeId2}>INVOICE</h2><div class="space-y-1" data-v-bc845ec1${_scopeId2}><p class="text-sm" data-v-bc845ec1${_scopeId2}><span class="font-semibold" data-v-bc845ec1${_scopeId2}>Invoice No:</span><span class="ml-2 font-mono" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(order.value.order_no)}</span></p><p class="text-sm" data-v-bc845ec1${_scopeId2}><span class="font-semibold" data-v-bc845ec1${_scopeId2}>Tanggal:</span><span class="ml-2" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(formatDate(order.value.created_at))}</span></p><p class="text-sm" data-v-bc845ec1${_scopeId2}><span class="font-semibold" data-v-bc845ec1${_scopeId2}>Status:</span><span class="${ssrRenderClass([{
                       "bg-green-100 text-green-800": order.value.payment_status === "PAID",
                       "bg-yellow-100 text-yellow-800": order.value.payment_status === "PENDING"
-                    }, "ml-2 px-2 py-1 rounded text-xs font-medium"])}" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(order.value.payment_status)}</span></p></div></div></div></div>`);
+                    }, "ml-2 px-2 py-1 rounded text-xs font-medium"])}" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(order.value.payment_status)}</span></p></div></div></div></div>`);
                     _push3(ssrRenderComponent(unref(_sfc_main$8), { class: "my-6" }, null, _parent3, _scopeId2));
-                    _push3(`<div class="mb-8" data-v-c96ce62d${_scopeId2}><div data-v-c96ce62d${_scopeId2}><h3 class="font-semibold text-sm mb-3 text-muted-foreground" data-v-c96ce62d${_scopeId2}>BILL TO:</h3><div class="space-y-1" data-v-c96ce62d${_scopeId2}><p class="font-semibold" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(billTo.value?.name)}</p><p class="text-sm text-muted-foreground" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(billTo.value?.email)}</p>`);
+                    _push3(`<div class="mb-8" data-v-bc845ec1${_scopeId2}><div data-v-bc845ec1${_scopeId2}><h3 class="font-semibold text-sm mb-3 text-muted-foreground" data-v-bc845ec1${_scopeId2}>BILL TO:</h3><div class="space-y-1" data-v-bc845ec1${_scopeId2}><p class="font-semibold" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(billTo.value?.name)}</p><p class="text-sm text-muted-foreground" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(billTo.value?.email)}</p>`);
                     if (billTo.value?.phone) {
-                      _push3(`<p class="text-sm text-muted-foreground" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(billTo.value.phone)}</p>`);
+                      _push3(`<p class="text-sm text-muted-foreground" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(billTo.value.phone)}</p>`);
                     } else {
                       _push3(`<!---->`);
                     }
                     if (billTo.value?.addressLines.length) {
-                      _push3(`<div class="text-sm text-muted-foreground mt-2" data-v-c96ce62d${_scopeId2}><!--[-->`);
+                      _push3(`<div class="text-sm text-muted-foreground mt-2" data-v-bc845ec1${_scopeId2}><!--[-->`);
                       ssrRenderList(billTo.value.addressLines, (line, index) => {
-                        _push3(`<p data-v-c96ce62d${_scopeId2}>${ssrInterpolate(line)}</p>`);
+                        _push3(`<p data-v-bc845ec1${_scopeId2}>${ssrInterpolate(line)}</p>`);
                       });
                       _push3(`<!--]--></div>`);
                     } else {
-                      _push3(`<p class="text-sm text-muted-foreground mt-2" data-v-c96ce62d${_scopeId2}>Alamat tidak tersedia</p>`);
+                      _push3(`<p class="text-sm text-muted-foreground mt-2" data-v-bc845ec1${_scopeId2}>Alamat tidak tersedia</p>`);
                     }
-                    _push3(`</div></div></div><div class="mb-8" data-v-c96ce62d${_scopeId2}><table class="w-full" data-v-c96ce62d${_scopeId2}><thead data-v-c96ce62d${_scopeId2}><tr class="border-b-2 border-border" data-v-c96ce62d${_scopeId2}><th class="text-left py-3 px-2 text-sm font-semibold" data-v-c96ce62d${_scopeId2}>No</th><th class="text-left py-3 px-2 text-sm font-semibold" data-v-c96ce62d${_scopeId2}>Produk</th><th class="text-center py-3 px-2 text-sm font-semibold" data-v-c96ce62d${_scopeId2}>Qty</th><th class="text-right py-3 px-2 text-sm font-semibold" data-v-c96ce62d${_scopeId2}>Harga</th><th class="text-right py-3 px-2 text-sm font-semibold" data-v-c96ce62d${_scopeId2}>Subtotal</th></tr></thead><tbody data-v-c96ce62d${_scopeId2}><!--[-->`);
+                    _push3(`</div></div></div><div class="mb-8" data-v-bc845ec1${_scopeId2}><table class="w-full" data-v-bc845ec1${_scopeId2}><thead data-v-bc845ec1${_scopeId2}><tr class="border-b-2 border-border" data-v-bc845ec1${_scopeId2}><th class="text-left py-3 px-2 text-sm font-semibold" data-v-bc845ec1${_scopeId2}>No</th><th class="text-left py-3 px-2 text-sm font-semibold" data-v-bc845ec1${_scopeId2}>Produk</th><th class="text-center py-3 px-2 text-sm font-semibold" data-v-bc845ec1${_scopeId2}>Qty</th><th class="text-right py-3 px-2 text-sm font-semibold" data-v-bc845ec1${_scopeId2}>Harga</th><th class="text-right py-3 px-2 text-sm font-semibold" data-v-bc845ec1${_scopeId2}>Subtotal</th></tr></thead><tbody data-v-bc845ec1${_scopeId2}><!--[-->`);
                     ssrRenderList(order.value.items, (item, index) => {
-                      _push3(`<tr class="border-b border-border" data-v-c96ce62d${_scopeId2}><td class="py-3 px-2 text-sm" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(index + 1)}</td><td class="py-3 px-2" data-v-c96ce62d${_scopeId2}><div data-v-c96ce62d${_scopeId2}><p class="font-medium" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(item.product.name)}</p><p class="text-xs text-muted-foreground" data-v-c96ce62d${_scopeId2}>SKU: ${ssrInterpolate(item.product.sku)}</p></div></td><td class="py-3 px-2 text-center" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(item.qty)}</td><td class="py-3 px-2 text-right" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(formatCurrency(item.unit_price ?? item.price))}</td><td class="py-3 px-2 text-right font-medium" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(formatCurrency(item.row_total ?? item.total))}</td></tr>`);
+                      _push3(`<tr class="border-b border-border" data-v-bc845ec1${_scopeId2}><td class="py-3 px-2 text-sm" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(index + 1)}</td><td class="py-3 px-2" data-v-bc845ec1${_scopeId2}><div data-v-bc845ec1${_scopeId2}><p class="font-medium" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(item.product.name)}</p><p class="text-xs text-muted-foreground" data-v-bc845ec1${_scopeId2}>SKU: ${ssrInterpolate(item.product.sku)}</p></div></td><td class="py-3 px-2 text-center" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(item.qty)}</td><td class="py-3 px-2 text-right" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(formatCurrency(item.unit_price ?? item.price))}</td><td class="py-3 px-2 text-right font-medium" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(formatCurrency(item.row_total ?? item.total))}</td></tr>`);
                     });
-                    _push3(`<!--]--></tbody></table></div><div class="flex justify-end mb-8" data-v-c96ce62d${_scopeId2}><div class="w-80 space-y-3" data-v-c96ce62d${_scopeId2}><div class="flex justify-between text-sm" data-v-c96ce62d${_scopeId2}><span class="text-muted-foreground" data-v-c96ce62d${_scopeId2}>Subtotal:</span><span class="font-medium" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(formatCurrency(order.value.subtotal_amount))}</span></div>`);
+                    _push3(`<!--]--></tbody></table></div><div class="flex justify-end mb-8" data-v-bc845ec1${_scopeId2}><div class="w-80 space-y-3" data-v-bc845ec1${_scopeId2}><div class="flex justify-between text-sm" data-v-bc845ec1${_scopeId2}><span class="text-muted-foreground" data-v-bc845ec1${_scopeId2}>Subtotal:</span><span class="font-medium" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(formatCurrency(order.value.subtotal_amount))}</span></div>`);
                     if (order.value.discount_amount > 0) {
-                      _push3(`<div class="flex justify-between text-sm" data-v-c96ce62d${_scopeId2}><span class="text-muted-foreground" data-v-c96ce62d${_scopeId2}>Diskon:</span><span class="font-medium text-red-600" data-v-c96ce62d${_scopeId2}>-${ssrInterpolate(formatCurrency(order.value.discount_amount))}</span></div>`);
+                      _push3(`<div class="flex justify-between text-sm" data-v-bc845ec1${_scopeId2}><span class="text-muted-foreground" data-v-bc845ec1${_scopeId2}>Diskon:</span><span class="font-medium text-red-600" data-v-bc845ec1${_scopeId2}>-${ssrInterpolate(formatCurrency(order.value.discount_amount))}</span></div>`);
                     } else {
                       _push3(`<!---->`);
                     }
-                    _push3(`<div class="flex justify-between text-sm" data-v-c96ce62d${_scopeId2}><span class="text-muted-foreground" data-v-c96ce62d${_scopeId2}>Ongkir:</span><span class="font-medium" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(formatCurrency(order.value.shipping_amount))}</span></div>`);
+                    _push3(`<div class="flex justify-between text-sm" data-v-bc845ec1${_scopeId2}><span class="text-muted-foreground" data-v-bc845ec1${_scopeId2}>Ongkir:</span><span class="font-medium" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(formatCurrency(order.value.shipping_amount))}</span></div>`);
                     if (order.value.tax_amount > 0) {
-                      _push3(`<div class="flex justify-between text-sm" data-v-c96ce62d${_scopeId2}><span class="text-muted-foreground" data-v-c96ce62d${_scopeId2}>Pajak:</span><span class="font-medium" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(formatCurrency(order.value.tax_amount))}</span></div>`);
+                      _push3(`<div class="flex justify-between text-sm" data-v-bc845ec1${_scopeId2}><span class="text-muted-foreground" data-v-bc845ec1${_scopeId2}>Pajak:</span><span class="font-medium" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(formatCurrency(order.value.tax_amount))}</span></div>`);
                     } else {
                       _push3(`<!---->`);
                     }
                     _push3(ssrRenderComponent(unref(_sfc_main$8), null, null, _parent3, _scopeId2));
-                    _push3(`<div class="flex justify-between text-lg font-bold" data-v-c96ce62d${_scopeId2}><span data-v-c96ce62d${_scopeId2}>Total:</span><span class="text-primary" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(formatCurrency(order.value.grand_total))}</span></div></div></div>`);
+                    _push3(`<div class="flex justify-between text-lg font-bold" data-v-bc845ec1${_scopeId2}><span data-v-bc845ec1${_scopeId2}>Total:</span><span class="text-primary" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(formatCurrency(order.value.grand_total))}</span></div></div></div>`);
                     if (order.value.payments && order.value.payments.length > 0) {
-                      _push3(`<div class="mb-8" data-v-c96ce62d${_scopeId2}><h3 class="font-semibold text-sm mb-3" data-v-c96ce62d${_scopeId2}>INFORMASI PEMBAYARAN:</h3><div class="bg-muted/50 rounded-lg p-4" data-v-c96ce62d${_scopeId2}><!--[-->`);
+                      _push3(`<div class="mb-8" data-v-bc845ec1${_scopeId2}><h3 class="font-semibold text-sm mb-3" data-v-bc845ec1${_scopeId2}>INFORMASI PEMBAYARAN:</h3><div class="bg-muted/50 rounded-lg p-4" data-v-bc845ec1${_scopeId2}><!--[-->`);
                       ssrRenderList(order.value.payments, (payment, index) => {
-                        _push3(`<div class="${ssrRenderClass([{ "mt-4 pt-4 border-t": index > 0 }, "text-sm"])}" data-v-c96ce62d${_scopeId2}><div class="flex justify-between mb-1" data-v-c96ce62d${_scopeId2}><span data-v-c96ce62d${_scopeId2}>Metode Pembayaran:</span><span class="font-medium" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(payment.method?.name || "N/A")}</span></div><div class="flex justify-between mb-1" data-v-c96ce62d${_scopeId2}><span data-v-c96ce62d${_scopeId2}>Kode:</span><span class="font-medium uppercase text-xs" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(payment.method?.code || "N/A")}</span></div><div class="flex justify-between mb-1" data-v-c96ce62d${_scopeId2}><span data-v-c96ce62d${_scopeId2}>Jumlah:</span><span class="font-medium" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(formatCurrency(payment.amount))}</span></div><div class="flex justify-between mb-1" data-v-c96ce62d${_scopeId2}><span data-v-c96ce62d${_scopeId2}>Tanggal:</span><span class="font-medium" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(formatDateTime(payment.created_at))}</span></div><div class="flex justify-between" data-v-c96ce62d${_scopeId2}><span data-v-c96ce62d${_scopeId2}>Status:</span><span class="${ssrRenderClass([{
+                        _push3(`<div class="${ssrRenderClass([{ "mt-4 pt-4 border-t": index > 0 }, "text-sm"])}" data-v-bc845ec1${_scopeId2}><div class="flex justify-between mb-1" data-v-bc845ec1${_scopeId2}><span data-v-bc845ec1${_scopeId2}>Metode Pembayaran:</span><span class="font-medium" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(payment.method?.name || "N/A")}</span></div><div class="flex justify-between mb-1" data-v-bc845ec1${_scopeId2}><span data-v-bc845ec1${_scopeId2}>Kode:</span><span class="font-medium uppercase text-xs" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(payment.method?.code || "N/A")}</span></div><div class="flex justify-between mb-1" data-v-bc845ec1${_scopeId2}><span data-v-bc845ec1${_scopeId2}>Jumlah:</span><span class="font-medium" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(formatCurrency(payment.amount))}</span></div><div class="flex justify-between mb-1" data-v-bc845ec1${_scopeId2}><span data-v-bc845ec1${_scopeId2}>Tanggal:</span><span class="font-medium" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(formatDateTime(payment.created_at))}</span></div><div class="flex justify-between" data-v-bc845ec1${_scopeId2}><span data-v-bc845ec1${_scopeId2}>Status:</span><span class="${ssrRenderClass([{
                           "bg-green-100 text-green-700": payment.status === "success",
                           "bg-yellow-100 text-yellow-700": payment.status === "pending",
                           "bg-red-100 text-red-700": payment.status === "failed"
-                        }, "font-medium uppercase text-xs px-2 py-0.5 rounded"])}" data-v-c96ce62d${_scopeId2}>${ssrInterpolate(payment.status)}</span></div></div>`);
+                        }, "font-medium uppercase text-xs px-2 py-0.5 rounded"])}" data-v-bc845ec1${_scopeId2}>${ssrInterpolate(payment.status)}</span></div></div>`);
                       });
                       _push3(`<!--]--></div></div>`);
                     } else {
                       _push3(`<!---->`);
                     }
-                    _push3(`<div class="border-t pt-6 mt-8" data-v-c96ce62d${_scopeId2}><p class="text-xs text-muted-foreground mb-2" data-v-c96ce62d${_scopeId2}>Catatan:</p><ul class="text-xs text-muted-foreground space-y-1" data-v-c96ce62d${_scopeId2}><li data-v-c96ce62d${_scopeId2}>• Invoice ini sah dan diproses oleh komputer</li><li data-v-c96ce62d${_scopeId2}>• Harap simpan invoice ini sebagai bukti pembelian yang sah</li><li data-v-c96ce62d${_scopeId2}>• Untuk pertanyaan lebih lanjut, hubungi customer service kami</li></ul></div><div class="text-center mt-8 pt-6 border-t" data-v-c96ce62d${_scopeId2}><p class="text-xs text-muted-foreground" data-v-c96ce62d${_scopeId2}> Terima kasih atas kepercayaan Anda berbelanja di Puranusa </p><p class="text-xs text-muted-foreground mt-1" data-v-c96ce62d${_scopeId2}> www.puranusa.id | CS: cs@puranusa.id | WA: +62 812-3456-7890 </p></div></div>`);
+                    _push3(`<div class="border-t pt-6 mt-8" data-v-bc845ec1${_scopeId2}><p class="text-xs text-muted-foreground mb-2" data-v-bc845ec1${_scopeId2}>Catatan:</p><ul class="text-xs text-muted-foreground space-y-1" data-v-bc845ec1${_scopeId2}><li data-v-bc845ec1${_scopeId2}>• Invoice ini sah dan diproses oleh komputer</li><li data-v-bc845ec1${_scopeId2}>• Harap simpan invoice ini sebagai bukti pembelian yang sah</li><li data-v-bc845ec1${_scopeId2}>• Untuk pertanyaan lebih lanjut, hubungi customer service kami</li></ul></div><div class="text-center mt-8 pt-6 border-t" data-v-bc845ec1${_scopeId2}><p class="text-xs text-muted-foreground" data-v-bc845ec1${_scopeId2}> Terima kasih atas kepercayaan Anda berbelanja di Puranusa </p><p class="text-xs text-muted-foreground mt-1" data-v-bc845ec1${_scopeId2}> www.puranusa.id | CS: cs@puranusa.id | WA: +62 812-3456-7890 </p></div></div>`);
                   } else {
                     _push3(`<!---->`);
                   }
@@ -829,7 +826,7 @@ _sfc_main$1.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("resources/js/components/orders/InvoiceDialog.vue");
   return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : void 0;
 };
-const InvoiceDialog = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-c96ce62d"]]);
+const InvoiceDialog = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-bc845ec1"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Paid",
   __ssrInlineRender: true,
