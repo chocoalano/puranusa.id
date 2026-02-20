@@ -967,13 +967,20 @@ const formatCurrencyIDR = (amount) => new Intl.NumberFormat("id-ID", {
   currency: "IDR",
   minimumFractionDigits: 0
 }).format(amount ?? 0);
-const formatDateID = (date) => new Date(date).toLocaleDateString("id-ID", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-  hour: "2-digit",
-  minute: "2-digit"
-});
+const WIB_TIMEZONE = "Asia/Jakarta";
+const formatDateID = (date) => {
+  const parsedDate = new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) return "-";
+  return `${new Intl.DateTimeFormat("id-ID", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: WIB_TIMEZONE
+  }).format(parsedDate)} WIB`;
+};
 const getStatusVariant = (status) => {
   const variants = {
     pending: "secondary",

@@ -19,6 +19,15 @@ use Midtrans\Snap;
 
 class WalletController extends Controller
 {
+    private const WIB_DB_TIMEZONE = '+07:00';
+
+    private function setDbSessionTimezoneToWib(\PDO $pdo): void
+    {
+        $stmt = $pdo->prepare('SET time_zone = ?');
+        $stmt->execute([self::WIB_DB_TIMEZONE]);
+        $stmt->closeCursor();
+    }
+
     /**
      * Display a listing of wallets for admin.
      */
@@ -305,6 +314,7 @@ class WalletController extends Controller
         try {
             // Pakai PDO: CALL + ambil OUT vars harus di koneksi yang sama
             $pdo = DB::connection()->getPdo();
+            $this->setDbSessionTimezoneToWib($pdo);
 
             // reset session vars (opsional, tapi bikin output selalu bersih)
             $pdo->exec("SET @ok=0, @msg=NULL, @wdid=NULL, @wdref=NULL, @bal_before=NULL");

@@ -13,6 +13,15 @@ use Inertia\Inertia;
 
 class WithdrawalManagementController extends Controller
 {
+    private const WIB_DB_TIMEZONE = '+07:00';
+
+    private function setDbSessionTimezoneToWib(\PDO $pdo): void
+    {
+        $stmt = $pdo->prepare('SET time_zone = ?');
+        $stmt->execute([self::WIB_DB_TIMEZONE]);
+        $stmt->closeCursor();
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->integer('per_page', 10);
@@ -77,6 +86,7 @@ class WithdrawalManagementController extends Controller
             $midtransTxnId   = null;
 
             $pdo = DB::connection()->getPdo();
+            $this->setDbSessionTimezoneToWib($pdo);
 
             // reset session vars (opsional tapi bagus)
             $pdo->exec("SET @ok = 0, @msg = NULL, @newbal = NULL");
