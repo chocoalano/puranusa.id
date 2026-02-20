@@ -3,8 +3,8 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
-import { Printer, Download, X } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { Printer, Download } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 import axios from 'axios';
 
 interface OrderItem {
@@ -14,8 +14,26 @@ interface OrderItem {
         sku: string;
     };
     qty: number;
-    price: number;
-    total: number;
+    unit_price?: number | string | null;
+    row_total?: number | string | null;
+    price?: number | string | null;
+    total?: number | string | null;
+}
+
+interface OrderAddress {
+    recipient_name?: string | null;
+    recipient_phone?: string | null;
+    address_line1?: string | null;
+    address_line2?: string | null;
+    city_label?: string | null;
+    province_label?: string | null;
+    postal_code?: string | null;
+    country?: string | null;
+    full_name?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    city?: string | null;
+    province?: string | null;
 }
 
 interface Order {
@@ -26,22 +44,10 @@ interface Order {
         email: string;
         phone?: string;
     };
-    shippingAddress?: {
-        full_name: string;
-        phone: string;
-        address: string;
-        city: string;
-        province: string;
-        postal_code: string;
-    };
-    billingAddress?: {
-        full_name: string;
-        phone: string;
-        address: string;
-        city: string;
-        province: string;
-        postal_code: string;
-    };
+    shippingAddress?: OrderAddress | null;
+    billingAddress?: OrderAddress | null;
+    shipping_address?: OrderAddress | null;
+    billing_address?: OrderAddress | null;
     items: OrderItem[];
     subtotal_amount: number;
     discount_amount: number;
@@ -73,15 +79,117 @@ const emit = defineEmits<{
     (e: 'update:open', value: boolean): void;
 }>();
 
+const companyLogoUrl = '/storage/logos/jKNIuJViG3uBVnl5x7kWFPahJGXBhx8yLeri4qb0.png';
+
 const order = ref<Order | null>(null);
 const loading = ref(false);
 
-const formatCurrency = (amount: number) => {
+const PICKUP_OFFICE_ADDRESS_LINES = [
+    '18 Office Park Building, 21TH Floor Unit C',
+    'Jl. TB Simatupang No.18, Jakarta Selatan',
+    'DKI Jakarta',
+];
+
+const isMeaningfulAddressValue = (value?: string | null) => {
+    if (!value) return false;
+    const trimmedValue = value.trim();
+
+    return trimmedValue !== '' && trimmedValue !== '-';
+};
+
+const buildAddressLines = (address?: OrderAddress | null) => {
+    if (!address) return [];
+
+    const line1 = (address.address_line1 ?? address.address ?? '').trim();
+    const line2 = address.address_line2?.trim() ?? '';
+    const isPickupAddress =
+        line1.toUpperCase().includes('PICKUP') || line2.toUpperCase().includes('PICKUP');
+
+    if (isPickupAddress) {
+        return PICKUP_OFFICE_ADDRESS_LINES;
+    }
+
+    const lines: string[] = [];
+
+    if (isMeaningfulAddressValue(line1)) {
+        lines.push(line1);
+    }
+
+    if (isMeaningfulAddressValue(line2)) {
+        lines.push(line2);
+    }
+
+    const cityProvince = [address.city_label ?? address.city, address.province_label ?? address.province]
+        .filter((value) => isMeaningfulAddressValue(value))
+        .join(', ');
+    const rawPostalCode = address.postal_code?.trim() ?? '';
+    const postalCode = isMeaningfulAddressValue(rawPostalCode)
+        ? rawPostalCode
+        : '';
+
+    const cityProvincePostal = [cityProvince, postalCode]
+        .filter((value) => value.length > 0)
+        .join(' ');
+
+    if (cityProvincePostal) {
+        lines.push(cityProvincePostal);
+    }
+
+    const country = address.country?.trim() ?? '';
+    if (isMeaningfulAddressValue(country)) {
+        lines.push(country);
+    }
+
+    return lines;
+};
+
+const billTo = computed(() => {
+    if (!order.value) return null;
+
+    const selectedAddress =
+        order.value.billing_address ??
+        order.value.billingAddress ??
+        order.value.shipping_address ??
+        order.value.shippingAddress;
+    const phone =
+        selectedAddress?.recipient_phone?.trim() ||
+        selectedAddress?.phone?.trim() ||
+        order.value.customer.phone?.trim() ||
+        null;
+
+    return {
+        name:
+            selectedAddress?.recipient_name?.trim() ||
+            selectedAddress?.full_name?.trim() ||
+            order.value.customer.name,
+        email: order.value.customer.email,
+        phone,
+        addressLines: buildAddressLines(selectedAddress),
+    };
+});
+
+type CurrencyValue = number | string | null | undefined;
+
+const toSafeNumber = (value: CurrencyValue) => {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    if (typeof value === 'string') {
+        const normalized = value.replace(/[^0-9.-]/g, '');
+        const parsed = Number(normalized);
+        return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    return 0;
+};
+
+const formatCurrency = (amount: CurrencyValue) => {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0,
-    }).format(amount);
+    }).format(toSafeNumber(amount));
 };
 
 const formatDate = (date: string) => {
@@ -134,7 +242,7 @@ watch(() => props.open, (newVal) => {
 
 <template>
     <Dialog :open="open" @update:open="(val) => emit('update:open', val)">
-        <DialogContent class="max-w-4xl max-h-[90vh] overflow-y-auto print:max-w-full print:max-h-full print:overflow-visible">
+        <DialogContent class="max-w-7xl max-h-[90vh] overflow-y-auto print:max-w-full print:max-h-full print:overflow-visible">
             <!-- Accessibility - Hidden Title and Description -->
             <VisuallyHidden>
                 <DialogTitle>Invoice {{ order?.order_no || '' }}</DialogTitle>
@@ -144,14 +252,14 @@ watch(() => props.open, (newVal) => {
             </VisuallyHidden>
 
             <!-- Close Button - Hide on print -->
-            <Button
+            <!-- <Button
                 variant="ghost"
                 size="icon"
                 class="absolute right-4 top-4 print:hidden"
                 @click="emit('update:open', false)"
             >
                 <X class="h-4 w-4" />
-            </Button>
+            </Button> -->
 
             <!-- Loading State -->
             <div v-if="loading" class="flex items-center justify-center py-12">
@@ -182,19 +290,17 @@ watch(() => props.open, (newVal) => {
                         <div>
                             <div class="flex items-center gap-3 mb-2">
                                 <!-- Logo Placeholder -->
-                                <div class="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                                    <span class="text-white font-bold text-xl">P</span>
-                                </div>
+                                <img :src="companyLogoUrl" alt="Puranusa Logo" class="w-16 h-16 object-contain" />
                                 <div>
                                     <h1 class="text-2xl font-bold">PURANUSA</h1>
                                     <p class="text-sm text-muted-foreground">Natural Health & Wellness</p>
                                 </div>
                             </div>
                             <div class="text-sm text-muted-foreground mt-3">
-                                <p>Jl. Raya Puranusa No. 123</p>
-                                <p>Jakarta Selatan, DKI Jakarta 12345</p>
-                                <p>Email: info@puranusa.id</p>
-                                <p>Telp: (021) 1234-5678</p>
+                                <p>18 Office Park Building, 21TH Floor Unit C</p>
+                                <p>Jl. TB Simatupang No.18, Jakarta Selatan, DKI Jakarta</p>
+                                <!-- <p>Email: info@puranusa.id</p>
+                                <p>Telp: (021) 1234-5678</p> -->
                             </div>
                         </div>
 
@@ -229,36 +335,22 @@ watch(() => props.open, (newVal) => {
 
                 <Separator class="my-6" />
 
-                <!-- Bill To / Ship To -->
-                <div class="grid grid-cols-2 gap-8 mb-8">
-                    <!-- Bill To -->
+                <!-- Bill To -->
+                <div class="mb-8">
                     <div>
                         <h3 class="font-semibold text-sm mb-3 text-muted-foreground">BILL TO:</h3>
                         <div class="space-y-1">
-                            <p class="font-semibold">{{ order.customer.name }}</p>
-                            <p class="text-sm text-muted-foreground">{{ order.customer.email }}</p>
-                            <p class="text-sm text-muted-foreground" v-if="order.customer.phone">
-                                {{ order.customer.phone }}
+                            <p class="font-semibold">{{ billTo?.name }}</p>
+                            <p class="text-sm text-muted-foreground">{{ billTo?.email }}</p>
+                            <p class="text-sm text-muted-foreground" v-if="billTo?.phone">
+                                {{ billTo.phone }}
                             </p>
-                            <div v-if="order.billingAddress" class="text-sm text-muted-foreground mt-2">
-                                <p>{{ order.billingAddress.address }}</p>
-                                <p>{{ order.billingAddress.city }}, {{ order.billingAddress.province }}</p>
-                                <p>{{ order.billingAddress.postal_code }}</p>
+                            <div v-if="billTo?.addressLines.length" class="text-sm text-muted-foreground mt-2">
+                                <p v-for="(line, index) in billTo.addressLines" :key="`${line}-${index}`">
+                                    {{ line }}
+                                </p>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Ship To -->
-                    <div v-if="order.shippingAddress">
-                        <h3 class="font-semibold text-sm mb-3 text-muted-foreground">SHIP TO:</h3>
-                        <div class="space-y-1">
-                            <p class="font-semibold">{{ order.shippingAddress.full_name }}</p>
-                            <p class="text-sm text-muted-foreground">{{ order.shippingAddress.phone }}</p>
-                            <div class="text-sm text-muted-foreground mt-2">
-                                <p>{{ order.shippingAddress.address }}</p>
-                                <p>{{ order.shippingAddress.city }}, {{ order.shippingAddress.province }}</p>
-                                <p>{{ order.shippingAddress.postal_code }}</p>
-                            </div>
+                            <p v-else class="text-sm text-muted-foreground mt-2">Alamat tidak tersedia</p>
                         </div>
                     </div>
                 </div>
@@ -289,8 +381,8 @@ watch(() => props.open, (newVal) => {
                                     </div>
                                 </td>
                                 <td class="py-3 px-2 text-center">{{ item.qty }}</td>
-                                <td class="py-3 px-2 text-right">{{ formatCurrency(item.price) }}</td>
-                                <td class="py-3 px-2 text-right font-medium">{{ formatCurrency(item.total) }}</td>
+                                <td class="py-3 px-2 text-right">{{ formatCurrency(item.unit_price ?? item.price) }}</td>
+                                <td class="py-3 px-2 text-right font-medium">{{ formatCurrency(item.row_total ?? item.total) }}</td>
                             </tr>
                         </tbody>
                     </table>

@@ -10,6 +10,12 @@
 /resources/js/actions
 /resources/js/routes
 /resources/js/wayfinder
+
+/resources/js/pages
+/resources/js/types
+/resources/js/lib
+/resources/js/layouts
+
 /vendor
 .DS_Store
 .env

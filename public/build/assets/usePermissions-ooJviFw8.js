@@ -1,0 +1,1 @@
+import{aR as i,p as s}from"./vendor-ppbe-N6l.js";function l(){const n=i(),e=s(()=>n.props.auth?.user??null),u=s(()=>!!e.value?.is_superadmin),a=s(()=>!!e.value?.is_admin),o=s(()=>e.value?.role??null),t=s(()=>u.value||a.value);return{authUser:e,role:o,isSuperAdmin:u,isAdmin:a,isStaff:t}}export{l as u};

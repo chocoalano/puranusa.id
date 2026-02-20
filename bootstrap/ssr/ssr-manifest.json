@@ -332,6 +332,12 @@
   "resources/js/components/categories/CategoryTable.vue?vue&type=script&setup=true&lang.ts": [
     "/build/assets/Index-DciMEw_2.js"
   ],
+  "resources/js/components/customers/CustomerForm.vue": [
+    "/build/assets/useShippingLocation-DOYvWAWR.js"
+  ],
+  "resources/js/components/customers/CustomerForm.vue?vue&type=script&setup=true&lang.ts": [
+    "/build/assets/useShippingLocation-DOYvWAWR.js"
+  ],
   "resources/js/components/ecommerce/CardCatalogProduct.vue": [
     "/build/assets/CardCatalogProduct-Dx6KW7gl.js"
   ],
@@ -449,16 +455,16 @@
     "/build/assets/Produk-esrVhIke.css"
   ],
   "resources/js/components/orders/InvoiceDialog.vue": [
-    "/build/assets/Paid-YbgiW4JN.js",
-    "/build/assets/Paid-C8a3WGFz.css"
+    "/build/assets/Paid-BRLjmT6d.js",
+    "/build/assets/Paid-CiGgoVos.css"
   ],
   "resources/js/components/orders/InvoiceDialog.vue?vue&type=script&setup=true&lang.ts": [
-    "/build/assets/Paid-YbgiW4JN.js",
-    "/build/assets/Paid-C8a3WGFz.css"
+    "/build/assets/Paid-BRLjmT6d.js",
+    "/build/assets/Paid-CiGgoVos.css"
   ],
-  "resources/js/components/orders/InvoiceDialog.vue?vue&type=style&index=0&scoped=c9cd3b5c&lang.css": [
-    "/build/assets/Paid-YbgiW4JN.js",
-    "/build/assets/Paid-C8a3WGFz.css"
+  "resources/js/components/orders/InvoiceDialog.vue?vue&type=style&index=0&scoped=c96ce62d&lang.css": [
+    "/build/assets/Paid-BRLjmT6d.js",
+    "/build/assets/Paid-CiGgoVos.css"
   ],
   "resources/js/components/profile/AddressManagement.vue": [
     "/build/assets/Index-BqplEMpO.js"
@@ -1601,12 +1607,12 @@
     "/build/assets/AppLayout-D11fLPDM.js"
   ],
   "resources/js/components/ui/visually-hidden/VisuallyHidden.vue": [
-    "/build/assets/Paid-YbgiW4JN.js",
-    "/build/assets/Paid-C8a3WGFz.css"
+    "/build/assets/Paid-BRLjmT6d.js",
+    "/build/assets/Paid-CiGgoVos.css"
   ],
   "resources/js/components/ui/visually-hidden/VisuallyHidden.vue?vue&type=script&setup=true&lang.ts": [
-    "/build/assets/Paid-YbgiW4JN.js",
-    "/build/assets/Paid-C8a3WGFz.css"
+    "/build/assets/Paid-BRLjmT6d.js",
+    "/build/assets/Paid-CiGgoVos.css"
   ],
   "resources/js/components/withdrawals/WithdrawalActionDialogs.vue": [
     "/build/assets/Index-inKvBcPi.js"
@@ -1631,6 +1637,12 @@
   ],
   "resources/js/components/withdrawals/WithdrawalTable.vue?vue&type=script&setup=true&lang.ts": [
     "/build/assets/Index-inKvBcPi.js"
+  ],
+  "resources/js/composables/customers/useCustomerForm.ts": [
+    "/build/assets/useShippingLocation-DOYvWAWR.js"
+  ],
+  "resources/js/composables/customers/useShippingLocation.ts": [
+    "/build/assets/useShippingLocation-DOYvWAWR.js"
   ],
   "resources/js/composables/useAppearance.ts": [
     "/build/assets/useAppearance-gspEihnp.js"
@@ -1759,16 +1771,16 @@
     "/build/assets/Index-ykbNiZho.js"
   ],
   "resources/js/pages/Admin/Customers/Create.vue": [
-    "/build/assets/Create-Bb6B-d1T.js"
+    "/build/assets/Create-DYWb2G6p.js"
   ],
   "resources/js/pages/Admin/Customers/Create.vue?vue&type=script&setup=true&lang.ts": [
-    "/build/assets/Create-Bb6B-d1T.js"
+    "/build/assets/Create-DYWb2G6p.js"
   ],
   "resources/js/pages/Admin/Customers/Edit.vue": [
-    "/build/assets/Edit-BWR7YgIv.js"
+    "/build/assets/Edit-BhkLZczz.js"
   ],
   "resources/js/pages/Admin/Customers/Edit.vue?vue&type=script&setup=true&lang.ts": [
-    "/build/assets/Edit-BWR7YgIv.js"
+    "/build/assets/Edit-BhkLZczz.js"
   ],
   "resources/js/pages/Admin/Customers/Index.vue": [
     "/build/assets/Index-BE7XOUMN.js"
@@ -1831,12 +1843,12 @@
     "/build/assets/Index-D33jTW0E.js"
   ],
   "resources/js/pages/Admin/Orders/Paid.vue": [
-    "/build/assets/Paid-YbgiW4JN.js",
-    "/build/assets/Paid-C8a3WGFz.css"
+    "/build/assets/Paid-BRLjmT6d.js",
+    "/build/assets/Paid-CiGgoVos.css"
   ],
   "resources/js/pages/Admin/Orders/Paid.vue?vue&type=script&setup=true&lang.ts": [
-    "/build/assets/Paid-YbgiW4JN.js",
-    "/build/assets/Paid-C8a3WGFz.css"
+    "/build/assets/Paid-BRLjmT6d.js",
+    "/build/assets/Paid-CiGgoVos.css"
   ],
   "resources/js/pages/Admin/Orders/Pending.vue": [
     "/build/assets/Pending-DGmMPs54.js"

@@ -7,15 +7,18 @@ use App\Http\Requests\Manage\StoreCustomerRequest;
 use App\Http\Requests\Manage\UpdateCustomerRequest;
 use App\Models\Manage\Customer;
 use App\Services\MLMService;
+use App\Services\RajaOngkirService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class CustomerController extends Controller
 {
     public function __construct(
-        protected MLMService $mlmService
+        protected MLMService $mlmService,
+        protected RajaOngkirService $rajaOngkirService,
     ) {}
 
     /**
@@ -123,32 +126,7 @@ class CustomerController extends Controller
      */
     public function create(): Response
     {
-        // Get all customers for sponsor/upline selection
-        $customers = Customer::select('id', 'name', 'ewallet_id')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($customer) {
-                return [
-                    'id' => $customer->id,
-                    'name' => $customer->name,
-                    'ewallet_id' => $customer->ewallet_id,
-                ];
-            });
-
-        return Inertia::render('Admin/Customers/Create', [
-            'customers' => $customers,
-            'packages' => [
-                ['id' => 1, 'name' => 'ZENNER Plus'],
-                ['id' => 2, 'name' => 'ZENNER Prime'],
-                ['id' => 3, 'name' => 'ZENNER Ultra'],
-            ],
-            'levels' => [
-                ['value' => 'Associate', 'label' => 'Associate'],
-                ['value' => 'Senior Associate', 'label' => 'Senior Associate'],
-                ['value' => 'Executive', 'label' => 'Executive'],
-                ['value' => 'Director', 'label' => 'Director'],
-            ],
-        ]);
+        return Inertia::render('Admin/Customers/Create');
     }
 
     /**
@@ -156,38 +134,49 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        try {
-            // Generate ewallet_id
-            $ewalletId = Customer::generateEwalletId();
+        $validated = $request->validated();
 
-            // Prepare customer data
+        DB::beginTransaction();
+
+        try {
+            $ewalletId = Customer::generateEwalletId();
+            $status = (int) $validated['status'];
+
             $customerData = [
-                'name' => $request->name,
-                'username' => $request->username,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'password' => bcrypt($request->password),
-                'description' => $request->description,
-                'sponsor_id' => $request->sponsor_id,
-                'status' => $request->status,
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'nik' => $validated['nik'],
+                'gender' => $validated['gender'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'password' => bcrypt($validated['password']),
+                'description' => $validated['description'],
+                'alamat' => $validated['alamat'],
+                'bank_name' => $validated['bank_name'],
+                'bank_account' => $validated['bank_account'],
+                'sponsor_id' => $validated['sponsor_id'] ?? null,
+                'status' => $status,
                 'ewallet_id' => $ewalletId,
                 'ref_code' => strtoupper(substr(md5(uniqid()), 0, 8)),
             ];
 
-            // Tambahkan level dan package_id jika status Aktif
-            if ($request->status === 3) {
-                $customerData['level'] = $request->level;
-                $customerData['package_id'] = $request->package_id;
+            if ($status === 3) {
+                $customerData['level'] = $validated['level'] ?? null;
+                $customerData['package_id'] = $validated['package_id'] ?? null;
             }
 
-            // Create customer with status only (no binary tree placement)
             $customer = Customer::create($customerData);
+            $this->syncPrimaryAddress($customer, $validated);
+            $this->syncCustomerNpwp($customer, $validated['npwp']);
+
+            DB::commit();
 
             return redirect()
                 ->route('customers.show', $customer)
                 ->with('success', 'Customer berhasil ditambahkan dengan Ewallet ID: '.$customer->ewallet_id);
-        } catch (\Exception $e) {
-            // dd($e->getMessage());
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
             return redirect()
                 ->back()
                 ->withInput()
@@ -289,23 +278,15 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer): Response
     {
-        $customer->load(['networkPosition.upline', 'matrixPosition.sponsor']);
+        $customer->load('defaultAddress');
+        $customerNpwp = DB::table('customer_npwp')
+            ->where('member_id', $customer->id)
+            ->orderByDesc('id')
+            ->first();
 
-        // Get customers for sponsor selection (only needed if customer is Prospek)
-        $customers = [];
-        if ($customer->status === 1) {
-            $customers = Customer::select('id', 'name', 'ewallet_id', 'username')
-                ->where('id', '!=', $customer->id) // Exclude self
-                ->where('status', '>=', 2) // Only Pasif or Aktif members can be sponsor
-                ->orderBy('name')
-                ->get()
-                ->map(fn ($c) => [
-                    'id' => $c->id,
-                    'name' => $c->name,
-                    'ewallet_id' => $c->ewallet_id,
-                    'username' => $c->username,
-                ])
-                ->toArray();
+        $defaultAddress = $customer->defaultAddress;
+        if (! $defaultAddress) {
+            $defaultAddress = $customer->addresses()->orderByDesc('is_default')->latest('id')->first();
         }
 
         return Inertia::render('Admin/Customers/Edit', [
@@ -313,33 +294,28 @@ class CustomerController extends Controller
                 'id' => $customer->id,
                 'name' => $customer->name,
                 'username' => $customer->username,
+                'nik' => $customer->nik,
+                'gender' => $customer->gender,
                 'email' => $customer->email,
                 'phone' => $customer->phone,
-                'ewallet_id' => $customer->ewallet_id,
-                'ewallet_saldo' => $customer->ewallet_saldo,
-                'email_verified_at' => $customer->email_verified_at?->format('Y-m-d H:i:s'),
                 'description' => $customer->description,
-                'status' => $customer->status,
-                'package_id' => $customer->package_id,
-                'package_name' => $customer->get_package_name(),
-                'level' => $customer->level,
-                'sponsor_id' => $customer->matrixPosition?->sponsor_id,
-                'sponsor_name' => $customer->matrixPosition?->sponsor?->name,
-                'upline_id' => $customer->networkPosition?->upline_id,
-                'upline_name' => $customer->networkPosition?->upline?->name,
-                'position' => $customer->networkPosition?->position,
-            ],
-            'customers' => $customers,
-            'packages' => [
-                ['id' => 1, 'name' => 'ZENNER Plus'],
-                ['id' => 2, 'name' => 'ZENNER Prime'],
-                ['id' => 3, 'name' => 'ZENNER Ultra'],
-            ],
-            'levels' => [
-                ['value' => 'Associate', 'label' => 'Associate'],
-                ['value' => 'Senior Associate', 'label' => 'Senior Associate'],
-                ['value' => 'Executive', 'label' => 'Executive'],
-                ['value' => 'Director', 'label' => 'Director'],
+                'address' => $defaultAddress?->address_line1,
+                'alamat' => $customer->alamat ?? $defaultAddress?->address_line2,
+                'province_id' => $defaultAddress?->province_id,
+                'city_id' => $defaultAddress?->city_id,
+                'bank_name' => $customer->bank_name,
+                'bank_account' => $customer->bank_account,
+                'npwp' => [
+                    'nama' => $customerNpwp?->nama ?? $customer->name,
+                    'npwp' => $customerNpwp?->npwp,
+                    'jk' => $this->mapNpwpGenderToForm($customerNpwp?->jk, $customer->gender),
+                    'npwp_date' => $customerNpwp?->npwp_date ?? now()->toDateString(),
+                    'alamat' => $customerNpwp?->alamat ?? ($customer->alamat ?? ''),
+                    'menikah' => $this->mapMarriageStatusToForm($customerNpwp?->menikah),
+                    'anak' => $customerNpwp?->anak !== null ? (int) $customerNpwp->anak : 0,
+                    'kerja' => $this->mapWorkStatusToForm($customerNpwp?->kerja),
+                    'office' => $customerNpwp?->office && $customerNpwp?->office !== '-' ? $customerNpwp->office : '',
+                ],
             ],
         ]);
     }
@@ -349,49 +325,66 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-        try {
-            $customer->update($request->only(['name', 'username', 'email', 'phone', 'description']));
+        $validated = $request->validated();
 
-            if ($request->filled('password')) {
-                $customer->update(['password' => $request->password]);
+        DB::beginTransaction();
+
+        try {
+            $customer->update([
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'nik' => $validated['nik'],
+                'gender' => $validated['gender'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'description' => $validated['description'],
+                'alamat' => $validated['alamat'],
+                'bank_name' => $validated['bank_name'],
+                'bank_account' => $validated['bank_account'],
+            ]);
+
+            if (! empty($validated['password'])) {
+                $customer->update(['password' => $validated['password']]);
             }
 
+            $this->syncPrimaryAddress($customer, $validated);
+            $this->syncCustomerNpwp($customer, $validated['npwp']);
+
             // Update package_id jika customer sudah Aktif (status = 3)
-            if ($request->has('package_id') && $customer->status === 3) {
+            if ($request->filled('package_id') && $customer->status === 3) {
                 // Re-validate status from database to prevent race condition
                 $freshCustomer = Customer::find($customer->id);
                 if ($freshCustomer && $freshCustomer->status === 3) {
-                    if ($freshCustomer->package_id === 1) {
-                        $customer_daily_pairing = 15;
-                    }elseif ($freshCustomer->package_id === 2) {
-                        $customer_daily_pairing = 50;
-                    }elseif ($freshCustomer->package_id === 3) {
-                        $customer_daily_pairing = 100;
-                    } else {
-                        $customer_daily_pairing = 0;
-                    }
+                    $packageId = (int) $request->input('package_id');
+                    $customerDailyPairing = match ($packageId) {
+                        1 => 15,
+                        2 => 50,
+                        3 => 100,
+                        default => 0,
+                    };
+
                     $customer->update([
-                        'package_id' => $request->package_id,
-                        'customer_daily_pairing' => $customer_daily_pairing,
+                        'package_id' => $packageId,
+                        'customer_daily_pairing' => $customerDailyPairing,
                     ]);
                 }
             }
 
             // Update level jika customer sudah Aktif (status = 3)
-            if ($request->has('level') && $customer->status === 3) {
+            if ($request->filled('level') && $customer->status === 3) {
                 // Re-validate status from database to prevent race condition
                 $freshCustomer = Customer::find($customer->id);
                 if ($freshCustomer && $freshCustomer->status === 3) {
-                    $customer->update(['level' => $request->level]);
+                    $customer->update(['level' => $request->input('level')]);
                 }
             }
 
             // Update sponsor_id jika customer masih Prospek (status = 1)
-            if ($request->has('sponsor_id') && $customer->status === 1) {
+            if ($request->exists('sponsor_id') && $customer->status === 1) {
                 // Re-validate status from database to prevent race condition
                 $freshCustomer = Customer::find($customer->id);
                 if ($freshCustomer && $freshCustomer->status === 1) {
-                    $newSponsorId = $request->sponsor_id;
+                    $newSponsorId = $request->integer('sponsor_id') ?: null;
 
                     // Update or create matrix position
                     if ($customer->matrixPosition) {
@@ -413,15 +406,160 @@ class CustomerController extends Controller
                 }
             }
 
+            DB::commit();
+
             return redirect()
                 ->route('customers.show', $customer)
                 ->with('success', 'Data customer berhasil diperbarui');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
             return redirect()
                 ->back()
                 ->withInput()
                 ->with('error', 'Gagal memperbarui customer: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Sinkronkan data NPWP customer dengan payload form admin.
+     */
+    private function syncCustomerNpwp(Customer $customer, array $npwp): void
+    {
+        $now = now();
+        $actor = (string) (Auth::user()?->username ?? Auth::user()?->name ?? 'system');
+
+        $payload = [
+            'member_id' => $customer->id,
+            'nama' => (string) ($npwp['nama'] ?? ''),
+            'npwp' => (string) ($npwp['npwp'] ?? ''),
+            'jk' => (int) ($npwp['jk'] ?? 0),
+            'npwp_date' => (string) ($npwp['npwp_date'] ?? ''),
+            'alamat' => (string) ($npwp['alamat'] ?? ''),
+            'menikah' => (string) ($npwp['menikah'] ?? 'N'),
+            'anak' => (string) ($npwp['anak'] ?? '0'),
+            'kerja' => (string) ($npwp['kerja'] ?? 'N'),
+            'office' => trim((string) ($npwp['office'] ?? '')) !== '' ? (string) $npwp['office'] : '-',
+            'updated' => $now,
+            'updatedby' => $actor,
+        ];
+
+        $existingId = DB::table('customer_npwp')
+            ->where('member_id', $customer->id)
+            ->orderByDesc('id')
+            ->value('id');
+
+        if ($existingId) {
+            DB::table('customer_npwp')
+                ->where('id', $existingId)
+                ->update($payload);
+
+            return;
+        }
+
+        DB::table('customer_npwp')->insert(array_merge($payload, [
+            'created' => $now,
+            'createdby' => $actor,
+        ]));
+    }
+
+    private function mapNpwpGenderToForm(mixed $jk, ?string $fallbackGender): string
+    {
+        if ((int) $jk === 1) {
+            return 'laki-laki';
+        }
+
+        if ((int) $jk === 2) {
+            return 'perempuan';
+        }
+
+        $normalized = strtolower(trim((string) $fallbackGender));
+
+        return match ($normalized) {
+            'l', 'male', 'laki-laki' => 'laki-laki',
+            'p', 'female', 'perempuan' => 'perempuan',
+            default => '',
+        };
+    }
+
+    private function mapMarriageStatusToForm(mixed $status): string
+    {
+        return strtoupper(trim((string) $status)) === 'Y' ? '1' : '0';
+    }
+
+    private function mapWorkStatusToForm(mixed $status): string
+    {
+        return strtoupper(trim((string) $status)) === 'Y' ? 'Karyawan' : 'Tidak Bekerja';
+    }
+
+    private function syncPrimaryAddress(Customer $customer, array $validated): void
+    {
+        $provinceId = (int) $validated['province_id'];
+        $cityId = (int) $validated['city_id'];
+
+        $addressPayload = [
+            'label' => 'Utama',
+            'recipient_name' => (string) $validated['name'],
+            'recipient_phone' => (string) $validated['phone'],
+            'address_line1' => (string) $validated['address'],
+            'address_line2' => (string) $validated['alamat'],
+            'province_label' => $this->resolveProvinceLabel($provinceId),
+            'province_id' => $provinceId,
+            'city_label' => $this->resolveCityLabel($provinceId, $cityId),
+            'city_id' => $cityId,
+            'postal_code' => null,
+            'country' => 'Indonesia',
+            'description' => (string) $validated['description'],
+        ];
+
+        $defaultAddress = $customer->addresses()->where('is_default', true)->first();
+        if (! $defaultAddress) {
+            $defaultAddress = $customer->addresses()->latest('id')->first();
+        }
+
+        if ($defaultAddress) {
+            $defaultAddress->update(array_merge($addressPayload, ['is_default' => true]));
+        } else {
+            $defaultAddress = $customer->addresses()->create(array_merge($addressPayload, ['is_default' => true]));
+        }
+
+        $customer->addresses()
+            ->where('id', '!=', $defaultAddress->id)
+            ->update(['is_default' => false]);
+    }
+
+    private function resolveProvinceLabel(int $provinceId): string
+    {
+        try {
+            $provinces = $this->rajaOngkirService->getProvinces();
+
+            foreach ($provinces as $province) {
+                if ((int) data_get($province, 'id') === $provinceId) {
+                    return (string) data_get($province, 'name', "Provinsi {$provinceId}");
+                }
+            }
+        } catch (\Throwable) {
+            // Fallback ke label berbasis ID jika API tidak tersedia.
+        }
+
+        return "Provinsi {$provinceId}";
+    }
+
+    private function resolveCityLabel(int $provinceId, int $cityId): string
+    {
+        try {
+            $cities = $this->rajaOngkirService->getCities($provinceId);
+
+            foreach ($cities as $city) {
+                if ((int) data_get($city, 'id') === $cityId) {
+                    return (string) data_get($city, 'name', "Kota {$cityId}");
+                }
+            }
+        } catch (\Throwable) {
+            // Fallback ke label berbasis ID jika API tidak tersedia.
+        }
+
+        return "Kota {$cityId}";
     }
 
     /**
