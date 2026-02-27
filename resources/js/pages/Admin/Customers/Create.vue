@@ -13,6 +13,21 @@ import { ArrowLeft } from 'lucide-vue-next';
 import { onMounted, watch } from 'vue';
 import { toast } from 'vue-sonner';
 
+interface SponsorOption {
+    id: number;
+    name: string;
+    username: string | null;
+    email: string | null;
+    phone: string | null;
+    ewallet_id: string | null;
+}
+
+interface Props {
+    sponsors: SponsorOption[];
+}
+
+const props = defineProps<Props>();
+
 const { form, toPayload } = useCustomerForm('create');
 
 const {
@@ -123,6 +138,7 @@ const submit = () => {
             <CustomerForm
                 v-model:form="form"
                 mode="create"
+                :sponsors="props.sponsors"
                 :provinces="provinces"
                 :cities="cities"
                 :loading-provinces="loadingProvinces"

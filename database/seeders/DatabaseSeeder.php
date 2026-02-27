@@ -465,10 +465,12 @@ class DatabaseSeeder extends Seeder
             for ($i = 0; $i < rand(1, 2); $i++) {
                 CustomerBonusPairing::create([
                     'member_id' => $customer->id,
-                    'pair' => rand(1, 10),
+                    'source_member_id' => $customer->id,
+                    'pairing_count' => rand(1, 10),
                     'amount' => rand(10000, 100000),
                     'index_value' => rand(10, 50),
                     'status' => rand(0, 1),
+                    'pairing_date' => now()->toDateString(),
                 ]);
             }
         }

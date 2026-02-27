@@ -28,6 +28,10 @@ interface Customer {
     city_id: number | null;
     bank_name: string | null;
     bank_account: string | null;
+    sponsor_id: number | null;
+    status: string | number | null;
+    package_id: string | number | null;
+    level: string | null;
     npwp: {
         nama: string | null;
         npwp: string | null;
@@ -41,8 +45,18 @@ interface Customer {
     } | null;
 }
 
+interface SponsorOption {
+    id: number;
+    name: string;
+    username: string | null;
+    email: string | null;
+    phone: string | null;
+    ewallet_id: string | null;
+}
+
 interface Props {
     customer: Customer;
+    sponsors: SponsorOption[];
 }
 
 const props = defineProps<Props>();
@@ -168,6 +182,7 @@ const submit = () => {
             <CustomerForm
                 v-model:form="form"
                 mode="edit"
+                :sponsors="props.sponsors"
                 :provinces="provinces"
                 :cities="cities"
                 :loading-provinces="loadingProvinces"

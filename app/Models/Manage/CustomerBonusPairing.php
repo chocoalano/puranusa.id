@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Schema;
 /**
  * @property int $id
  * @property int $member_id
+ * @property int $source_member_id
  * @property int $pair
  * @property int $pairing_count
  * @property float $amount
  * @property float|null $index_value
  * @property int $status
  * @property string|null $description
+ * @property \Illuminate\Support\Carbon|null $pairing_date
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Customer $member
@@ -26,6 +28,8 @@ class CustomerBonusPairing extends Model
 
     public const LEGACY_PAIR_COLUMN = 'pair';
     public const PAIRING_COUNT_COLUMN = 'pairing_count';
+    public const SOURCE_MEMBER_ID_COLUMN = 'source_member_id';
+    public const PAIRING_DATE_COLUMN = 'pairing_date';
 
     protected static ?string $pairColumn = null;
 
@@ -33,20 +37,24 @@ class CustomerBonusPairing extends Model
 
     protected $fillable = [
         'member_id',
-        'pair',
+        'source_member_id',
+        'pairing_count',
         'amount',
         'index_value',
         'status',
         'description',
+        'pairing_date',
     ];
 
     protected function casts(): array
     {
         return [
+            'source_member_id' => 'integer',
             'pairing_count' => 'integer',
             'amount' => 'float',
             'index_value' => 'float',
             'status' => 'integer',
+            'pairing_date' => 'date',
         ];
     }
 
@@ -64,21 +72,26 @@ class CustomerBonusPairing extends Model
             return self::$pairColumn;
         }
 
-        $table = (new self())->getTable();
+        if (self::hasColumn(self::PAIRING_COUNT_COLUMN)) {
+            self::$pairColumn = self::PAIRING_COUNT_COLUMN;
 
-        try {
-            if (Schema::hasColumn($table, self::PAIRING_COUNT_COLUMN)) {
-                self::$pairColumn = self::PAIRING_COUNT_COLUMN;
-
-                return self::$pairColumn;
-            }
-        } catch (\Throwable $e) {
-            // Fallback when schema introspection isn't available.
+            return self::$pairColumn;
         }
 
         self::$pairColumn = self::LEGACY_PAIR_COLUMN;
 
         return self::$pairColumn;
+    }
+
+    protected static function hasColumn(string $column): bool
+    {
+        $table = (new self())->getTable();
+
+        try {
+            return Schema::hasColumn($table, $column);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     public function getPairAttribute(): int
@@ -128,15 +141,30 @@ class CustomerBonusPairing extends Model
         }
 
         $amount = $pairs * $bonusPerPair;
-
-        return self::create([
+        $pairColumn = self::pairColumn();
+        $payload = [
             'member_id' => $memberId,
-            'pair' => $pairs,
             'amount' => $amount,
             'index_value' => $amount,
             'status' => 0,
             'description' => "Bonus pairing untuk {$pairs} pasangan",
-        ]);
+        ];
+
+        $payload[$pairColumn] = $pairs;
+
+        if (self::hasColumn(self::SOURCE_MEMBER_ID_COLUMN)) {
+            $payload[self::SOURCE_MEMBER_ID_COLUMN] = $memberId;
+        }
+
+        if (self::hasColumn(self::PAIRING_DATE_COLUMN)) {
+            $payload[self::PAIRING_DATE_COLUMN] = now()->toDateString();
+        }
+
+        $bonus = new self;
+        $bonus->forceFill($payload);
+        $bonus->save();
+
+        return $bonus;
     }
 
     /**

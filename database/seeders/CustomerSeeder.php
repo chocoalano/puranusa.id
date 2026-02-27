@@ -387,10 +387,12 @@ class CustomerSeeder extends Seeder
                 for ($i = 0; $i < min($pairs, 3); $i++) {
                     CustomerBonusPairing::create([
                         'member_id' => $customer->id,
-                        'pair' => $i + 1,
+                        'source_member_id' => $customer->id,
+                        'pairing_count' => $i + 1,
                         'amount' => fake()->randomFloat(2, 25000, 125000),
                         'index_value' => fake()->randomFloat(2, 12.5, 62.5),
                         'status' => fake()->randomElement([0, 1]),
+                        'pairing_date' => fake()->date(),
                         'description' => 'Bonus pairing pair ke-'.($i + 1),
                     ]);
                 }

@@ -22,10 +22,12 @@ class CustomerBonusPairingFactory extends Factory
 
         return [
             'member_id' => \App\Models\Manage\Customer::factory(),
-            'pair' => $pairs,
+            'source_member_id' => \App\Models\Manage\Customer::factory(),
+            'pairing_count' => $pairs,
             'amount' => $amount,
             'index_value' => $this->faker->optional()->randomFloat(2, 100000, 10000000),
             'status' => $this->faker->randomElement([0, 1]),
+            'pairing_date' => $this->faker->optional()->date(),
             'description' => $this->faker->optional()->randomElement([
                 "Bonus pairing untuk {$pairs} pasangan",
                 'Pairing bonus periode '.now()->format('F Y'),

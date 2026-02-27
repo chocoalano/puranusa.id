@@ -46,7 +46,7 @@ class UpdateCustomerRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:customers,username,'.$this->customer->id],
             'nik' => ['required', 'string', 'max:32', 'regex:/^\d{8,32}$/'],
-            'gender' => ['required', 'string', 'in:L,P,male,female,laki-laki,perempuan'],
+            'gender' => ['nullable', 'string', 'in:L,P,male,female,laki-laki,perempuan'],
             'email' => ['required', 'email', 'max:255', function (string $attribute, mixed $value, \Closure $fail) {
                 $count = Customer::where('email', $value)
                     ->where('id', '!=', $this->customer->id)
@@ -56,23 +56,23 @@ class UpdateCustomerRequest extends FormRequest
                 }
             }],
             'phone' => ['required', 'string', 'max:20'],
-            'description' => ['required', 'string', 'max:1000'],
-            'address' => ['required', 'string', 'max:1000'],
-            'alamat' => ['required', 'string', 'max:1000'],
-            'province_id' => ['required', 'integer'],
-            'city_id' => ['required', 'integer'],
-            'bank_name' => ['required', 'string', 'max:100'],
-            'bank_account' => ['required', 'string', 'max:50'],
-            'npwp' => ['required', 'array'],
-            'npwp.nama' => ['required', 'string', 'max:50'],
-            'npwp.npwp' => ['required', 'string', 'max:50', 'regex:/^\d{15,16}$/'],
-            'npwp.jk' => ['required', 'integer', 'in:1,2'],
-            'npwp.npwp_date' => ['required', 'date'],
-            'npwp.alamat' => ['required', 'string', 'max:255'],
-            'npwp.menikah' => ['required', 'string', 'in:Y,N'],
-            'npwp.anak' => ['required', 'string', 'in:0,1,2,3'],
-            'npwp.kerja' => ['required', 'string', 'in:Y,N'],
-            'npwp.office' => ['required', 'string', 'max:50'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'address' => ['nullable', 'string', 'max:1000'],
+            'alamat' => ['nullable', 'string', 'max:1000'],
+            'province_id' => ['nullable', 'integer'],
+            'city_id' => ['nullable', 'integer'],
+            'bank_name' => ['nullable', 'string', 'max:100'],
+            'bank_account' => ['nullable', 'string', 'max:50'],
+            'npwp' => ['nullable', 'array'],
+            'npwp.nama' => ['nullable', 'string', 'max:50'],
+            'npwp.npwp' => ['nullable', 'string', 'max:50', 'regex:/^\d{15,16}$/'],
+            'npwp.jk' => ['nullable', 'integer', 'in:1,2'],
+            'npwp.npwp_date' => ['nullable', 'date'],
+            'npwp.alamat' => ['nullable', 'string', 'max:255'],
+            'npwp.menikah' => ['nullable', 'string', 'in:Y,N'],
+            'npwp.anak' => ['nullable', 'string', 'in:0,1,2,3'],
+            'npwp.kerja' => ['nullable', 'string', 'in:Y,N'],
+            'npwp.office' => ['nullable', 'string', 'max:50'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'sponsor_id' => ['nullable', 'exists:customers,id'],
             'package_id' => ['nullable', 'integer', 'in:1,2,3'],
@@ -205,25 +205,6 @@ class UpdateCustomerRequest extends FormRequest
                 }
             }
 
-            // Jika ada perubahan package_id (berbeda dari nilai saat ini), validasi apakah customer sudah Aktif
-            if ($this->filled('package_id') && $this->package_id != $freshCustomer->package_id) {
-                if ($freshCustomer->status !== 3) {
-                    $validator->errors()->add(
-                        'package_id',
-                        'Paket hanya dapat diubah untuk member dengan status Aktif. Member ini masih berstatus Prospek/Pasif.'
-                    );
-                }
-            }
-
-            // Jika ada perubahan level (berbeda dari nilai saat ini), validasi apakah customer sudah Aktif
-            if ($this->filled('level') && $this->level != $freshCustomer->level) {
-                if ($freshCustomer->status !== 3) {
-                    $validator->errors()->add(
-                        'level',
-                        'Peringkat hanya dapat diubah untuk member dengan status Aktif. Member ini masih berstatus Prospek/Pasif.'
-                    );
-                }
-            }
         });
     }
 

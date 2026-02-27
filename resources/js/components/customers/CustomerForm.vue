@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -6,8 +7,21 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -21,14 +35,25 @@ import type {
     CustomerFormState,
 } from '@/composables/customers/useCustomerForm';
 import type { ShippingLocationOption } from '@/composables/customers/useShippingLocation';
+import { cn } from '@/lib/utils';
 import type { InertiaForm } from '@inertiajs/vue3';
-import { Loader2 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+
+interface CustomerSponsorOption {
+    id: number;
+    name: string;
+    username: string | null;
+    email: string | null;
+    phone: string | null;
+    ewallet_id: string | null;
+}
 
 interface Props {
     mode: CustomerFormMode;
     provinces: ShippingLocationOption[];
     cities: ShippingLocationOption[];
+    sponsors: CustomerSponsorOption[];
     loadingProvinces: boolean;
     loadingCities: boolean;
 }
@@ -53,6 +78,74 @@ const selectedProvinceLabel = computed(() => {
 const selectedCityLabel = computed(() => {
     return props.cities.find((city) => city.id === form.value.city_id)?.name;
 });
+
+const sponsorComboboxOpen = ref(false);
+
+const customerStatusLabel = computed(() => {
+    if (form.value.status === '1') {
+        return 'Prospek';
+    }
+
+    if (form.value.status === '2') {
+        return 'Pasif';
+    }
+
+    if (form.value.status === '3') {
+        return 'Aktif';
+    }
+
+    return '-';
+});
+
+const selectedSponsor = computed(() => {
+    if (form.value.sponsor_id === null) {
+        return null;
+    }
+
+    return (
+        props.sponsors.find(
+            (sponsor) => sponsor.id === form.value.sponsor_id,
+        ) ?? null
+    );
+});
+
+const selectedSponsorLabel = computed(() => {
+    if (!selectedSponsor.value) {
+        return 'Pilih sponsor berdasarkan username';
+    }
+
+    const username = selectedSponsor.value.username
+        ? `@${selectedSponsor.value.username}`
+        : `ID ${selectedSponsor.value.id}`;
+
+    return `${username} - ${selectedSponsor.value.name}`;
+});
+
+const getSponsorSearchValue = (sponsor: CustomerSponsorOption): string => {
+    return [
+        sponsor.id.toString(),
+        sponsor.username ?? '',
+        sponsor.name,
+        sponsor.email ?? '',
+        sponsor.phone ?? '',
+        sponsor.ewallet_id ?? '',
+    ]
+        .join(' ')
+        .trim();
+};
+
+const getSponsorMeta = (sponsor: CustomerSponsorOption): string => {
+    const details = [sponsor.email, sponsor.phone, sponsor.ewallet_id].filter(
+        (value): value is string => Boolean(value),
+    );
+
+    return details.join(' • ');
+};
+
+const selectSponsor = (sponsorId: number | null): void => {
+    form.value.sponsor_id = sponsorId;
+    sponsorComboboxOpen.value = false;
+};
 </script>
 
 <template>
@@ -136,7 +229,7 @@ const selectedCityLabel = computed(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="gender">Jenis Kelamin *</Label>
+                        <Label for="gender">Jenis Kelamin</Label>
                         <Select v-model="form.gender">
                             <SelectTrigger
                                 id="gender"
@@ -219,6 +312,257 @@ const selectedCityLabel = computed(() => {
 
         <Card>
             <CardHeader>
+                <CardTitle>Data Keanggotaan</CardTitle>
+                <CardDescription>
+                    Informasi ini mengacu pada atribut keanggotaan di model
+                    customer.
+                </CardDescription>
+            </CardHeader>
+            <CardContent class="space-y-4">
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div class="space-y-2">
+                        <Label for="status">Status</Label>
+                        <template v-if="isCreateMode">
+                            <Select v-model="form.status">
+                                <SelectTrigger
+                                    id="status"
+                                    :class="{
+                                        'border-destructive':
+                                            form.errors.status,
+                                    }"
+                                >
+                                    <SelectValue
+                                        placeholder="Pilih status customer"
+                                    />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="1">Prospek</SelectItem>
+                                    <SelectItem value="2">Pasif</SelectItem>
+                                    <SelectItem value="3">Aktif</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p
+                                v-if="form.errors.status"
+                                class="text-sm text-destructive"
+                            >
+                                {{ form.errors.status }}
+                            </p>
+                        </template>
+                        <template v-else>
+                            <Input
+                                id="status"
+                                :value="customerStatusLabel"
+                                disabled
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                Status hanya dapat diubah lewat proses bisnis
+                                aktivasi customer.
+                            </p>
+                        </template>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="sponsor_id">Sponsor</Label>
+                        <Popover v-model:open="sponsorComboboxOpen">
+                            <PopoverTrigger as-child>
+                                <Button
+                                    id="sponsor_id"
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-label="Pilih sponsor"
+                                    :class="
+                                        cn(
+                                            'w-full justify-between font-normal',
+                                            form.errors.sponsor_id &&
+                                                'border-destructive',
+                                        )
+                                    "
+                                >
+                                    <span class="truncate text-left">
+                                        {{ selectedSponsorLabel }}
+                                    </span>
+                                    <ChevronsUpDown
+                                        class="ml-2 h-4 w-4 shrink-0 opacity-50"
+                                    />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                                align="start"
+                                class="w-[--reka-popover-trigger-width] p-0"
+                            >
+                                <Command>
+                                    <CommandInput
+                                        placeholder="Cari username sponsor..."
+                                    />
+                                    <CommandList>
+                                        <CommandEmpty
+                                            >Sponsor tidak
+                                            ditemukan.</CommandEmpty
+                                        >
+                                        <CommandGroup heading="Daftar Sponsor">
+                                            <CommandItem
+                                                value="tanpa sponsor"
+                                                @select.prevent="
+                                                    selectSponsor(null)
+                                                "
+                                            >
+                                                <Check
+                                                    :class="
+                                                        cn(
+                                                            'mr-2 h-4 w-4',
+                                                            form.sponsor_id ===
+                                                                null
+                                                                ? 'opacity-100'
+                                                                : 'opacity-0',
+                                                        )
+                                                    "
+                                                />
+                                                Tanpa sponsor
+                                            </CommandItem>
+                                            <CommandItem
+                                                v-for="sponsor in props.sponsors"
+                                                :key="sponsor.id"
+                                                :value="
+                                                    getSponsorSearchValue(
+                                                        sponsor,
+                                                    )
+                                                "
+                                                @select.prevent="
+                                                    selectSponsor(sponsor.id)
+                                                "
+                                            >
+                                                <Check
+                                                    :class="
+                                                        cn(
+                                                            'mr-2 h-4 w-4',
+                                                            form.sponsor_id ===
+                                                                sponsor.id
+                                                                ? 'opacity-100'
+                                                                : 'opacity-0',
+                                                        )
+                                                    "
+                                                />
+                                                <div class="flex flex-col">
+                                                    <span class="font-medium">
+                                                        {{
+                                                            sponsor.username
+                                                                ? `@${sponsor.username}`
+                                                                : `ID ${sponsor.id}`
+                                                        }}
+                                                    </span>
+                                                    <span
+                                                        class="text-xs text-muted-foreground"
+                                                    >
+                                                        {{ sponsor.name }}
+                                                        <template
+                                                            v-if="
+                                                                getSponsorMeta(
+                                                                    sponsor,
+                                                                )
+                                                            "
+                                                        >
+                                                            •
+                                                            {{
+                                                                getSponsorMeta(
+                                                                    sponsor,
+                                                                )
+                                                            }}
+                                                        </template>
+                                                    </span>
+                                                </div>
+                                            </CommandItem>
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+                        <p class="text-xs text-muted-foreground">
+                            Pilih sponsor dari data customer dan cari dengan
+                            username.
+                        </p>
+                        <p
+                            v-if="form.errors.sponsor_id"
+                            class="text-sm text-destructive"
+                        >
+                            {{ form.errors.sponsor_id }}
+                        </p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="package_id">Paket Membership</Label>
+                        <Select v-model="form.package_id">
+                            <SelectTrigger
+                                id="package_id"
+                                :class="{
+                                    'border-destructive':
+                                        form.errors.package_id,
+                                }"
+                            >
+                                <SelectValue
+                                    placeholder="Pilih paket membership"
+                                />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="1">ZENNER Plus</SelectItem>
+                                <SelectItem value="2">ZENNER Prime</SelectItem>
+                                <SelectItem value="3">ZENNER Ultra</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p class="text-xs text-muted-foreground">
+                            Anda dapat memilih paket sesuai kebutuhan customer.
+                        </p>
+                        <p
+                            v-if="form.errors.package_id"
+                            class="text-sm text-destructive"
+                        >
+                            {{ form.errors.package_id }}
+                        </p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label for="level">Level Customer</Label>
+                        <Select v-model="form.level">
+                            <SelectTrigger
+                                id="level"
+                                :class="{
+                                    'border-destructive': form.errors.level,
+                                }"
+                            >
+                                <SelectValue
+                                    placeholder="Pilih level customer"
+                                />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Associate"
+                                    >Associate</SelectItem
+                                >
+                                <SelectItem value="Senior Associate"
+                                    >Senior Associate</SelectItem
+                                >
+                                <SelectItem value="Executive"
+                                    >Executive</SelectItem
+                                >
+                                <SelectItem value="Director"
+                                    >Director</SelectItem
+                                >
+                            </SelectContent>
+                        </Select>
+                        <p class="text-xs text-muted-foreground">
+                            Level customer dipakai untuk struktur jaringan.
+                        </p>
+                        <p
+                            v-if="form.errors.level"
+                            class="text-sm text-destructive"
+                        >
+                            {{ form.errors.level }}
+                        </p>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
                 <CardTitle>Alamat Pelanggan</CardTitle>
                 <CardDescription>
                     Masukkan alamat utama pengiriman dan domisili untuk
@@ -227,7 +571,7 @@ const selectedCityLabel = computed(() => {
             </CardHeader>
             <CardContent class="space-y-4">
                 <div class="space-y-2">
-                    <Label for="address">Address *</Label>
+                    <Label for="address">Address</Label>
                     <Textarea
                         id="address"
                         v-model="form.address"
@@ -236,7 +580,6 @@ const selectedCityLabel = computed(() => {
                         :class="{
                             'border-destructive': form.errors.address,
                         }"
-                        required
                     />
                     <p class="text-xs text-muted-foreground">
                         Contoh: nama jalan, nomor rumah, RT/RW, kelurahan,
@@ -252,7 +595,7 @@ const selectedCityLabel = computed(() => {
 
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label for="province_id">Provinsi *</Label>
+                        <Label for="province_id">Provinsi</Label>
                         <Select
                             v-model="form.province_id"
                             :disabled="props.loadingProvinces"
@@ -300,7 +643,7 @@ const selectedCityLabel = computed(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="city_id">Kota/Kabupaten *</Label>
+                        <Label for="city_id">Kota/Kabupaten</Label>
                         <Select
                             v-model="form.city_id"
                             :disabled="props.loadingCities || !form.province_id"
@@ -351,7 +694,7 @@ const selectedCityLabel = computed(() => {
                 </div>
 
                 <div class="space-y-2">
-                    <Label for="alamat">Alamat Domisili (alamat) *</Label>
+                    <Label for="alamat">Alamat Domisili (alamat)</Label>
                     <Textarea
                         id="alamat"
                         v-model="form.alamat"
@@ -360,7 +703,6 @@ const selectedCityLabel = computed(() => {
                         :class="{
                             'border-destructive': form.errors.alamat,
                         }"
-                        required
                     />
                     <p class="text-xs text-muted-foreground">
                         Pisahkan data domisili untuk kebutuhan dokumen internal.
@@ -386,7 +728,7 @@ const selectedCityLabel = computed(() => {
             <CardContent class="space-y-4">
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label for="npwp_nama">Nama NPWP *</Label>
+                        <Label for="npwp_nama">Nama NPWP</Label>
                         <Input
                             id="npwp_nama"
                             v-model="form.npwp.nama"
@@ -394,7 +736,6 @@ const selectedCityLabel = computed(() => {
                             :class="{
                                 'border-destructive': form.errors['npwp.nama'],
                             }"
-                            required
                         />
                         <p
                             v-if="form.errors['npwp.nama']"
@@ -405,7 +746,7 @@ const selectedCityLabel = computed(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="npwp_number">Nomor NPWP *</Label>
+                        <Label for="npwp_number">Nomor NPWP</Label>
                         <Input
                             id="npwp_number"
                             v-model="form.npwp.npwp"
@@ -415,7 +756,6 @@ const selectedCityLabel = computed(() => {
                             :class="{
                                 'border-destructive': form.errors['npwp.npwp'],
                             }"
-                            required
                         />
                         <p
                             v-if="form.errors['npwp.npwp']"
@@ -426,7 +766,7 @@ const selectedCityLabel = computed(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="npwp_jk">Jenis Kelamin NPWP *</Label>
+                        <Label for="npwp_jk">Jenis Kelamin NPWP</Label>
                         <Select v-model="form.npwp.jk">
                             <SelectTrigger
                                 id="npwp_jk"
@@ -457,7 +797,7 @@ const selectedCityLabel = computed(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="npwp_date">Tanggal NPWP *</Label>
+                        <Label for="npwp_date">Tanggal NPWP</Label>
                         <Input
                             id="npwp_date"
                             v-model="form.npwp.npwp_date"
@@ -466,7 +806,6 @@ const selectedCityLabel = computed(() => {
                                 'border-destructive':
                                     form.errors['npwp.npwp_date'],
                             }"
-                            required
                         />
                         <p
                             v-if="form.errors['npwp.npwp_date']"
@@ -478,7 +817,7 @@ const selectedCityLabel = computed(() => {
                 </div>
 
                 <div class="space-y-2">
-                    <Label for="npwp_alamat">Alamat NPWP *</Label>
+                    <Label for="npwp_alamat">Alamat NPWP</Label>
                     <Textarea
                         id="npwp_alamat"
                         v-model="form.npwp.alamat"
@@ -487,7 +826,6 @@ const selectedCityLabel = computed(() => {
                         :class="{
                             'border-destructive': form.errors['npwp.alamat'],
                         }"
-                        required
                     />
                     <p
                         v-if="form.errors['npwp.alamat']"
@@ -499,7 +837,7 @@ const selectedCityLabel = computed(() => {
 
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label for="npwp_menikah">Status Menikah *</Label>
+                        <Label for="npwp_menikah">Status Menikah</Label>
                         <Select v-model="form.npwp.menikah">
                             <SelectTrigger
                                 id="npwp_menikah"
@@ -526,7 +864,7 @@ const selectedCityLabel = computed(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="npwp_anak">Jumlah Anak *</Label>
+                        <Label for="npwp_anak">Jumlah Anak</Label>
                         <Input
                             id="npwp_anak"
                             v-model.number="form.npwp.anak"
@@ -537,7 +875,6 @@ const selectedCityLabel = computed(() => {
                             :class="{
                                 'border-destructive': form.errors['npwp.anak'],
                             }"
-                            required
                         />
                         <p class="text-xs text-muted-foreground">
                             Mengikuti batas data perpajakan: maksimal 3 anak.
@@ -551,7 +888,7 @@ const selectedCityLabel = computed(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="npwp_kerja">Pekerjaan *</Label>
+                        <Label for="npwp_kerja">Pekerjaan</Label>
                         <Input
                             id="npwp_kerja"
                             v-model="form.npwp.kerja"
@@ -559,7 +896,6 @@ const selectedCityLabel = computed(() => {
                             :class="{
                                 'border-destructive': form.errors['npwp.kerja'],
                             }"
-                            required
                         />
                         <p
                             v-if="form.errors['npwp.kerja']"
@@ -570,7 +906,7 @@ const selectedCityLabel = computed(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="npwp_office">Nama Perusahaan *</Label>
+                        <Label for="npwp_office">Nama Perusahaan</Label>
                         <Input
                             id="npwp_office"
                             v-model="form.npwp.office"
@@ -579,7 +915,6 @@ const selectedCityLabel = computed(() => {
                                 'border-destructive':
                                     form.errors['npwp.office'],
                             }"
-                            required
                         />
                         <p
                             v-if="form.errors['npwp.office']"
@@ -602,7 +937,7 @@ const selectedCityLabel = computed(() => {
             <CardContent class="space-y-4">
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label for="bank_name">Nama Bank *</Label>
+                        <Label for="bank_name">Nama Bank</Label>
                         <Input
                             id="bank_name"
                             v-model="form.bank_name"
@@ -610,7 +945,6 @@ const selectedCityLabel = computed(() => {
                             :class="{
                                 'border-destructive': form.errors.bank_name,
                             }"
-                            required
                         />
                         <p
                             v-if="form.errors.bank_name"
@@ -621,7 +955,7 @@ const selectedCityLabel = computed(() => {
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="bank_account">Nomor Rekening *</Label>
+                        <Label for="bank_account">Nomor Rekening</Label>
                         <Input
                             id="bank_account"
                             v-model="form.bank_account"
@@ -629,7 +963,6 @@ const selectedCityLabel = computed(() => {
                             :class="{
                                 'border-destructive': form.errors.bank_account,
                             }"
-                            required
                         />
                         <p
                             v-if="form.errors.bank_account"
@@ -641,7 +974,7 @@ const selectedCityLabel = computed(() => {
                 </div>
 
                 <div class="space-y-2">
-                    <Label for="description">Deskripsi *</Label>
+                    <Label for="description">Deskripsi</Label>
                     <Textarea
                         id="description"
                         v-model="form.description"
@@ -650,7 +983,6 @@ const selectedCityLabel = computed(() => {
                         :class="{
                             'border-destructive': form.errors.description,
                         }"
-                        required
                     />
                     <p class="text-xs text-muted-foreground">
                         Contoh: sumber lead, kebutuhan khusus, atau informasi
@@ -673,7 +1005,8 @@ const selectedCityLabel = computed(() => {
                 }}</CardTitle>
                 <CardDescription>
                     <template v-if="isCreateMode">
-                        Password wajib diisi minimal 8 karakter.
+                        Password opsional. Jika dikosongkan, sistem akan membuat
+                        password otomatis.
                     </template>
                     <template v-else>
                         Kosongkan bila tidak ingin mengubah password.
@@ -683,9 +1016,7 @@ const selectedCityLabel = computed(() => {
             <CardContent>
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label for="password">{{
-                            isCreateMode ? 'Password *' : 'Password Baru'
-                        }}</Label>
+                        <Label for="password">Password (Opsional)</Label>
                         <Input
                             id="password"
                             v-model="form.password"
@@ -694,7 +1025,6 @@ const selectedCityLabel = computed(() => {
                             :class="{
                                 'border-destructive': form.errors.password,
                             }"
-                            :required="isCreateMode"
                         />
                         <p
                             v-if="form.errors.password"
@@ -706,18 +1036,13 @@ const selectedCityLabel = computed(() => {
 
                     <div class="space-y-2">
                         <Label for="password_confirmation">
-                            {{
-                                isCreateMode
-                                    ? 'Konfirmasi Password *'
-                                    : 'Konfirmasi Password Baru'
-                            }}
+                            Konfirmasi Password (Opsional)
                         </Label>
                         <Input
                             id="password_confirmation"
                             v-model="form.password_confirmation"
                             type="password"
                             placeholder="Ulangi password"
-                            :required="isCreateMode"
                         />
                     </div>
                 </div>

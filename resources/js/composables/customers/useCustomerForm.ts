@@ -3,6 +3,7 @@ import { useForm } from '@inertiajs/vue3';
 export type CustomerFormMode = 'create' | 'edit';
 export type CustomerGenderOption = '' | 'laki-laki' | 'perempuan';
 export type CustomerMarriageOption = '0' | '1';
+export type CustomerStatusOption = '1' | '2' | '3';
 
 export interface CustomerNpwpFormState {
     nama: string;
@@ -34,7 +35,7 @@ export interface CustomerFormState {
     password: string;
     password_confirmation: string;
     sponsor_id: number | null;
-    status: string;
+    status: CustomerStatusOption;
     package_id: string;
     level: string;
 }
@@ -69,8 +70,8 @@ export interface CustomerFormInitialValues {
     password?: string | null;
     password_confirmation?: string | null;
     sponsor_id?: number | string | null;
-    status?: string | null;
-    package_id?: string | null;
+    status?: string | number | null;
+    package_id?: number | string | null;
     level?: string | null;
 }
 
@@ -117,6 +118,14 @@ const normalizeString = (value: unknown): string => {
     return value.trim();
 };
 
+const normalizeStringValue = (value: unknown): string => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return String(value);
+    }
+
+    return normalizeString(value);
+};
+
 const normalizeNumber = (value: unknown): number | null => {
     if (typeof value === 'number' && Number.isFinite(value)) {
         return value;
@@ -128,6 +137,16 @@ const normalizeNumber = (value: unknown): number | null => {
     }
 
     return null;
+};
+
+const normalizeStatus = (value: unknown): CustomerStatusOption => {
+    const normalized = normalizeStringValue(value);
+
+    if (normalized === '1' || normalized === '2' || normalized === '3') {
+        return normalized;
+    }
+
+    return '1';
 };
 
 const normalizeGender = (value?: string | null): CustomerGenderOption => {
@@ -259,8 +278,10 @@ export function useCustomerForm(
             normalizeString(initialValues.password_confirmation) ||
             defaults.password_confirmation,
         sponsor_id: normalizeNumber(initialValues.sponsor_id),
-        status: normalizeString(initialValues.status) || defaults.status,
-        package_id: normalizeString(initialValues.package_id),
+        status: normalizeStatus(initialValues.status),
+        package_id:
+            normalizeStringValue(initialValues.package_id) ||
+            defaults.package_id,
         level: normalizeString(initialValues.level),
     });
 
@@ -302,13 +323,13 @@ export function useCustomerForm(
                 mode === 'edit' && passwordConfirmation === ''
                     ? null
                     : passwordConfirmation,
+            sponsor_id: normalizeNumber(data.sponsor_id),
+            package_id: normalizeNumber(data.package_id),
+            level: normalizeString(data.level) || null,
         };
 
         if (mode === 'create') {
-            payload.sponsor_id = normalizeNumber(data.sponsor_id);
             payload.status = Number.parseInt(data.status, 10) || 1;
-            payload.package_id = normalizeNumber(data.package_id);
-            payload.level = normalizeString(data.level) || null;
         }
 
         return payload;

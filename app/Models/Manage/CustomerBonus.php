@@ -38,6 +38,7 @@ class CustomerBonus extends Model
         'tax_value',
         'status',
         'description',
+        'date',
     ];
 
     protected function casts(): array
@@ -49,6 +50,7 @@ class CustomerBonus extends Model
             'tax_percent' => 'integer',
             'tax_value' => 'float',
             'status' => 'integer',
+            'date' => 'date',
         ];
     }
 

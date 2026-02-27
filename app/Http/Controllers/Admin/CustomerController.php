@@ -11,6 +11,7 @@ use App\Services\RajaOngkirService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -126,7 +127,9 @@ class CustomerController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Admin/Customers/Create');
+        return Inertia::render('Admin/Customers/Create', [
+            'sponsors' => $this->getSponsorOptions(),
+        ]);
     }
 
     /**
@@ -140,34 +143,36 @@ class CustomerController extends Controller
 
         try {
             $ewalletId = Customer::generateEwalletId();
-            $status = (int) $validated['status'];
+            $status = (int) ($validated['status'] ?? 1);
+            $rawPassword = trim((string) ($validated['password'] ?? ''));
 
             $customerData = [
                 'name' => $validated['name'],
                 'username' => $validated['username'],
                 'nik' => $validated['nik'],
-                'gender' => $validated['gender'],
+                'gender' => $validated['gender'] ?? null,
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
-                'password' => bcrypt($validated['password']),
-                'description' => $validated['description'],
-                'alamat' => $validated['alamat'],
-                'bank_name' => $validated['bank_name'],
-                'bank_account' => $validated['bank_account'],
+                'password' => $rawPassword !== '' ? bcrypt($rawPassword) : bcrypt(Str::password(16)),
+                'description' => $validated['description'] ?? null,
+                'alamat' => $validated['alamat'] ?? null,
+                'bank_name' => $validated['bank_name'] ?? null,
+                'bank_account' => $validated['bank_account'] ?? null,
                 'sponsor_id' => $validated['sponsor_id'] ?? null,
                 'status' => $status,
+                'level' => $validated['level'] ?? null,
+                'package_id' => $validated['package_id'] ?? null,
                 'ewallet_id' => $ewalletId,
                 'ref_code' => strtoupper(substr(md5(uniqid()), 0, 8)),
             ];
 
-            if ($status === 3) {
-                $customerData['level'] = $validated['level'] ?? null;
-                $customerData['package_id'] = $validated['package_id'] ?? null;
-            }
-
             $customer = Customer::create($customerData);
-            $this->syncPrimaryAddress($customer, $validated);
-            $this->syncCustomerNpwp($customer, $validated['npwp']);
+            if ($this->hasPrimaryAddressPayload($validated)) {
+                $this->syncPrimaryAddress($customer, $validated);
+            }
+            if ($this->hasNpwpPayload($validated['npwp'] ?? null)) {
+                $this->syncCustomerNpwp($customer, $validated['npwp']);
+            }
 
             DB::commit();
 
@@ -278,7 +283,7 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer): Response
     {
-        $customer->load('defaultAddress');
+        $customer->load(['defaultAddress', 'matrixPosition']);
         $customerNpwp = DB::table('customer_npwp')
             ->where('member_id', $customer->id)
             ->orderByDesc('id')
@@ -290,6 +295,7 @@ class CustomerController extends Controller
         }
 
         return Inertia::render('Admin/Customers/Edit', [
+            'sponsors' => $this->getSponsorOptions($customer->id),
             'customer' => [
                 'id' => $customer->id,
                 'name' => $customer->name,
@@ -305,6 +311,10 @@ class CustomerController extends Controller
                 'city_id' => $defaultAddress?->city_id,
                 'bank_name' => $customer->bank_name,
                 'bank_account' => $customer->bank_account,
+                'sponsor_id' => $customer->matrixPosition?->sponsor_id,
+                'status' => (string) $customer->status,
+                'package_id' => $customer->package_id,
+                'level' => $customer->level,
                 'npwp' => [
                     'nama' => $customerNpwp?->nama ?? $customer->name,
                     'npwp' => $customerNpwp?->npwp,
@@ -334,49 +344,45 @@ class CustomerController extends Controller
                 'name' => $validated['name'],
                 'username' => $validated['username'],
                 'nik' => $validated['nik'],
-                'gender' => $validated['gender'],
+                'gender' => $validated['gender'] ?? $customer->gender,
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
-                'description' => $validated['description'],
-                'alamat' => $validated['alamat'],
-                'bank_name' => $validated['bank_name'],
-                'bank_account' => $validated['bank_account'],
+                'description' => $validated['description'] ?? $customer->description,
+                'alamat' => $validated['alamat'] ?? $customer->alamat,
+                'bank_name' => $validated['bank_name'] ?? $customer->bank_name,
+                'bank_account' => $validated['bank_account'] ?? $customer->bank_account,
             ]);
 
             if (! empty($validated['password'])) {
                 $customer->update(['password' => $validated['password']]);
             }
 
-            $this->syncPrimaryAddress($customer, $validated);
-            $this->syncCustomerNpwp($customer, $validated['npwp']);
-
-            // Update package_id jika customer sudah Aktif (status = 3)
-            if ($request->filled('package_id') && $customer->status === 3) {
-                // Re-validate status from database to prevent race condition
-                $freshCustomer = Customer::find($customer->id);
-                if ($freshCustomer && $freshCustomer->status === 3) {
-                    $packageId = (int) $request->input('package_id');
-                    $customerDailyPairing = match ($packageId) {
-                        1 => 15,
-                        2 => 50,
-                        3 => 100,
-                        default => 0,
-                    };
-
-                    $customer->update([
-                        'package_id' => $packageId,
-                        'customer_daily_pairing' => $customerDailyPairing,
-                    ]);
-                }
+            if ($this->hasPrimaryAddressPayload($validated)) {
+                $this->syncPrimaryAddress($customer, $validated);
+            }
+            if ($this->hasNpwpPayload($validated['npwp'] ?? null)) {
+                $this->syncCustomerNpwp($customer, $validated['npwp']);
             }
 
-            // Update level jika customer sudah Aktif (status = 3)
-            if ($request->filled('level') && $customer->status === 3) {
-                // Re-validate status from database to prevent race condition
-                $freshCustomer = Customer::find($customer->id);
-                if ($freshCustomer && $freshCustomer->status === 3) {
-                    $customer->update(['level' => $request->input('level')]);
-                }
+            if (array_key_exists('package_id', $validated)) {
+                $packageId = $validated['package_id'] !== null
+                    ? (int) $validated['package_id']
+                    : null;
+                $customerDailyPairing = match ($packageId) {
+                    1 => 15,
+                    2 => 50,
+                    3 => 100,
+                    default => 0,
+                };
+
+                $customer->update([
+                    'package_id' => $packageId,
+                    'customer_daily_pairing' => $customerDailyPairing,
+                ]);
+            }
+
+            if (array_key_exists('level', $validated)) {
+                $customer->update(['level' => $validated['level']]);
             }
 
             // Update sponsor_id jika customer masih Prospek (status = 1)
@@ -490,6 +496,79 @@ class CustomerController extends Controller
     private function mapWorkStatusToForm(mixed $status): string
     {
         return strtoupper(trim((string) $status)) === 'Y' ? 'Karyawan' : 'Tidak Bekerja';
+    }
+
+    /**
+     * Ambil daftar sponsor untuk field pencarian berdasarkan username.
+     *
+     * @return array<int, array{id:int,name:string,username:?string,email:?string,phone:?string,ewallet_id:?string}>
+     */
+    private function getSponsorOptions(?int $excludeCustomerId = null): array
+    {
+        return Customer::query()
+            ->select(['id', 'name', 'username', 'email', 'phone', 'ewallet_id'])
+            ->when($excludeCustomerId !== null, function ($query) use ($excludeCustomerId) {
+                $query->where('id', '!=', $excludeCustomerId);
+            })
+            ->orderByRaw("CASE WHEN username IS NULL OR username = '' THEN 1 ELSE 0 END")
+            ->orderBy('username')
+            ->orderBy('name')
+            ->get()
+            ->map(function (Customer $customer) {
+                return [
+                    'id' => $customer->id,
+                    'name' => $customer->name,
+                    'username' => $customer->username,
+                    'email' => $customer->email,
+                    'phone' => $customer->phone,
+                    'ewallet_id' => $customer->ewallet_id,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Cek apakah payload alamat utama cukup untuk disinkronkan.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private function hasPrimaryAddressPayload(array $validated): bool
+    {
+        if (! array_key_exists('address', $validated) || ! array_key_exists('province_id', $validated) || ! array_key_exists('city_id', $validated)) {
+            return false;
+        }
+
+        return trim((string) $validated['address']) !== ''
+            && $validated['province_id'] !== null
+            && $validated['city_id'] !== null;
+    }
+
+    /**
+     * Cek apakah payload NPWP berisi data bermakna.
+     */
+    private function hasNpwpPayload(mixed $npwp): bool
+    {
+        if (! is_array($npwp)) {
+            return false;
+        }
+
+        foreach (['nama', 'npwp', 'jk', 'npwp_date', 'alamat', 'office'] as $key) {
+            if (! array_key_exists($key, $npwp)) {
+                continue;
+            }
+
+            $value = $npwp[$key];
+            if (is_string($value) && trim($value) !== '') {
+                return true;
+            }
+
+            if (! is_string($value) && $value !== null && $value !== '') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function syncPrimaryAddress(Customer $customer, array $validated): void
@@ -662,18 +741,6 @@ class CustomerController extends Controller
         // Find available position under this sponsor
         $position = $this->mlmService->findAvailablePosition($sponsorId);
 
-        // Get all customers for the form
-        $customers = Customer::select('id', 'name', 'ewallet_id')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($customer) {
-                return [
-                    'id' => $customer->id,
-                    'name' => $customer->name,
-                    'ewallet_id' => $customer->ewallet_id,
-                ];
-            });
-
         $suggestedPosition = null;
         if ($position) {
             $suggestedPosition = [
@@ -684,7 +751,7 @@ class CustomerController extends Controller
         }
 
         return Inertia::render('Admin/Customers/Create', [
-            'customers' => $customers,
+            'sponsors' => $this->getSponsorOptions(),
             'suggestedPosition' => $suggestedPosition,
         ]);
     }
