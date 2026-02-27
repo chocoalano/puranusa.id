@@ -3605,7 +3605,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       _push3(ssrRenderComponent(unref(_sfc_main$e), {
                         variant: "ghost",
                         size: "icon",
-                        class: "flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100",
+                        class: "flex-shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100",
                         onClick: ($event) => removeFromWishlist(
                           item.id,
                           item.product_id
@@ -3752,7 +3752,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               createVNode(unref(_sfc_main$e), {
                                 variant: "ghost",
                                 size: "icon",
-                                class: "flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100",
+                                class: "flex-shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100",
                                 onClick: withModifiers(($event) => removeFromWishlist(
                                   item.id,
                                   item.product_id
@@ -3898,7 +3898,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             createVNode(unref(_sfc_main$e), {
                               variant: "ghost",
                               size: "icon",
-                              class: "flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100",
+                              class: "flex-shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100",
                               onClick: withModifiers(($event) => removeFromWishlist(
                                 item.id,
                                 item.product_id
@@ -4150,7 +4150,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       _push3(ssrRenderComponent(unref(_sfc_main$e), {
                         variant: "ghost",
                         size: "icon",
-                        class: "flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100",
+                        class: "flex-shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100",
                         onClick: ($event) => removeFromCart(item.id),
                         "aria-label": "Remove from cart"
                       }, {
@@ -4329,7 +4329,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               createVNode(unref(_sfc_main$e), {
                                 variant: "ghost",
                                 size: "icon",
-                                class: "flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100",
+                                class: "flex-shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100",
                                 onClick: withModifiers(($event) => removeFromCart(item.id), ["stop"]),
                                 "aria-label": "Remove from cart"
                               }, {
@@ -4529,7 +4529,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             createVNode(unref(_sfc_main$e), {
                               variant: "ghost",
                               size: "icon",
-                              class: "flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100",
+                              class: "flex-shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100",
                               onClick: withModifiers(($event) => removeFromCart(item.id), ["stop"]),
                               "aria-label": "Remove from cart"
                             }, {

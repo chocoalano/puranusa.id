@@ -749,7 +749,7 @@ const searchSuggestions = computed(() => {
                                                     </p>
                                                 </div>
                                                 <Button variant="ghost" size="icon"
-                                                    class="flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                                    class="flex-shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100"
                                                     @click.stop="
                                                         removeFromWishlist(
                                                             item.id,
@@ -845,7 +845,7 @@ const searchSuggestions = computed(() => {
                                                     </p>
                                                 </div>
                                                 <Button variant="ghost" size="icon"
-                                                    class="flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                                    class="flex-shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100"
                                                     @click.stop="
                                                         removeFromCart(item.id)
                                                         " aria-label="Remove from cart">

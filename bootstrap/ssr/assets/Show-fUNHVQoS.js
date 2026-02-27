@@ -1,6 +1,6 @@
 import { defineComponent, unref, withCtx, createVNode, toDisplayString, createBlock, openBlock, useSSRContext } from "vue";
 import { ssrRenderComponent, ssrInterpolate, ssrRenderAttr, ssrRenderClass } from "vue/server-renderer";
-import { _ as _sfc_main$1 } from "./Ecommerce-BguXVEia.js";
+import { _ as _sfc_main$1 } from "./Ecommerce-tntAMUbA.js";
 import { Head } from "@inertiajs/vue3";
 import { _ as _sfc_main$2, c as _sfc_main$3 } from "./CardTitle-sqUG0LTw.js";
 import { _ as _sfc_main$4 } from "./ArticleContent-BYZJF0Pu.js";

@@ -1,7 +1,7 @@
 import { defineComponent, ref, mergeProps, unref, withCtx, createVNode, createBlock, createCommentVNode, openBlock, toDisplayString, useSSRContext, createTextVNode, computed, Fragment, renderList, onMounted } from "vue";
 import { ssrRenderAttrs, ssrRenderComponent, ssrRenderAttr, ssrRenderClass, ssrInterpolate, ssrRenderList, ssrRenderStyle } from "vue/server-renderer";
 import { router, Head } from "@inertiajs/vue3";
-import { a as _sfc_main$c, _ as _sfc_main$j } from "./Ecommerce-BguXVEia.js";
+import { a as _sfc_main$c, _ as _sfc_main$j } from "./Ecommerce-tntAMUbA.js";
 import { _ as _sfc_main$7, a as _sfc_main$d, b as _sfc_main$e, c as _sfc_main$f } from "./CardTitle-sqUG0LTw.js";
 import { _ as _sfc_main$8 } from "./index-SN_CnQ_F.js";
 import { ChevronLeft, ChevronRight, ZoomIn, Award, Package, Star, Truck, Minus, Plus, ShoppingCart, Heart, Share2, Info, Lightbulb, Ruler } from "lucide-vue-next";
